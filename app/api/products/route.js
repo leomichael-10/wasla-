@@ -49,6 +49,7 @@ export async function GET(request) {
       priceAed:      true,
       stockQty:      true, // fetched internally, stripped from response below
       skuCode:       true,
+      image:         true,
     },
     orderBy: { flavor: 'asc' },
   }

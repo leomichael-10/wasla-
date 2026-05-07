@@ -33,7 +33,7 @@ export default function ProductCard({ product }) {
 
   const flavors        = product.variants.map(v => v.flavor).filter(Boolean)
   const inStockVariant = product.variants.find(v => v.inStock ?? v.stockQty > 0) ?? null
-  const mainImage      = product.images?.[0] ?? null
+  const mainImage      = product.images?.[0] || product.variants?.find(v => v.image)?.image || null
 
   const reviews     = product.reviews ?? []
   const avgRating   = reviews.length
