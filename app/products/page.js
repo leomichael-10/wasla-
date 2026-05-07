@@ -29,10 +29,10 @@ function SkeletonCard() {
 
 function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div>
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Brand</p>
-        <div className="space-y-1.5">
+        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Brand</p>
+        <div className="space-y-2.5">
           {BRANDS.map(b => (
             <label key={b} className="flex items-center gap-2.5 cursor-pointer group">
               <input type="radio" name="brand" checked={brand === b} onChange={() => setBrand(brand === b ? '' : b)} className="accent-purple-600 w-4 h-4" />
@@ -43,8 +43,8 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
       </div>
 
       <div>
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Emirate</p>
-        <div className="space-y-1.5">
+        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Emirate</p>
+        <div className="space-y-2.5">
           {EMIRATES.map(c => (
             <label key={c} className="flex items-center gap-2.5 cursor-pointer group">
               <input type="radio" name="city" checked={city === c} onChange={() => setCity(city === c ? '' : c)} className="accent-purple-600 w-4 h-4" />
@@ -78,18 +78,18 @@ function CategoryRail({ categories, active, onSelect }) {
           <button
             key={cat.id}
             onClick={() => onSelect(cat.id === '__all__' ? '' : cat.name)}
-            className={`relative flex items-center justify-center transition-colors ${
+            className={`relative flex items-center justify-center transition-colors border-b border-purple-100 ${
               isActive
                 ? 'bg-purple-700 text-white'
                 : 'text-gray-500 hover:bg-purple-50 hover:text-purple-700'
             }`}
-            style={{ minHeight: 56 }}
+            style={{ minHeight: 72 }}
           >
             {isActive && (
               <span className="absolute right-0 top-0 bottom-0 w-1 bg-amber-400 rounded-l-full" />
             )}
             <span
-              className="text-[11px] font-bold leading-none select-none"
+              className="text-[11px] font-bold leading-none select-none px-1"
               style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
             >
               {cat.name}
@@ -252,12 +252,14 @@ function ProductsBrowser() {
 
                 {categories.length > 0 && (
                   <div className="mb-5">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Category</p>
-                    <div className="space-y-1">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Category</p>
+                    <div className="space-y-1.5">
                       <button
                         onClick={() => setCategory('')}
-                        className={`w-full text-left px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
-                          !category ? 'bg-purple-700 text-white' : 'text-gray-700 hover:bg-purple-50 hover:text-purple-700'
+                        className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors border-l-4 ${
+                          !category
+                            ? 'bg-purple-700 text-white border-amber-400'
+                            : 'text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-transparent'
                         }`}
                       >
                         All
@@ -266,8 +268,10 @@ function ProductsBrowser() {
                         <button
                           key={cat.id}
                           onClick={() => setCategory(category === cat.name ? '' : cat.name)}
-                          className={`w-full text-left px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
-                            category === cat.name ? 'bg-purple-700 text-white' : 'text-gray-700 hover:bg-purple-50 hover:text-purple-700'
+                          className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors border-l-4 ${
+                            category === cat.name
+                              ? 'bg-purple-700 text-white border-amber-400'
+                              : 'text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-transparent'
                           }`}
                         >
                           {cat.name}
@@ -277,6 +281,7 @@ function ProductsBrowser() {
                   </div>
                 )}
 
+                <hr className="border-purple-100 mb-5" />
                 <FilterPanel brand={brand} setBrand={setBrand} city={city} setCity={setCity} />
               </div>
             </aside>
