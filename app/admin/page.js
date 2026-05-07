@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import Navbar from '../../components/Navbar'
 
 const SUB_STATUS = {
@@ -568,7 +569,8 @@ export default function AdminPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-100 bg-[#f9f7ff]">
-                        <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Business</th>
+                        <th className="px-5 py-3.5 w-12" />
+                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Business</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Email</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">City</th>
                         <th className="px-4 py-3.5" />
@@ -577,10 +579,21 @@ export default function AdminPage() {
                     <tbody className="divide-y divide-gray-50">
                       {pending.map(seller => (
                         <tr key={seller.id} className="hover:bg-[#f9f7ff] transition-colors">
-                          <td className="px-5 py-4 font-semibold text-gray-900">{seller.businessName}</td>
-                          <td className="px-4 py-4 text-gray-600">{seller.user?.email ?? '—'}</td>
-                          <td className="px-4 py-4 text-gray-600">{seller.city ?? '—'}</td>
-                          <td className="px-4 py-4">
+                          <td className="px-5 py-2.5">
+                            {seller.logoUrl ? (
+                              <div className="relative w-10 h-10 rounded-full overflow-hidden bg-purple-50 shrink-0">
+                                <Image src={seller.logoUrl} alt={seller.businessName} fill className="object-cover" sizes="40px" />
+                              </div>
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                                <span className="text-purple-600 font-black text-sm">{(seller.businessName ?? 'S')[0].toUpperCase()}</span>
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-2.5 font-semibold text-gray-900">{seller.businessName}</td>
+                          <td className="px-4 py-2.5 text-gray-600">{seller.user?.email ?? '—'}</td>
+                          <td className="px-4 py-2.5 text-gray-600">{seller.city ?? '—'}</td>
+                          <td className="px-4 py-2.5">
                             <button
                               onClick={() => handleApproveSeller(seller.id)}
                               disabled={approving === seller.id}
@@ -611,7 +624,8 @@ export default function AdminPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-100 bg-[#f9f7ff]">
-                        <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Business</th>
+                        <th className="px-5 py-3.5 w-12" />
+                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Business</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Email</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">City</th>
                         <th className="text-center px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Status</th>
@@ -620,10 +634,21 @@ export default function AdminPage() {
                     <tbody className="divide-y divide-gray-50">
                       {sellers.map(seller => (
                         <tr key={seller.id} className="hover:bg-[#f9f7ff] transition-colors">
-                          <td className="px-5 py-4 font-semibold text-gray-900">{seller.businessName}</td>
-                          <td className="px-4 py-4 text-gray-600">{seller.user?.email ?? '—'}</td>
-                          <td className="px-4 py-4 text-gray-600">{seller.city ?? '—'}</td>
-                          <td className="px-4 py-4 text-center">
+                          <td className="px-5 py-2.5">
+                            {seller.logoUrl ? (
+                              <div className="relative w-10 h-10 rounded-full overflow-hidden bg-purple-50 shrink-0">
+                                <Image src={seller.logoUrl} alt={seller.businessName} fill className="object-cover" sizes="40px" />
+                              </div>
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                                <span className="text-purple-600 font-black text-sm">{(seller.businessName ?? 'S')[0].toUpperCase()}</span>
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-2.5 font-semibold text-gray-900">{seller.businessName}</td>
+                          <td className="px-4 py-2.5 text-gray-600">{seller.user?.email ?? '—'}</td>
+                          <td className="px-4 py-2.5 text-gray-600">{seller.city ?? '—'}</td>
+                          <td className="px-4 py-2.5 text-center">
                             <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${seller.approvedByAdmin ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                               {seller.approvedByAdmin ? 'Approved' : 'Pending'}
                             </span>
@@ -678,7 +703,7 @@ export default function AdminPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-100 bg-[#f9f7ff]">
-                        <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">ID</th>
+                        <th className="px-5 py-3.5 w-12" />
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Email</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Name</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Role</th>
@@ -690,34 +715,46 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                      {filteredUsers.map(u => (
+                      {filteredUsers.map(u => {
+                        const displayName = u.customerProfile?.fullName || u.sellerProfile?.businessName || u.email
+                        const roleColors  = {
+                          admin:      'bg-purple-100 text-purple-700',
+                          wholesaler: 'bg-blue-100 text-blue-700',
+                          retailer:   'bg-amber-100 text-amber-700',
+                          customer:   'bg-gray-100 text-gray-600',
+                        }
+                        return (
                         <tr key={u.id} className={`hover:bg-[#f9f7ff] transition-colors ${u.isBanned ? 'opacity-60' : ''}`}>
-                          <td className="px-5 py-3.5 text-gray-400 text-xs tabular-nums">#{u.id}</td>
-                          <td className="px-4 py-3.5 text-gray-700 font-medium">{u.email}</td>
-                          <td className="px-4 py-3.5 text-gray-600">
-                            {u.customerProfile?.fullName || u.sellerProfile?.businessName || '—'}
-                          </td>
-                          <td className="px-4 py-3.5">
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full capitalize ${
+                          <td className="px-5 py-2.5">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-black text-sm ${
                               u.role === 'admin'      ? 'bg-purple-100 text-purple-700' :
+                              u.role === 'retailer'   ? 'bg-amber-100 text-amber-700' :
                               u.role === 'wholesaler' ? 'bg-blue-100 text-blue-700' :
-                              u.role === 'retailer'   ? 'bg-purple-100 text-purple-700' :
                               'bg-gray-100 text-gray-600'
                             }`}>
+                              {displayName[0].toUpperCase()}
+                            </div>
+                          </td>
+                          <td className="px-4 py-2.5 text-gray-700 font-medium">{u.email}</td>
+                          <td className="px-4 py-2.5 text-gray-600">
+                            {u.customerProfile?.fullName || u.sellerProfile?.businessName || '—'}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full capitalize ${roleColors[u.role] ?? 'bg-gray-100 text-gray-600'}`}>
                               {u.role}
                             </span>
                           </td>
-                          <td className="px-4 py-3.5 text-gray-600">{u.city ?? '—'}</td>
-                          <td className="px-4 py-3.5 text-center text-gray-600">{u._count?.orders ?? 0}</td>
-                          <td className="px-4 py-3.5 text-gray-500 text-xs">
+                          <td className="px-4 py-2.5 text-gray-600">{u.city ?? '—'}</td>
+                          <td className="px-4 py-2.5 text-center text-gray-600">{u._count?.orders ?? 0}</td>
+                          <td className="px-4 py-2.5 text-gray-500 text-xs">
                             {new Date(u.createdAt).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' })}
                           </td>
-                          <td className="px-4 py-3.5 text-center">
+                          <td className="px-4 py-2.5 text-center">
                             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${u.isBanned ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700'}`}>
                               {u.isBanned ? 'Banned' : 'Active'}
                             </span>
                           </td>
-                          <td className="px-4 py-3.5">
+                          <td className="px-4 py-2.5">
                             {u.role !== 'admin' && (
                               <button
                                 onClick={() => handleBan(u.id, u.isBanned)}
@@ -733,7 +770,8 @@ export default function AdminPage() {
                             )}
                           </td>
                         </tr>
-                      ))}
+                        )
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -780,7 +818,8 @@ export default function AdminPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-100 bg-[#f9f7ff]">
-                        <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
+                        <th className="px-5 py-3.5 w-12" />
+                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Brand</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Category</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Seller</th>
@@ -800,24 +839,38 @@ export default function AdminPage() {
                           : `${minP.toFixed(0)}–${maxP.toFixed(0)}`
                         return (
                           <tr key={p.id} className={`hover:bg-[#f9f7ff] transition-colors ${!p.isActive ? 'opacity-60' : ''}`}>
-                            <td className="px-5 py-3.5">
+                            <td className="px-5 py-2.5">
+                              {(() => {
+                                const thumb = p.images?.[0] || p.variants?.find(v => v.image)?.image || null
+                                return thumb ? (
+                                  <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-purple-50 shrink-0">
+                                    <Image src={thumb} alt={p.name} fill className="object-cover" sizes="40px" />
+                                  </div>
+                                ) : (
+                                  <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
+                                    <span className="text-purple-600 font-black text-sm">{(p.brand ?? p.name ?? 'P')[0].toUpperCase()}</span>
+                                  </div>
+                                )
+                              })()}
+                            </td>
+                            <td className="px-4 py-2.5">
                               <Link href={`/products/${p.id}`} className="font-semibold text-gray-900 hover:text-purple-700 transition-colors">
                                 {p.name}
                               </Link>
                             </td>
-                            <td className="px-4 py-3.5 text-gray-600">{p.brand ?? '—'}</td>
-                            <td className="px-4 py-3.5 text-gray-600 capitalize">{p.category?.name ?? '—'}</td>
-                            <td className="px-4 py-3.5 text-gray-600">{p.seller?.businessName ?? '—'}</td>
-                            <td className="px-4 py-3.5 text-right font-semibold tabular-nums">{priceStr}</td>
-                            <td className="px-4 py-3.5 text-gray-500 text-xs">
+                            <td className="px-4 py-2.5 text-gray-600">{p.brand ?? '—'}</td>
+                            <td className="px-4 py-2.5 text-gray-600 capitalize">{p.category?.name ?? '—'}</td>
+                            <td className="px-4 py-2.5 text-gray-600">{p.seller?.businessName ?? '—'}</td>
+                            <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{priceStr}</td>
+                            <td className="px-4 py-2.5 text-gray-500 text-xs">
                               {new Date(p.createdAt).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </td>
-                            <td className="px-4 py-3.5 text-center">
+                            <td className="px-4 py-2.5 text-center">
                               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                                 {p.isActive ? 'Active' : 'Inactive'}
                               </span>
                             </td>
-                            <td className="px-4 py-3.5">
+                            <td className="px-4 py-2.5">
                               <button
                                 onClick={() => handleToggleProduct(p.id, p.isActive)}
                                 disabled={toggling === p.id}
