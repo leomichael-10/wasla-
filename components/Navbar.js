@@ -69,12 +69,12 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="bg-teal-400 sticky top-0 z-50 shadow-sm">
+      <nav className="bg-purple-700 sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-3">
 
           {/* Hamburger — mobile only */}
           <button
-            className="lg:hidden text-white hover:text-yellow-300 transition-colors shrink-0"
+            className="lg:hidden text-white hover:text-amber-300 transition-colors shrink-0"
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
           >
@@ -86,7 +86,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="shrink-0 leading-none">
             <span className="text-white font-black text-xl tracking-tight">
-              toba<span className="text-yellow-300">ki</span>
+              toba<span className="text-amber-300">ki</span>
             </span>
           </Link>
 
@@ -105,7 +105,7 @@ export default function Navbar() {
               {showBrowse && (
                 <Link
                   href="/browse"
-                  className="text-yellow-300 hover:text-yellow-200 text-sm font-semibold px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors whitespace-nowrap"
+                  className="text-amber-300 hover:text-amber-200 text-sm font-semibold px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors whitespace-nowrap"
                 >
                   View as Customer
                 </Link>
@@ -121,10 +121,10 @@ export default function Navbar() {
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Search products, brands, flavors..."
-                className="w-full rounded-full pl-4 pr-10 py-2 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                className="w-full rounded-full pl-4 pr-10 py-2 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
               <button type="submit" aria-label="Search"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-teal-500 hover:text-teal-700 transition-colors">
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-purple-600 hover:text-purple-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                 </svg>
@@ -146,18 +146,18 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link href="/login"    className="hidden sm:block text-white text-sm font-semibold hover:text-yellow-300 transition-colors">Sign in</Link>
-                <Link href="/register" className="hidden sm:block bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm font-black px-4 py-1.5 rounded-full transition-colors">Register</Link>
+                <Link href="/login"    className="hidden sm:block text-white text-sm font-semibold hover:text-amber-300 transition-colors">Sign in</Link>
+                <Link href="/register" className="hidden sm:block bg-amber-400 hover:bg-amber-500 text-gray-900 text-sm font-black px-4 py-1.5 rounded-full transition-colors">Register</Link>
               </>
             )}
 
             {/* Cart */}
             {showCart && (
-              <Link href="/cart" aria-label="Cart" className="relative text-white hover:text-yellow-300 transition-colors ml-1">
+              <Link href="/cart" aria-label="Cart" className="relative text-white hover:text-amber-300 transition-colors ml-1">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.847-7.148a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                 </svg>
-                <span className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-gray-900 text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center leading-none">
+                <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-gray-900 text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center leading-none">
                   {cartCount > 9 ? '9+' : cartCount}
                 </span>
               </Link>

@@ -9,7 +9,7 @@ function StarRating({ rating, count }) {
     <div className="flex items-center gap-1">
       <div className="flex gap-0.5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <span key={i} className={`text-xs ${i < rounded ? 'text-yellow-400' : 'text-gray-200'}`}>&#9733;</span>
+          <span key={i} className={`text-xs ${i < rounded ? 'text-amber-400' : 'text-gray-200'}`}>&#9733;</span>
         ))}
       </div>
       {count > 0 && <span className="text-[11px] text-gray-400">({count})</span>}
@@ -101,46 +101,52 @@ export default function ProductCard({ product }) {
   }
 
   return (
-    <div className="relative group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col h-full">
+    <div className="relative group bg-white rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full border border-purple-50">
 
       {/* Full-card link */}
       <Link href={`/products/${product.id}`} className="absolute inset-0 z-0" aria-label={`View ${product.name}`} />
 
-      {/* Wishlist button */}
-      {isCustomer && (
-        <button
-          onClick={handleWishlist}
-          disabled={wishLoading}
-          className="absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors"
-          aria-label={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-            fill={wishlisted ? '#ef4444' : 'none'}
-            stroke={wishlisted ? '#ef4444' : '#9ca3af'}
-            strokeWidth={2} className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-          </svg>
-        </button>
-      )}
+      {/* Purple banner header with circular image */}
+      <div className="relative bg-purple-700 pt-5 pb-8 px-4 flex items-center justify-center">
+        {/* Wishlist button */}
+        {isCustomer && (
+          <button
+            onClick={handleWishlist}
+            disabled={wishLoading}
+            className="absolute top-3 right-3 z-10 w-7 h-7 flex items-center justify-center bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+            aria-label={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+              fill={wishlisted ? '#ef4444' : 'none'}
+              stroke={wishlisted ? '#ef4444' : 'white'}
+              strokeWidth={2} className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+        )}
 
-      {/* Image */}
-      <div className="aspect-square overflow-hidden">
-        {mainImage ? (
-          <img src={mainImage} alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        ) : (
-          <div className="w-full h-full bg-linear-to-br from-teal-50 via-teal-100 to-cyan-100 flex items-center justify-center">
-            <span className="text-4xl font-black text-teal-200 group-hover:scale-110 transition-transform duration-200 select-none tracking-tighter">
+        {/* Circular product image */}
+        <div className="w-28 h-28 rounded-full bg-white/10 border-4 border-white/30 overflow-hidden flex items-center justify-center shadow-lg">
+          {mainImage ? (
+            <img src={mainImage} alt={product.name}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+          ) : (
+            <span className="text-4xl font-black text-white/40 select-none tracking-tighter">
               {(product.brand ?? 'V')[0].toUpperCase()}
             </span>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Price badge — positioned at bottom of banner */}
+        <div className="absolute bottom-0 translate-y-1/2 right-4 bg-amber-400 text-gray-900 text-xs font-black px-3 py-1 rounded-full shadow-md z-10">
+          {priceLabel}
+        </div>
       </div>
 
       {/* Card body */}
-      <div className="p-3 flex flex-col flex-1 gap-1.5">
+      <div className="pt-5 px-4 pb-4 flex flex-col flex-1 gap-1.5">
         {product.brand && (
-          <span className="text-[11px] font-bold text-teal-600 uppercase tracking-wide">{product.brand}</span>
+          <span className="text-[11px] font-bold text-purple-500 uppercase tracking-wide">{product.brand}</span>
         )}
         <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{product.name}</h3>
         {flavors.length > 0 && (
@@ -153,28 +159,27 @@ export default function ProductCard({ product }) {
         {product.seller && (
           <Link
             href={`/shops/${product.seller.id}`}
-            className="relative z-10 text-xs text-gray-400 hover:text-teal-600 transition-colors"
+            className="relative z-10 text-xs text-gray-400 hover:text-purple-600 transition-colors"
             onClick={e => e.stopPropagation()}
           >
             {product.seller.businessName}{product.seller.city ? ` · ${product.seller.city}` : ''}
           </Link>
         )}
 
-        {/* Price + CTA */}
-        <div className="mt-auto pt-2 flex items-center justify-between gap-2">
-          <span className="font-black text-gray-900 text-sm tabular-nums">{priceLabel}</span>
+        {/* CTA */}
+        <div className="mt-auto pt-2">
           <button
-            className={`relative z-10 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors shrink-0 ${
+            className={`relative z-10 w-full text-white text-xs font-bold py-2.5 rounded-2xl transition-all duration-200 ${
               feedback
-                ? 'bg-green-500'
+                ? 'bg-green-500 scale-95'
                 : inStockVariant
-                  ? 'bg-teal-400 hover:bg-teal-500 active:bg-teal-600'
+                  ? 'bg-purple-700 hover:bg-purple-800 active:scale-95'
                   : 'bg-gray-300 cursor-not-allowed'
             }`}
             onClick={handleAddToCart}
             disabled={!inStockVariant}
           >
-            {feedback ? 'Added!' : inStockVariant ? 'Add to cart' : 'Out of stock'}
+            {feedback ? '✓ Added!' : inStockVariant ? 'Add to Cart' : 'Out of Stock'}
           </button>
         </div>
       </div>

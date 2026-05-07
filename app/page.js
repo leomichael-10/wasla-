@@ -72,11 +72,11 @@ function ShopCard({ shop }) {
   return (
     <Link
       href={`/shops/${shop.id}`}
-      className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-teal-200 transition-all duration-200 flex flex-col overflow-hidden"
+      className="group bg-white rounded-3xl border border-purple-50 shadow-sm hover:shadow-md hover:border-purple-200 transition-all duration-200 flex flex-col overflow-hidden"
     >
-      {/* Shop banner / avatar area */}
-      <div className="h-24 bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center relative">
-        <span className="text-5xl font-black text-white/30 select-none group-hover:text-white/40 transition-colors">
+      {/* Shop banner */}
+      <div className="h-24 bg-gradient-to-br from-purple-700 to-purple-500 flex items-center justify-center relative">
+        <span className="text-5xl font-black text-white/20 select-none group-hover:text-white/35 transition-colors">
           {shop.businessName[0].toUpperCase()}
         </span>
         {shop.deliveryAvailable && (
@@ -88,13 +88,13 @@ function ShopCard({ shop }) {
 
       {/* Content */}
       <div className="p-4 flex flex-col flex-1 gap-2">
-        <h3 className="font-black text-gray-900 text-base leading-snug group-hover:text-teal-600 transition-colors">
+        <h3 className="font-black text-gray-900 text-base leading-snug group-hover:text-purple-700 transition-colors">
           {shop.businessName}
         </h3>
 
         {(shop.city || shop.area) && (
           <p className="text-xs text-gray-500 flex items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 shrink-0 text-purple-400">
               <path fillRule="evenodd" d="M8 1.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM2.5 6a5.5 5.5 0 1 1 9.5 3.774l2.614 2.613a.75.75 0 0 1-1.06 1.06L11 11.061A5.5 5.5 0 0 1 2.5 6Z" clipRule="evenodd" />
             </svg>
             {[shop.city, shop.area].filter(Boolean).join(', ')}
@@ -105,7 +105,7 @@ function ShopCard({ shop }) {
           <div className="flex items-center gap-1">
             {shop.averageRating > 0 ? (
               <>
-                <span className="text-yellow-400 text-sm">&#9733;</span>
+                <span className="text-amber-400 text-sm">&#9733;</span>
                 <span className="text-xs font-bold text-gray-700">{shop.averageRating.toFixed(1)}</span>
                 <span className="text-[10px] text-gray-400">({shop.reviewCount})</span>
               </>
@@ -137,10 +137,10 @@ function CategoryPill({ category }) {
   return (
     <Link
       href={`/products?category=${encodeURIComponent(category.name)}`}
-      className="group shrink-0 flex flex-col items-center gap-2 w-24 py-4 px-2 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-teal-300 hover:shadow-md transition-all duration-200"
+      className="group shrink-0 flex flex-col items-center gap-2 w-24 py-4 px-2 bg-white rounded-2xl border border-purple-50 shadow-sm hover:border-purple-300 hover:shadow-md transition-all duration-200"
     >
-      <span className="text-teal-500 group-hover:text-teal-600 transition-colors">{icon}</span>
-      <span className="text-xs font-bold text-gray-700 text-center leading-tight group-hover:text-teal-600 transition-colors">
+      <span className="text-purple-600 group-hover:text-purple-800 transition-colors">{icon}</span>
+      <span className="text-xs font-bold text-gray-700 text-center leading-tight group-hover:text-purple-700 transition-colors">
         {category.name}
       </span>
       {category._count?.products > 0 && (
@@ -160,11 +160,11 @@ export default async function HomePage() {
   ])
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f9f7ff]">
       <Navbar />
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="bg-gradient-to-br from-teal-500 via-teal-400 to-cyan-400 text-white">
+      <section className="bg-gradient-to-br from-purple-800 via-purple-700 to-violet-600 text-white">
         <div className="max-w-4xl mx-auto px-4 py-16 text-center">
           <div className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-4 tracking-wide uppercase">
             UAE&apos;s First Vape Marketplace
@@ -172,7 +172,7 @@ export default async function HomePage() {
           <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight mb-3">
             Order from the best<br className="hidden sm:block" /> vape shops in Dubai
           </h1>
-          <p className="text-teal-50 text-base sm:text-lg mb-8 max-w-xl mx-auto">
+          <p className="text-purple-100 text-base sm:text-lg mb-8 max-w-xl mx-auto">
             Disposables, devices &amp; e-liquids from verified sellers — delivered to your door.
           </p>
 
@@ -186,7 +186,7 @@ export default async function HomePage() {
               />
               <button
                 type="submit"
-                className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-gray-900 font-black px-6 py-2.5 rounded-xl text-sm transition-colors shrink-0"
+                className="bg-amber-400 hover:bg-amber-500 active:bg-amber-600 text-gray-900 font-black px-6 py-2.5 rounded-xl text-sm transition-colors shrink-0"
               >
                 Search
               </button>
@@ -199,8 +199,8 @@ export default async function HomePage() {
               { label: 'Cash on Delivery' },
               { label: 'UAE-Wide Delivery' },
             ].map(b => (
-              <div key={b.label} className="flex items-center gap-1.5 text-teal-50 text-sm font-medium">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-yellow-300 shrink-0">
+              <div key={b.label} className="flex items-center gap-1.5 text-purple-100 text-sm font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-amber-300 shrink-0">
                   <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
                 </svg>
                 {b.label}
@@ -215,7 +215,7 @@ export default async function HomePage() {
         <section className="max-w-7xl mx-auto px-4 pt-10 pb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-black text-gray-900">Browse by Category</h2>
-            <Link href="/products" className="text-sm text-teal-600 font-semibold hover:underline">
+            <Link href="/products" className="text-sm text-purple-600 font-semibold hover:underline">
               View all
             </Link>
           </div>
@@ -234,13 +234,13 @@ export default async function HomePage() {
             <h2 className="text-xl font-black text-gray-900">Shops Near You</h2>
             <p className="text-sm text-gray-500 mt-0.5">{shops.length} verified shop{shops.length !== 1 ? 's' : ''} available</p>
           </div>
-          <Link href="/shops" className="text-sm text-teal-600 font-semibold hover:underline">
+          <Link href="/shops" className="text-sm text-purple-600 font-semibold hover:underline">
             View all shops
           </Link>
         </div>
 
         {shops.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+          <div className="bg-white rounded-3xl border border-purple-50 shadow-sm py-16 text-center">
             <p className="text-gray-500 font-semibold">No shops available in your area yet.</p>
             <p className="text-sm text-gray-400 mt-1">Check back soon as new sellers join daily.</p>
           </div>
@@ -258,7 +258,7 @@ export default async function HomePage() {
         <section className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-black text-gray-900">Popular Products</h2>
-            <Link href="/products" className="text-sm text-teal-600 font-semibold hover:underline">
+            <Link href="/products" className="text-sm text-purple-600 font-semibold hover:underline">
               View all
             </Link>
           </div>
@@ -271,7 +271,7 @@ export default async function HomePage() {
       )}
 
       {/* ── How It Works ──────────────────────────────────────────────────── */}
-      <section className="bg-white border-t border-gray-100 mt-4">
+      <section className="bg-white border-t border-purple-50 mt-4">
         <div className="max-w-4xl mx-auto px-4 py-14 text-center">
           <h2 className="text-xl font-black text-gray-900 mb-10">How It Works</h2>
           <div className="grid sm:grid-cols-3 gap-8">
@@ -293,7 +293,7 @@ export default async function HomePage() {
               },
             ].map(item => (
               <div key={item.step} className="flex flex-col items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-teal-400 text-white font-black text-lg flex items-center justify-center shadow-sm">
+                <div className="w-12 h-12 rounded-full bg-purple-700 text-white font-black text-lg flex items-center justify-center shadow-md">
                   {item.step}
                 </div>
                 <h3 className="font-black text-gray-900">{item.title}</h3>
