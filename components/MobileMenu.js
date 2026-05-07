@@ -45,7 +45,7 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
       <div className="fixed top-0 left-0 h-full w-72 bg-white z-50 shadow-2xl lg:hidden flex flex-col">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-teal-400">
+        <div className="flex items-center justify-between px-5 py-4 bg-purple-700">
           <span className="text-white font-black text-xl tracking-tight">
             toba<span className="text-yellow-300">ki</span>
           </span>
@@ -62,8 +62,8 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
 
         {/* User info */}
         {user && (
-          <div className="px-5 py-3 bg-teal-50 border-b border-teal-100">
-            <p className="text-xs font-bold text-teal-700 uppercase tracking-wide">{user.role}</p>
+          <div className="px-5 py-3 bg-purple-50 border-b border-purple-100">
+            <p className="text-xs font-bold text-purple-700 uppercase tracking-wide">{user.role}</p>
             <p className="text-sm font-semibold text-gray-800 truncate mt-0.5">{user.email}</p>
           </div>
         )}
@@ -75,7 +75,7 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
               key={link.href}
               href={link.href}
               onClick={onClose}
-              className="flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+              className="flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
             >
               {link.label}
             </Link>
@@ -102,7 +102,7 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
             </button>
           ) : (
             <div className="flex gap-2">
-              <Link href="/login"    onClick={onClose} className="flex-1 text-center border border-teal-400 text-teal-600 font-bold py-2.5 rounded-xl text-sm hover:bg-teal-50 transition-colors">Sign in</Link>
+              <Link href="/login"    onClick={onClose} className="flex-1 text-center border border-purple-400 text-purple-600 font-bold py-2.5 rounded-xl text-sm hover:bg-purple-50 transition-colors">Sign in</Link>
               <Link href="/register" onClick={onClose} className="flex-1 text-center bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-black py-2.5 rounded-xl text-sm transition-colors">Register</Link>
             </div>
           )}

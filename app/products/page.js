@@ -15,13 +15,13 @@ const SORT_OPTIONS = [
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 animate-pulse overflow-hidden">
-      <div className="aspect-square bg-gray-100" />
+    <div className="bg-white rounded-3xl border border-purple-50 animate-pulse overflow-hidden">
+      <div className="aspect-square bg-purple-50" />
       <div className="p-3 space-y-2">
-        <div className="h-2.5 bg-gray-100 rounded w-1/3" />
-        <div className="h-4 bg-gray-100 rounded w-3/4" />
-        <div className="h-2.5 bg-gray-100 rounded w-1/2" />
-        <div className="h-7 bg-gray-100 rounded-full mt-3 w-full" />
+        <div className="h-2.5 bg-purple-50 rounded w-1/3" />
+        <div className="h-4 bg-purple-50 rounded w-3/4" />
+        <div className="h-2.5 bg-purple-50 rounded w-1/2" />
+        <div className="h-7 bg-purple-50 rounded-full mt-3 w-full" />
       </div>
     </div>
   )
@@ -35,8 +35,8 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
         <div className="space-y-1.5">
           {BRANDS.map(b => (
             <label key={b} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="radio" name="brand" checked={brand === b} onChange={() => setBrand(brand === b ? '' : b)} className="accent-teal-400 w-4 h-4" />
-              <span className="text-sm text-gray-700 group-hover:text-teal-600 transition-colors">{b}</span>
+              <input type="radio" name="brand" checked={brand === b} onChange={() => setBrand(brand === b ? '' : b)} className="accent-purple-600 w-4 h-4" />
+              <span className="text-sm text-gray-700 group-hover:text-purple-600 transition-colors">{b}</span>
             </label>
           ))}
         </div>
@@ -47,15 +47,15 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
         <div className="space-y-1.5">
           {EMIRATES.map(c => (
             <label key={c} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="radio" name="city" checked={city === c} onChange={() => setCity(city === c ? '' : c)} className="accent-teal-400 w-4 h-4" />
-              <span className="text-sm text-gray-700 group-hover:text-teal-600 transition-colors">{c}</span>
+              <input type="radio" name="city" checked={city === c} onChange={() => setCity(city === c ? '' : c)} className="accent-purple-600 w-4 h-4" />
+              <span className="text-sm text-gray-700 group-hover:text-purple-600 transition-colors">{c}</span>
             </label>
           ))}
         </div>
       </div>
 
       {onClose && (
-        <button onClick={onClose} className="w-full bg-teal-400 hover:bg-teal-500 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">
+        <button onClick={onClose} className="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">
           Show results
         </button>
       )}
@@ -63,12 +63,49 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
   )
 }
 
+/* ── Left side category rail (mobile) ── */
+function CategoryRail({ categories, active, onSelect }) {
+  const ALL = { id: '__all__', name: 'All' }
+  const items = [ALL, ...categories]
+
+  return (
+    <div className="flex flex-col bg-white border-r border-purple-100 w-14 shrink-0 sm:hidden overflow-y-auto">
+      {items.map(cat => {
+        const isActive = cat.id === '__all__' ? !active : active === cat.name
+        return (
+          <button
+            key={cat.id}
+            onClick={() => onSelect(cat.id === '__all__' ? '' : cat.name)}
+            className={`flex items-center justify-center py-5 transition-colors relative ${
+              isActive
+                ? 'bg-purple-700 text-white'
+                : 'text-gray-500 hover:bg-purple-50 hover:text-purple-700'
+            }`}
+          >
+            {/* Active indicator bar */}
+            {isActive && (
+              <span className="absolute right-0 top-0 bottom-0 w-1 bg-amber-400 rounded-l-full" />
+            )}
+            <span
+              className="text-[11px] font-bold leading-none select-none"
+              style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+            >
+              {cat.name}
+            </span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 function ProductsBrowser() {
   const searchParams = useSearchParams()
 
-  const [products,   setProducts]   = useState([])
-  const [loading,    setLoading]    = useState(true)
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [products,    setProducts]    = useState([])
+  const [categories,  setCategories]  = useState([])
+  const [loading,     setLoading]     = useState(true)
+  const [mobileOpen,  setMobileOpen]  = useState(false)
 
   const [search,   setSearch]   = useState(searchParams.get('search')   ?? '')
   const [brand,    setBrand]    = useState(searchParams.get('brand')    ?? '')
@@ -77,6 +114,14 @@ function ProductsBrowser() {
   const [sort,     setSort]     = useState(searchParams.get('sort')     ?? 'az')
 
   const hasFilters = search || brand || category || city
+
+  /* Fetch categories once */
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(r => r.json())
+      .then(d => setCategories(d.categories ?? []))
+      .catch(() => {})
+  }, [])
 
   const fetchProducts = useCallback(async () => {
     setLoading(true)
@@ -103,7 +148,7 @@ function ProductsBrowser() {
   function clearFilters() { setSearch(''); setBrand(''); setCategory(''); setCity('') }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f9f7ff]">
       <Navbar />
 
       {/* Mobile filter backdrop */}
@@ -111,7 +156,7 @@ function ProductsBrowser() {
         <div className="fixed inset-0 bg-black/40 z-40 sm:hidden" onClick={() => setMobileOpen(false)} />
       )}
 
-      {/* Mobile filter sheet */}
+      {/* Mobile filter sheet (brand / emirate) */}
       <div className={`fixed bottom-0 inset-x-0 z-50 bg-white rounded-t-3xl p-6 shadow-2xl transition-transform duration-300 sm:hidden ${mobileOpen ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-black text-gray-900">Filters</h2>
@@ -127,33 +172,31 @@ function ProductsBrowser() {
         <FilterPanel brand={brand} setBrand={setBrand} city={city} setCity={setCity} onClose={() => setMobileOpen(false)} />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
-
-        {/* Page header */}
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+      {/* ── Page header (above the side-rail layout) ── */}
+      <div className="max-w-7xl mx-auto px-4 pt-6 pb-3">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-2xl font-black text-gray-900">Browse Products</h1>
             {!loading && (
               <p className="text-sm text-gray-500 mt-0.5">
                 {products.length} product{products.length !== 1 ? 's' : ''}
-                {category && <span> in <span className="font-semibold text-teal-600">{category}</span></span>}
+                {category && <span> in <span className="font-semibold text-purple-600">{category}</span></span>}
               </p>
             )}
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Sort dropdown */}
             <select
               value={sort}
               onChange={e => setSort(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white"
+              className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
             >
               {SORT_OPTIONS.map(o => (
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
 
-            {/* Mobile filter toggle */}
+            {/* Mobile filter toggle (brand/emirate) */}
             <button
               onClick={() => setMobileOpen(true)}
               className="sm:hidden flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm"
@@ -163,7 +206,7 @@ function ProductsBrowser() {
               </svg>
               Filters
               {hasFilters && (
-                <span className="bg-teal-400 text-white text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center">·</span>
+                <span className="bg-purple-600 text-white text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center">·</span>
               )}
             </button>
           </div>
@@ -171,7 +214,7 @@ function ProductsBrowser() {
 
         {/* Active filter chips */}
         {hasFilters && (
-          <div className="flex flex-wrap gap-2 mb-5">
+          <div className="flex flex-wrap gap-2 mt-3">
             {[
               search   && { label: `"${search}"`, clear: () => setSearch('') },
               brand    && { label: brand,          clear: () => setBrand('') },
@@ -179,9 +222,9 @@ function ProductsBrowser() {
               city     && { label: city,           clear: () => setCity('') },
             ].filter(Boolean).map(chip => (
               <button key={chip.label} onClick={chip.clear}
-                className="flex items-center gap-1.5 bg-teal-50 text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-teal-100 transition-colors">
+                className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-purple-100 transition-colors">
                 {chip.label}
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-teal-400">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-purple-400">
                   <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
                 </svg>
               </button>
@@ -189,43 +232,88 @@ function ProductsBrowser() {
             <button onClick={clearFilters} className="text-xs text-gray-400 hover:text-red-500 font-semibold px-2 transition-colors">Clear all</button>
           </div>
         )}
+      </div>
 
-        <div className="flex gap-6">
+      {/* ── Main layout: side rail + content ── */}
+      <div className="max-w-7xl mx-auto flex" style={{ minHeight: 'calc(100vh - 160px)' }}>
 
-          {/* Desktop sidebar */}
-          <aside className="hidden sm:block w-52 shrink-0">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-24">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-black text-gray-900 text-sm">Filters</h2>
-                {hasFilters && <button onClick={clearFilters} className="text-xs text-red-400 hover:text-red-600 font-semibold">Clear</button>}
-              </div>
-              <FilterPanel brand={brand} setBrand={setBrand} city={city} setCity={setCity} />
-            </div>
-          </aside>
+        {/* Mobile category side rail */}
+        {categories.length > 0 && (
+          <CategoryRail
+            categories={categories}
+            active={category}
+            onSelect={setCategory}
+          />
+        )}
 
-          {/* Product grid */}
-          <main className="flex-1 min-w-0">
-            {loading ? (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
-              </div>
-            ) : products.length === 0 ? (
-              <div className="text-center py-24">
-                <p className="text-gray-500 font-semibold text-lg">No products found</p>
-                <p className="text-gray-400 text-sm mt-1">Try adjusting your filters</p>
-                {hasFilters && (
-                  <button onClick={clearFilters} className="mt-4 text-teal-600 font-bold hover:underline text-sm">Clear filters</button>
+        {/* Desktop sidebar + product grid */}
+        <div className="flex-1 min-w-0 px-4 pb-10">
+          <div className="flex gap-6 pt-2">
+
+            {/* Desktop sidebar */}
+            <aside className="hidden sm:block w-52 shrink-0">
+              <div className="bg-white rounded-2xl border border-purple-50 shadow-sm p-5 sticky top-24">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-black text-gray-900 text-sm">Filters</h2>
+                  {hasFilters && <button onClick={clearFilters} className="text-xs text-red-400 hover:text-red-600 font-semibold">Clear</button>}
+                </div>
+
+                {/* Desktop category list */}
+                {categories.length > 0 && (
+                  <div className="mb-5">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Category</p>
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => setCategory('')}
+                        className={`w-full text-left px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+                          !category ? 'bg-purple-700 text-white' : 'text-gray-700 hover:bg-purple-50 hover:text-purple-700'
+                        }`}
+                      >
+                        All
+                      </button>
+                      {categories.map(cat => (
+                        <button
+                          key={cat.id}
+                          onClick={() => setCategory(category === cat.name ? '' : cat.name)}
+                          className={`w-full text-left px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+                            category === cat.name ? 'bg-purple-700 text-white' : 'text-gray-700 hover:bg-purple-50 hover:text-purple-700'
+                          }`}
+                        >
+                          {cat.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 )}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                {products.map(product => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            )}
-          </main>
 
+                <FilterPanel brand={brand} setBrand={setBrand} city={city} setCity={setCity} />
+              </div>
+            </aside>
+
+            {/* Product grid */}
+            <main className="flex-1 min-w-0">
+              {loading ? (
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+                </div>
+              ) : products.length === 0 ? (
+                <div className="text-center py-24">
+                  <p className="text-gray-500 font-semibold text-lg">No products found</p>
+                  <p className="text-gray-400 text-sm mt-1">Try adjusting your filters</p>
+                  {hasFilters && (
+                    <button onClick={clearFilters} className="mt-4 text-purple-600 font-bold hover:underline text-sm">Clear filters</button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                  {products.map(product => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              )}
+            </main>
+
+          </div>
         </div>
       </div>
     </div>
@@ -235,8 +323,8 @@ function ProductsBrowser() {
 export default function ProductsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50">
-        <div className="h-16 bg-teal-400" />
+      <div className="min-h-screen bg-[#f9f7ff]">
+        <div className="h-16 bg-purple-700" />
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-10">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
