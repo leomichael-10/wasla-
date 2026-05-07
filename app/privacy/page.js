@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 
 export const metadata = {
@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f9f7ff]">
       <Navbar />
       <div className="max-w-3xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-black text-gray-900 mb-2">Privacy Policy</h1>
@@ -94,7 +94,7 @@ export default function PrivacyPage() {
             <h2 className="text-base font-black text-gray-900 mb-3">8. Contact</h2>
             <p>
               For any privacy-related queries, please contact us at{' '}
-              <span className="font-semibold text-teal-600">privacy@tobaki.ae</span>.
+              <span className="font-semibold text-purple-700">privacy@tobaki.ae</span>.
               We will respond within 10 business days.
             </p>
           </section>
@@ -102,7 +102,7 @@ export default function PrivacyPage() {
         </div>
 
         <div className="mt-8 text-center">
-          <Link href="/terms" className="text-sm font-semibold text-teal-600 hover:underline">
+          <Link href="/terms" className="text-sm font-semibold text-purple-700 hover:underline">
             Read our Terms of Service
           </Link>
         </div>

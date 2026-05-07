@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -39,14 +39,14 @@ function BrowseProductCard({ product }) {
       href={`/products/${product.id}`}
       className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col h-full"
     >
-      <div className="bg-linear-to-br from-teal-50 via-teal-100 to-cyan-100 aspect-square flex items-center justify-center">
-        <span className="text-4xl font-black text-teal-200 select-none tracking-tighter">
+      <div className="bg-linear-to-br from-purple-50 via-purple-100 to-violet-100 aspect-square flex items-center justify-center">
+        <span className="text-4xl font-black text-purple-200 select-none tracking-tighter">
           {(product.brand ?? 'V')[0].toUpperCase()}
         </span>
       </div>
       <div className="p-3 flex flex-col gap-1.5">
         {product.brand && (
-          <span className="text-[11px] font-bold text-teal-600 uppercase tracking-wide">{product.brand}</span>
+          <span className="text-[11px] font-bold text-purple-700 uppercase tracking-wide">{product.brand}</span>
         )}
         <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{product.name}</h3>
         {flavors.length > 0 && (
@@ -111,7 +111,7 @@ function BrowseBrowser() {
   function clearFilters() { setSearch(''); setBrand(''); setCategory(''); setCity('') }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f9f7ff]">
       <Navbar />
 
       {/* Read-only banner */}
@@ -160,7 +160,7 @@ function BrowseBrowser() {
             <select
               value={sort}
               onChange={e => setSort(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white"
+              className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
             >
               {SORT_OPTIONS.map(o => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -174,7 +174,7 @@ function BrowseBrowser() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search..."
-                className="border border-gray-200 rounded-xl pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 w-40"
+                className="border border-gray-200 rounded-xl pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 w-40"
               />
             </div>
 
@@ -201,9 +201,9 @@ function BrowseBrowser() {
               city     && { label: city,           clear: () => setCity('') },
             ].filter(Boolean).map(chip => (
               <button key={chip.label} onClick={chip.clear}
-                className="flex items-center gap-1.5 bg-teal-50 text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-teal-100 transition-colors">
+                className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-purple-100 transition-colors">
                 {chip.label}
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-teal-400">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-purple-600">
                   <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
                 </svg>
               </button>
@@ -234,7 +234,7 @@ function BrowseBrowser() {
                 <p className="text-gray-500 font-semibold text-lg">No products found</p>
                 <p className="text-gray-400 text-sm mt-1">Try adjusting your filters</p>
                 {hasFilters && (
-                  <button onClick={clearFilters} className="mt-4 text-teal-600 font-bold hover:underline text-sm">Clear filters</button>
+                  <button onClick={clearFilters} className="mt-4 text-purple-700 font-bold hover:underline text-sm">Clear filters</button>
                 )}
               </div>
             ) : (
@@ -259,8 +259,8 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
         <div className="space-y-1.5">
           {BRANDS.map(b => (
             <label key={b} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="radio" name="browse-brand" checked={brand === b} onChange={() => setBrand(brand === b ? '' : b)} className="accent-teal-400 w-4 h-4" />
-              <span className="text-sm text-gray-700 group-hover:text-teal-600 transition-colors">{b}</span>
+              <input type="radio" name="browse-brand" checked={brand === b} onChange={() => setBrand(brand === b ? '' : b)} className="accent-purple-600 w-4 h-4" />
+              <span className="text-sm text-gray-700 group-hover:text-purple-700 transition-colors">{b}</span>
             </label>
           ))}
         </div>
@@ -270,14 +270,14 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
         <div className="space-y-1.5">
           {CITIES.map(c => (
             <label key={c} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="radio" name="browse-city" checked={city === c} onChange={() => setCity(city === c ? '' : c)} className="accent-teal-400 w-4 h-4" />
-              <span className="text-sm text-gray-700 group-hover:text-teal-600 transition-colors">{c}</span>
+              <input type="radio" name="browse-city" checked={city === c} onChange={() => setCity(city === c ? '' : c)} className="accent-purple-600 w-4 h-4" />
+              <span className="text-sm text-gray-700 group-hover:text-purple-700 transition-colors">{c}</span>
             </label>
           ))}
         </div>
       </div>
       {onClose && (
-        <button onClick={onClose} className="w-full bg-teal-400 hover:bg-teal-500 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">
+        <button onClick={onClose} className="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">
           Show results
         </button>
       )}
@@ -288,8 +288,8 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
 export default function BrowsePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50">
-        <div className="h-16 bg-teal-400" />
+      <div className="min-h-screen bg-[#f9f7ff]">
+        <div className="h-16 bg-purple-700" />
         <div className="h-10 bg-yellow-50 border-b border-yellow-200" />
         <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
           {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}

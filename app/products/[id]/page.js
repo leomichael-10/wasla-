@@ -159,7 +159,7 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#f9f7ff]">
         <Navbar />
         <div className="max-w-4xl mx-auto px-4 py-24 text-center">
           <p className="text-gray-500 font-semibold text-lg">Product not found</p>
@@ -255,7 +255,7 @@ export default function ProductDetailPage() {
             {/* Flavor selector */}
             <div>
               <p className="text-sm font-bold text-gray-800 mb-2.5">
-                Flavor{selectedVariant?.flavor && <span className="ml-2 font-normal text-teal-600">{selectedVariant.flavor}</span>}
+                Flavor{selectedVariant?.flavor && <span className="ml-2 font-normal text-purple-700">{selectedVariant.flavor}</span>}
               </p>
               <div className="flex flex-wrap gap-2">
                 {product.variants.map(variant => {

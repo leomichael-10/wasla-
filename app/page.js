@@ -3,8 +3,6 @@ import { prisma } from '../lib/prisma'
 import Navbar from '../components/Navbar'
 import ProductCard from '../components/ProductCard'
 
-// ── Data helpers ──────────────────────────────────────────────────────────────
-
 async function getShops() {
   try {
     const sellers = await prisma.sellerProfile.findMany({
@@ -66,16 +64,13 @@ async function getFeaturedProducts() {
   } catch { return [] }
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
-
 function ShopCard({ shop }) {
   return (
     <Link
       href={`/shops/${shop.id}`}
-      className="group bg-white rounded-3xl border border-purple-50 shadow-sm hover:shadow-md hover:border-purple-200 transition-all duration-200 flex flex-col overflow-hidden"
+      className="group bg-white rounded-3xl border border-purple-50 shadow-sm hover:shadow-lg hover:border-purple-200 transition-all duration-300 flex flex-col overflow-hidden"
     >
-      {/* Shop banner */}
-      <div className="h-24 bg-gradient-to-br from-purple-700 to-purple-500 flex items-center justify-center relative">
+      <div className="h-24 bg-linear-to-br from-purple-700 to-violet-600 flex items-center justify-center relative">
         <span className="text-5xl font-black text-white/20 select-none group-hover:text-white/35 transition-colors">
           {shop.businessName[0].toUpperCase()}
         </span>
@@ -86,7 +81,6 @@ function ShopCard({ shop }) {
         )}
       </div>
 
-      {/* Content */}
       <div className="p-4 flex flex-col flex-1 gap-2">
         <h3 className="font-black text-gray-900 text-base leading-snug group-hover:text-purple-700 transition-colors">
           {shop.businessName}
@@ -137,7 +131,7 @@ function CategoryPill({ category }) {
   return (
     <Link
       href={`/products?category=${encodeURIComponent(category.name)}`}
-      className="group shrink-0 flex flex-col items-center gap-2 w-24 py-4 px-2 bg-white rounded-2xl border border-purple-50 shadow-sm hover:border-purple-300 hover:shadow-md transition-all duration-200"
+      className="group shrink-0 flex flex-col items-center gap-2 w-20 h-20 sm:w-24 sm:h-24 py-4 px-2 bg-white rounded-2xl border border-purple-100 shadow-sm hover:shadow-md hover:border-purple-300 hover:bg-purple-50 transition-all duration-200"
     >
       <span className="text-purple-600 group-hover:text-purple-800 transition-colors">{icon}</span>
       <span className="text-xs font-bold text-gray-700 text-center leading-tight group-hover:text-purple-700 transition-colors">
@@ -150,8 +144,6 @@ function CategoryPill({ category }) {
   )
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
-
 export default async function HomePage() {
   const [shops, categories, products] = await Promise.all([
     getShops(),
@@ -163,13 +155,14 @@ export default async function HomePage() {
     <div className="min-h-screen bg-[#f9f7ff]">
       <Navbar />
 
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="bg-gradient-to-br from-purple-800 via-purple-700 to-violet-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-          <div className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-4 tracking-wide uppercase">
+      <section className="relative bg-linear-to-br from-purple-900 via-purple-700 to-violet-600 text-white overflow-hidden">
+        <div className="absolute top-1/2 -translate-y-1/2 -left-24 w-96 h-96 rounded-full bg-white/5 pointer-events-none" />
+        <div className="absolute -bottom-20 right-0 w-72 h-72 rounded-full bg-white/5 pointer-events-none" />
+        <div className="relative max-w-4xl mx-auto px-4 py-20 sm:py-28 text-center">
+          <div className="inline-block bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-bold px-4 py-1.5 rounded-full mb-5 tracking-wide uppercase">
             UAE&apos;s First Vape Marketplace
           </div>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight mb-3">
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-tight mb-4">
             Order from the best<br className="hidden sm:block" /> vape shops in Dubai
           </h1>
           <p className="text-purple-100 text-base sm:text-lg mb-8 max-w-xl mx-auto">
@@ -177,16 +170,16 @@ export default async function HomePage() {
           </p>
 
           <form action="/products" method="GET" className="max-w-xl mx-auto">
-            <div className="flex bg-white rounded-2xl shadow-xl overflow-hidden p-1.5 gap-1">
+            <div className="flex bg-white rounded-2xl shadow-2xl overflow-hidden p-1.5 gap-1">
               <input
                 type="text"
                 name="search"
                 placeholder="Search products, brands, flavors..."
-                className="flex-1 pl-4 py-2.5 text-gray-800 text-sm focus:outline-none bg-transparent placeholder-gray-400"
+                className="flex-1 pl-4 py-3 text-gray-800 text-sm focus:outline-none bg-transparent placeholder-gray-400"
               />
               <button
                 type="submit"
-                className="bg-amber-400 hover:bg-amber-500 active:bg-amber-600 text-gray-900 font-black px-6 py-2.5 rounded-xl text-sm transition-colors shrink-0"
+                className="bg-amber-400 hover:bg-amber-500 active:scale-95 active:bg-amber-600 text-gray-900 font-black px-6 py-3 rounded-xl text-sm transition-all duration-200 shrink-0"
               >
                 Search
               </button>
@@ -210,12 +203,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Categories ────────────────────────────────────────────────────── */}
       {categories.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 pt-10 pb-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-black text-gray-900">Browse by Category</h2>
-            <Link href="/products" className="text-sm text-purple-600 font-semibold hover:underline">
+            <h2 className="text-2xl font-black text-gray-900">Browse by Category</h2>
+            <Link href="/products" className="text-purple-600 font-semibold text-sm hover:text-purple-800 transition-colors">
               View all
             </Link>
           </div>
@@ -227,14 +219,13 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ── Shops Near You ────────────────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-xl font-black text-gray-900">Shops Near You</h2>
+            <h2 className="text-2xl font-black text-gray-900">Shops Near You</h2>
             <p className="text-sm text-gray-500 mt-0.5">{shops.length} verified shop{shops.length !== 1 ? 's' : ''} available</p>
           </div>
-          <Link href="/shops" className="text-sm text-purple-600 font-semibold hover:underline">
+          <Link href="/shops" className="text-purple-600 font-semibold text-sm hover:text-purple-800 transition-colors">
             View all shops
           </Link>
         </div>
@@ -253,12 +244,11 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* ── Popular Products ──────────────────────────────────────────────── */}
       {products.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-black text-gray-900">Popular Products</h2>
-            <Link href="/products" className="text-sm text-purple-600 font-semibold hover:underline">
+            <h2 className="text-2xl font-black text-gray-900">Popular Products</h2>
+            <Link href="/products" className="text-purple-600 font-semibold text-sm hover:text-purple-800 transition-colors">
               View all
             </Link>
           </div>
@@ -270,10 +260,9 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ── How It Works ──────────────────────────────────────────────────── */}
       <section className="bg-white border-t border-purple-50 mt-4">
         <div className="max-w-4xl mx-auto px-4 py-14 text-center">
-          <h2 className="text-xl font-black text-gray-900 mb-10">How It Works</h2>
+          <h2 className="text-2xl font-black text-gray-900 mb-10">How It Works</h2>
           <div className="grid sm:grid-cols-3 gap-8">
             {[
               {
@@ -293,7 +282,7 @@ export default async function HomePage() {
               },
             ].map(item => (
               <div key={item.step} className="flex flex-col items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-purple-700 text-white font-black text-lg flex items-center justify-center shadow-md">
+                <div className="w-14 h-14 rounded-2xl bg-purple-700 text-white font-black text-lg flex items-center justify-center shadow-md">
                   {item.step}
                 </div>
                 <h3 className="font-black text-gray-900">{item.title}</h3>

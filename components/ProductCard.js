@@ -101,19 +101,16 @@ export default function ProductCard({ product }) {
   }
 
   return (
-    <div className="relative group bg-white rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full border border-purple-50">
+    <div className="relative group bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-purple-50 hover:border-purple-200 overflow-hidden flex flex-col h-full">
 
-      {/* Full-card link */}
       <Link href={`/products/${product.id}`} className="absolute inset-0 z-0" aria-label={`View ${product.name}`} />
 
-      {/* Purple banner header with circular image */}
-      <div className="relative bg-purple-700 pt-5 pb-8 px-4 flex items-center justify-center">
-        {/* Wishlist button */}
+      <div className="relative bg-linear-to-br from-purple-700 to-violet-600 pt-5 pb-8 px-4 flex items-center justify-center">
         {isCustomer && (
           <button
             onClick={handleWishlist}
             disabled={wishLoading}
-            className="absolute top-3 right-3 z-10 w-7 h-7 flex items-center justify-center bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+            className="absolute top-3 right-3 z-10 w-10 h-10 flex items-center justify-center bg-white/20 hover:bg-white/30 rounded-full transition-colors"
             aria-label={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -125,35 +122,34 @@ export default function ProductCard({ product }) {
           </button>
         )}
 
-        {/* Circular product image */}
-        <div className="w-28 h-28 rounded-full bg-white/10 border-4 border-white/30 overflow-hidden flex items-center justify-center shadow-lg">
+        <div className="w-28 h-28 rounded-full bg-white border-4 border-white/80 overflow-hidden flex items-center justify-center shadow-lg">
           {mainImage ? (
             <img src={mainImage} alt={product.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
           ) : (
-            <span className="text-4xl font-black text-white/40 select-none tracking-tighter">
+            <span className="text-4xl font-black text-purple-200 select-none tracking-tighter">
               {(product.brand ?? 'V')[0].toUpperCase()}
             </span>
           )}
         </div>
 
-        {/* Price badge — positioned at bottom of banner */}
-        <div className="absolute bottom-0 translate-y-1/2 right-4 bg-amber-400 text-gray-900 text-xs font-black px-3 py-1 rounded-full shadow-md z-10">
+        <div className="absolute bottom-0 translate-y-1/2 right-4 bg-amber-400 text-gray-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg z-10">
           {priceLabel}
         </div>
       </div>
 
-      {/* Card body */}
-      <div className="pt-5 px-4 pb-4 flex flex-col flex-1 gap-1.5">
+      <div className="pt-6 px-4 pb-4 flex flex-col flex-1 gap-1.5">
         {product.brand && (
           <span className="text-[11px] font-bold text-purple-500 uppercase tracking-wide">{product.brand}</span>
         )}
-        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{product.name}</h3>
-        {flavors.length > 0 && (
+        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 min-h-10">{product.name}</h3>
+        {flavors.length > 0 ? (
           <p className="text-xs text-gray-400 leading-tight">
             {flavors.length} flavor{flavors.length !== 1 ? 's' : ''}{' · '}
             {flavors.slice(0, 2).join(', ')}{flavors.length > 2 ? '…' : ''}
           </p>
+        ) : (
+          <p className="text-xs text-gray-400 leading-tight min-h-4" />
         )}
         {reviewCount > 0 && <StarRating rating={avgRating} count={reviewCount} />}
         {product.seller && (
@@ -166,20 +162,26 @@ export default function ProductCard({ product }) {
           </Link>
         )}
 
-        {/* CTA */}
         <div className="mt-auto pt-2">
           <button
-            className={`relative z-10 w-full text-white text-xs font-bold py-2.5 rounded-2xl transition-all duration-200 ${
+            className={`relative z-10 w-full text-white text-xs font-bold py-2.5 rounded-2xl active:scale-95 transition-all duration-200 ${
               feedback
                 ? 'bg-green-500 scale-95'
                 : inStockVariant
-                  ? 'bg-purple-700 hover:bg-purple-800 active:scale-95'
+                  ? 'bg-purple-700 hover:bg-purple-800'
                   : 'bg-gray-300 cursor-not-allowed'
             }`}
             onClick={handleAddToCart}
             disabled={!inStockVariant}
           >
-            {feedback ? '✓ Added!' : inStockVariant ? 'Add to Cart' : 'Out of Stock'}
+            {feedback ? (
+              <span className="flex items-center justify-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                  <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+                </svg>
+                Added!
+              </span>
+            ) : inStockVariant ? 'Add to Cart' : 'Out of Stock'}
           </button>
         </div>
       </div>

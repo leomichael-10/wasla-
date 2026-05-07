@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -9,11 +9,11 @@ export default function LoginPage() {
   const router = useRouter()
   const { login } = useUser()
 
-  const [email,       setEmail]       = useState('')
-  const [password,    setPassword]    = useState('')
+  const [email,        setEmail]        = useState('')
+  const [password,     setPassword]     = useState('')
   const [ageConfirmed, setAgeConfirmed] = useState(false)
-  const [error,       setError]       = useState('')
-  const [loading,     setLoading]     = useState(false)
+  const [error,        setError]        = useState('')
+  const [loading,      setLoading]      = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -43,13 +43,11 @@ export default function LoginPage() {
       localStorage.setItem('tobaki_user',  JSON.stringify(data.user))
       login(data.user)
 
-      // Age verification — fire and forget, non-blocking
       fetch('/api/auth/verify-age', {
         method:  'PATCH',
         headers: { Authorization: `Bearer ${data.token}` },
       }).catch(() => {})
 
-      // Role-based redirect
       const { role } = data.user
       if (role === 'admin') {
         router.push('/admin')
@@ -66,18 +64,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[#f9f7ff] flex flex-col">
 
-      {/* Top bar */}
-      <div className="bg-teal-400 px-6 py-4">
+      <div className="bg-purple-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
-          toba<span className="text-yellow-300">ki</span>
+          toba<span className="text-amber-300">ki</span>
         </Link>
       </div>
 
-      {/* Card */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 w-full max-w-md p-8">
+        <div className="bg-white rounded-3xl shadow-lg border border-purple-50 w-full max-w-md p-8">
 
           <div className="mb-8 text-center">
             <h1 className="text-2xl font-black text-gray-900">Welcome back</h1>
@@ -86,14 +82,12 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
 
-            {/* Error banner */}
             {error && (
-              <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-4 py-3">
+              <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl px-4 py-3">
                 {error}
               </div>
             )}
 
-            {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Email address
@@ -106,11 +100,10 @@ export default function LoginPage() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+                className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition"
               />
             </div>
 
-            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Password
@@ -123,11 +116,10 @@ export default function LoginPage() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+                className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition"
               />
             </div>
 
-            {/* Age verification */}
             <label className="flex items-start gap-3 cursor-pointer group">
               <div className="relative shrink-0 mt-0.5">
                 <input
@@ -138,8 +130,8 @@ export default function LoginPage() {
                 />
                 <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
                   ageConfirmed
-                    ? 'bg-teal-400 border-teal-400'
-                    : 'border-gray-300 group-hover:border-teal-400'
+                    ? 'bg-purple-700 border-purple-700'
+                    : 'border-gray-300 group-hover:border-purple-400'
                 }`}>
                   {ageConfirmed && (
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-white">
@@ -153,29 +145,26 @@ export default function LoginPage() {
               </span>
             </label>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading || !ageConfirmed}
-              className="w-full bg-teal-400 hover:bg-teal-500 active:bg-teal-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-xl text-sm transition-colors mt-2"
+              className="w-full bg-purple-700 hover:bg-purple-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200 mt-2"
             >
               {loading ? 'Signing in…' : 'Sign in'}
             </button>
 
           </form>
 
-          {/* Divider */}
           <div className="flex items-center gap-3 mt-6">
             <div className="flex-1 h-px bg-gray-100" />
             <span className="text-xs text-gray-400 font-medium">or</span>
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          {/* Google sign-in */}
           <button
             type="button"
             onClick={() => signIn('google', { callbackUrl: '/auth/redirect' })}
-            className="mt-3 w-full flex items-center justify-center gap-3 border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+            className="mt-3 w-full flex items-center justify-center gap-3 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#f9f7ff] active:bg-gray-100 active:scale-95 transition-all duration-200"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -186,10 +175,9 @@ export default function LoginPage() {
             Continue with Google
           </button>
 
-          {/* Footer link */}
           <p className="text-center text-sm text-gray-500 mt-6">
             Don&apos;t have an account?{' '}
-            <Link href="/register" className="text-teal-600 font-semibold hover:underline">
+            <Link href="/register" className="text-purple-600 font-semibold hover:underline">
               Register
             </Link>
           </p>

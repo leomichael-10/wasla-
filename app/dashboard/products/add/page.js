@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
@@ -10,10 +10,10 @@ const EMPTY_VARIANT = {
 
 function VariantRow({ index, variant, onChange, onRemove, canRemove }) {
   function field(name) { return e => onChange(index, name, e.target.value) }
-  const inputCls = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition'
+  const inputCls = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition'
   const labelCls = 'block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1'
   return (
-    <div className="bg-gray-50 rounded-2xl border border-gray-200 p-4">
+    <div className="bg-[#f9f7ff] rounded-2xl border border-gray-200 p-4">
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-black text-gray-700">Variant {index + 1}</span>
         {canRemove && (
@@ -120,10 +120,10 @@ function ImageUploader({ images, setImages }) {
           {...getRootProps()}
           className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-colors ${
             isDragActive
-              ? 'border-teal-400 bg-teal-50'
+              ? 'border-purple-600 bg-purple-50'
               : uploading
-                ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
-                : 'border-gray-200 hover:border-teal-400 hover:bg-teal-50'
+                ? 'border-gray-200 bg-[#f9f7ff] cursor-not-allowed'
+                : 'border-gray-200 hover:border-purple-600 hover:bg-purple-50'
           }`}
         >
           <input {...getInputProps()} />
@@ -234,7 +234,7 @@ export default function AddProductPage() {
     }
   }
 
-  const inputCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition bg-white'
+  const inputCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition bg-white'
   const labelCls = 'block text-sm font-semibold text-gray-700 mb-1.5'
 
   return (
@@ -308,7 +308,7 @@ export default function AddProductPage() {
               <p className="text-xs text-gray-400 mt-0.5">Add one row per flavor / option. Price is required.</p>
             </div>
             <button type="button" onClick={addVariant}
-              className="text-sm font-bold text-teal-600 hover:text-teal-800 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg transition-colors">
+              className="text-sm font-bold text-purple-700 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors">
               + Add Variant
             </button>
           </div>
@@ -321,7 +321,7 @@ export default function AddProductPage() {
             ))}
           </div>
           <button type="button" onClick={addVariant}
-            className="w-full border-2 border-dashed border-gray-200 hover:border-teal-400 text-gray-400 hover:text-teal-600 font-semibold text-sm py-3 rounded-2xl transition-colors">
+            className="w-full border-2 border-dashed border-gray-200 hover:border-purple-600 text-gray-400 hover:text-purple-700 font-semibold text-sm py-3 rounded-2xl transition-colors">
             + Add another variant
           </button>
         </section>
@@ -329,7 +329,7 @@ export default function AddProductPage() {
         {/* Submit */}
         <div className="flex items-center gap-4 pb-6">
           <button type="submit" disabled={loading}
-            className="bg-teal-400 hover:bg-teal-500 active:bg-teal-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black px-8 py-3 rounded-xl transition-colors">
+            className="bg-purple-700 hover:bg-purple-800 active:bg-purple-900 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black px-8 py-3 rounded-xl transition-colors">
             {loading ? 'Creating product…' : 'Create Product'}
           </button>
           <a href="/dashboard/products" className="text-sm font-semibold text-gray-500 hover:text-gray-700">Cancel</a>

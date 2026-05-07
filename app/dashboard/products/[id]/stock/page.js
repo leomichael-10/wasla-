@@ -93,7 +93,7 @@ export default function ManageStockPage() {
   if (!product) return (
     <div className="max-w-3xl">
       <p className="text-red-500 font-semibold">{error || 'Product not found.'}</p>
-      <Link href="/dashboard/products" className="mt-3 inline-block text-teal-600 font-bold text-sm hover:underline">
+      <Link href="/dashboard/products" className="mt-3 inline-block text-purple-700 font-bold text-sm hover:underline">
         Back to products
       </Link>
     </div>
@@ -121,7 +121,7 @@ export default function ManageStockPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
+                <tr className="border-b border-gray-100 bg-[#f9f7ff]">
                   <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Flavor</th>
                   <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Nicotine</th>
                   <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Puffs</th>
@@ -134,7 +134,7 @@ export default function ManageStockPage() {
                 {product.variants.map((v, i) => {
                   const row = rows[i] ?? {}
                   return (
-                    <tr key={v.id} className={v.stockQty < 5 ? 'bg-red-50' : 'hover:bg-gray-50'}>
+                    <tr key={v.id} className={v.stockQty < 5 ? 'bg-red-50' : 'hover:bg-[#f9f7ff]'}>
                       <td className="px-5 py-3 font-semibold text-gray-900">
                         {v.flavor ?? '—'}
                       </td>
@@ -150,7 +150,7 @@ export default function ManageStockPage() {
                         <select
                           value={row.movementType}
                           onChange={e => updateRow(i, 'movementType', e.target.value)}
-                          className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-teal-400"
+                          className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400"
                         >
                           {MOVEMENT_TYPES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
                         </select>
@@ -162,7 +162,7 @@ export default function ManageStockPage() {
                           value={row.quantity}
                           onChange={e => updateRow(i, 'quantity', e.target.value)}
                           placeholder="0"
-                          className="w-20 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal-400"
+                          className="w-20 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-purple-400"
                         />
                       </td>
                     </tr>
@@ -175,7 +175,7 @@ export default function ManageStockPage() {
 
         <div className="mt-5 flex items-center gap-4">
           <button type="submit" disabled={saving}
-            className="bg-teal-400 hover:bg-teal-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black px-8 py-3 rounded-xl transition-colors">
+            className="bg-purple-700 hover:bg-purple-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black px-8 py-3 rounded-xl transition-colors">
             {saving ? 'Saving…' : 'Update Stock'}
           </button>
           <Link href="/dashboard/products" className="text-sm font-semibold text-gray-500 hover:text-gray-700">

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSession } from 'next-auth/react'
@@ -74,16 +74,16 @@ export default function OnboardingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#f9f7ff] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[#f9f7ff] flex flex-col">
 
-      <div className="bg-teal-400 px-6 py-4">
+      <div className="bg-purple-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
           toba<span className="text-yellow-300">ki</span>
         </Link>
@@ -118,7 +118,7 @@ export default function OnboardingPage() {
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
                 placeholder="Your full name"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
               />
             </div>
 
@@ -134,7 +134,7 @@ export default function OnboardingPage() {
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 placeholder="+971 50 000 0000"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
               />
             </div>
 
@@ -147,7 +147,7 @@ export default function OnboardingPage() {
                 id="city"
                 value={city}
                 onChange={e => setCity(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition bg-white"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition bg-white"
               >
                 <option value="">Select your city</option>
                 {UAE_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -165,8 +165,8 @@ export default function OnboardingPage() {
                 />
                 <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
                   becomeSeller
-                    ? 'bg-teal-400 border-teal-400'
-                    : 'border-gray-300 group-hover:border-teal-400'
+                    ? 'bg-purple-700 border-purple-600'
+                    : 'border-gray-300 group-hover:border-purple-600'
                 }`}>
                   {becomeSeller && (
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-white">
@@ -192,7 +192,7 @@ export default function OnboardingPage() {
                   value={businessName}
                   onChange={e => setBusinessName(e.target.value)}
                   placeholder="e.g. Dubai Vape Store"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
                 />
               </div>
             )}
@@ -200,7 +200,7 @@ export default function OnboardingPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-teal-400 hover:bg-teal-500 active:bg-teal-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-xl text-sm transition-colors mt-2"
+              className="w-full bg-purple-700 hover:bg-purple-800 active:bg-purple-900 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-xl text-sm transition-colors mt-2"
             >
               {submitting ? 'Saving…' : 'Continue'}
             </button>

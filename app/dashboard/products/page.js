@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 
@@ -57,7 +57,7 @@ export default function DashboardProductsPage() {
           {!loading && <p className="text-sm text-gray-500 mt-0.5">{products.length} product{products.length !== 1 ? 's' : ''}</p>}
         </div>
         <Link href="/dashboard/products/add"
-          className="bg-teal-400 hover:bg-teal-500 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors">
+          className="bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors">
           + Add Product
         </Link>
       </div>
@@ -78,7 +78,7 @@ export default function DashboardProductsPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-20 text-center">
           <p className="text-gray-500 font-semibold">No products listed yet</p>
           <Link href="/dashboard/products/add"
-            className="inline-block mt-4 bg-teal-400 hover:bg-teal-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
+            className="inline-block mt-4 bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
             Add your first product
           </Link>
         </div>
@@ -88,7 +88,7 @@ export default function DashboardProductsPage() {
           <div className="hidden sm:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
+                <tr className="border-b border-gray-100 bg-[#f9f7ff]">
                   <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
                   <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Brand</th>
                   <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Category</th>
@@ -103,7 +103,7 @@ export default function DashboardProductsPage() {
                   const low  = lowStockCount(p)
                   const minStock = Math.min(...(p.variants ?? []).map(v => v.stockQty), Infinity)
                   return (
-                    <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={p.id} className="hover:bg-[#f9f7ff] transition-colors">
                       <td className="px-5 py-4 font-semibold text-gray-900">{p.name}</td>
                       <td className="px-4 py-4 text-gray-600">{p.brand ?? '—'}</td>
                       <td className="px-4 py-4 text-gray-600">{p.category?.name ?? '—'}</td>
@@ -135,7 +135,7 @@ export default function DashboardProductsPage() {
                             Stock
                           </Link>
                           <Link href={`/dashboard/products/${p.id}/edit`}
-                            className="text-xs font-semibold text-teal-600 hover:text-teal-800 transition-colors">
+                            className="text-xs font-semibold text-purple-700 hover:text-purple-800 transition-colors">
                             Edit
                           </Link>
                           <button
@@ -162,7 +162,7 @@ export default function DashboardProductsPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="font-bold text-gray-900 leading-tight">{p.name}</p>
-                      {p.brand && <p className="text-sm text-teal-600 font-semibold mt-0.5">{p.brand}</p>}
+                      {p.brand && <p className="text-sm text-purple-700 font-semibold mt-0.5">{p.brand}</p>}
                       <p className="text-xs text-gray-400 mt-1">
                         {p.category?.name} · {p._count?.variants ?? 0} variant{p._count?.variants !== 1 ? 's' : ''}
                       </p>
@@ -174,7 +174,7 @@ export default function DashboardProductsPage() {
                   </div>
                   <div className="flex items-center gap-4 mt-3">
                     <Link href={`/dashboard/products/${p.id}/stock`} className="text-xs font-semibold text-blue-600">Manage Stock</Link>
-                    <Link href={`/dashboard/products/${p.id}/edit`}  className="text-xs font-semibold text-teal-600">Edit</Link>
+                    <Link href={`/dashboard/products/${p.id}/edit`}  className="text-xs font-semibold text-purple-700">Edit</Link>
                     {p.isActive && (
                       <button onClick={() => handleDelete(p.id, p.name)} disabled={deleting === p.id}
                         className="text-xs font-semibold text-red-500 disabled:opacity-40">

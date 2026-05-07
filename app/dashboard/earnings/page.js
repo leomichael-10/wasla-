@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
@@ -20,7 +20,7 @@ function RevenueBar({ data }) {
       {data.map((d, i) => (
         <div key={i} className="flex-1 flex flex-col items-center justify-end gap-0.5 group relative">
           <div
-            className="w-full bg-teal-400 rounded-sm transition-all duration-300 hover:bg-teal-500"
+            className="w-full bg-purple-700 rounded-sm transition-all duration-300 hover:bg-purple-800"
             style={{ height: `${Math.max(2, (d.revenue / max) * 100)}%` }}
           />
           {/* Tooltip on hover */}
@@ -138,7 +138,7 @@ export default function EarningsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
+                <tr className="bg-[#f9f7ff] border-b border-gray-100">
                   <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Date</th>
                   <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Order ID</th>
                   <th className="text-center px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Items</th>
@@ -147,7 +147,7 @@ export default function EarningsPage() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {data.orders.map(o => (
-                  <tr key={o.id} className="hover:bg-gray-50">
+                  <tr key={o.id} className="hover:bg-[#f9f7ff]">
                     <td className="px-5 py-3 text-gray-600">
                       {new Date(o.createdAt).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>

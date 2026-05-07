@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -29,11 +29,11 @@ export default function AgeVerificationPage() {
 
         {/* Brand */}
         <div>
-          <div className="w-20 h-20 rounded-3xl bg-teal-400 flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 rounded-3xl bg-purple-700 flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl font-black text-white select-none">T</span>
           </div>
           <h1 className="text-3xl font-black text-white">Tobaki</h1>
-          <p className="text-teal-400 font-semibold mt-1">UAE Vape Marketplace</p>
+          <p className="text-purple-600 font-semibold mt-1">UAE Vape Marketplace</p>
         </div>
 
         {/* Gate */}
@@ -52,7 +52,7 @@ export default function AgeVerificationPage() {
           <div className="flex gap-3">
             <button
               onClick={handleYes}
-              className="flex-1 bg-teal-400 hover:bg-teal-500 text-white font-black py-3.5 rounded-2xl text-sm transition-colors"
+              className="flex-1 bg-purple-700 hover:bg-purple-800 text-white font-black py-3.5 rounded-2xl text-sm transition-colors"
             >
               Yes, I am 21+
             </button>

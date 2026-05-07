@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, useCallback } from 'react'
 
 const STATUS_STYLES = {
@@ -183,7 +183,7 @@ export default function DashboardOrdersPage() {
 
                 {/* Status actions */}
                 {nextOptions.length > 0 && (
-                  <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center gap-3 flex-wrap">
+                  <div className="px-5 py-3 bg-[#f9f7ff] border-t border-gray-100 flex items-center gap-3 flex-wrap">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">
                       Update status:
                     </span>
@@ -195,7 +195,7 @@ export default function DashboardOrdersPage() {
                         className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                           next === 'cancelled'
                             ? 'border-red-200 text-red-600 hover:bg-red-50'
-                            : 'border-teal-300 text-teal-700 hover:bg-teal-50'
+                            : 'border-purple-300 text-purple-700 hover:bg-purple-50'
                         }`}
                       >
                         {isUpdating ? '…' : `→ ${next}`}
@@ -206,7 +206,7 @@ export default function DashboardOrdersPage() {
 
                 {/* Terminal state notice */}
                 {nextOptions.length === 0 && (
-                  <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
+                  <div className="px-5 py-3 bg-[#f9f7ff] border-t border-gray-100">
                     <span className="text-xs text-gray-400 font-medium">
                       {order.status === 'delivered' ? 'Order completed' : 'Order cancelled'}
                     </span>

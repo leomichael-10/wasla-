@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -46,7 +46,7 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f9f7ff]">
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
@@ -58,7 +58,7 @@ export default function WishlistPage() {
               </p>
             )}
           </div>
-          <Link href="/products" className="text-sm font-bold text-teal-600 hover:underline">
+          <Link href="/products" className="text-sm font-bold text-purple-700 hover:underline">
             Browse Products
           </Link>
         </div>
@@ -84,7 +84,7 @@ export default function WishlistPage() {
             <p className="text-gray-500 font-semibold text-lg">No saved products yet</p>
             <p className="text-sm text-gray-400 mt-1">Tap the heart icon on any product to save it here.</p>
             <Link href="/products"
-              className="inline-block mt-5 bg-teal-400 hover:bg-teal-500 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors">
+              className="inline-block mt-5 bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors">
               Browse Products
             </Link>
           </div>

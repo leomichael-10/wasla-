@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '../../../components/Navbar'
@@ -14,7 +14,7 @@ export default function OrderConfirmationPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f9f7ff]">
       <Navbar />
 
       <div className="max-w-2xl mx-auto px-4 py-12">
@@ -51,7 +51,7 @@ export default function OrderConfirmationPage() {
                     </div>
                   ))}
                 </div>
-                <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 grid grid-cols-3 text-xs text-gray-500 gap-2">
+                <div className="px-5 py-3 bg-[#f9f7ff] border-t border-gray-100 grid grid-cols-3 text-xs text-gray-500 gap-2">
                   <span>Payment: {order.paymentMethod ?? 'Cash'}</span>
                   <span className="text-center text-green-600 font-semibold">Status: Pending</span>
                   <span className="text-right">Delivery: 2–4 hrs</span>
@@ -70,7 +70,7 @@ export default function OrderConfirmationPage() {
         <div className="flex items-center gap-4 justify-center">
           <Link
             href="/orders"
-            className="bg-teal-400 hover:bg-teal-500 text-white font-black px-6 py-3 rounded-xl text-sm transition-colors"
+            className="bg-purple-700 hover:bg-purple-800 text-white font-black px-6 py-3 rounded-xl text-sm transition-colors"
           >
             Track My Orders
           </Link>

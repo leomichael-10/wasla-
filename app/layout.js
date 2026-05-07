@@ -44,7 +44,7 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-gray-50 text-gray-900">
+      <body className="min-h-full flex flex-col bg-[#f9f7ff] text-gray-900">
         <SessionProviderWrapper>
         <UserProvider initialUser={initialUser}>
         <AuthSync />
@@ -62,20 +62,19 @@ export default async function RootLayout({ children }) {
           }}
         />
         <main className="flex-1">{children}</main>
-        {/* initialUser passed via Navbar prop below — see Navbar usage in page-level layouts */}
         <footer className="bg-white border-t border-gray-100 mt-auto">
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-lg font-black text-teal-500">Tobaki</span>
+                <span className="text-lg font-black text-purple-600">Tobaki</span>
                 <span className="text-gray-300">|</span>
                 <span className="text-xs text-gray-400">UAE Vape Marketplace</span>
               </div>
               <nav className="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500">
-                <Link href="/products"          className="hover:text-teal-600 transition-colors">Products</Link>
-                <Link href="/age-verification"  className="hover:text-teal-600 transition-colors">Age Policy</Link>
-                <Link href="/terms"             className="hover:text-teal-600 transition-colors">Terms of Service</Link>
-                <Link href="/privacy"           className="hover:text-teal-600 transition-colors">Privacy Policy</Link>
+                <Link href="/products"          className="hover:text-purple-600 transition-colors">Products</Link>
+                <Link href="/age-verification"  className="hover:text-purple-600 transition-colors">Age Policy</Link>
+                <Link href="/terms"             className="hover:text-purple-600 transition-colors">Terms of Service</Link>
+                <Link href="/privacy"           className="hover:text-purple-600 transition-colors">Privacy Policy</Link>
               </nav>
               <p className="text-xs text-gray-400">
                 &copy; {new Date().getFullYear()} Tobaki. All rights reserved.

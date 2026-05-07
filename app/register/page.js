@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -25,7 +25,6 @@ const PAYMENT_METHODS = [
 export default function RegisterPage() {
   const router = useRouter()
 
-  // Step 1 state
   const [form, setForm] = useState({
     email:        '',
     password:     '',
@@ -38,7 +37,6 @@ export default function RegisterPage() {
   const [step1Error,     setStep1Error]     = useState('')
   const [step1Loading,   setStep1Loading]   = useState(false)
 
-  // Step 2 state (seller subscription)
   const [step,            setStep]          = useState(1)
   const [paymentMethod,   setPaymentMethod] = useState('bank_transfer')
   const [termsAccepted,   setTermsAccepted] = useState(false)
@@ -74,7 +72,6 @@ export default function RegisterPage() {
     if (isSeller) body.businessName = form.businessName
 
     try {
-      // Register
       const regRes  = await fetch('/api/auth/register', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,7 +84,6 @@ export default function RegisterPage() {
       }
 
       if (isSeller) {
-        // Auto-login to get token for step 2
         const loginRes  = await fetch('/api/auth/login', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -95,14 +91,12 @@ export default function RegisterPage() {
         })
         const loginData = await loginRes.json()
         if (!loginRes.ok) {
-          // Registration succeeded; fall back to /login
           router.push('/login')
           return
         }
         localStorage.setItem('tobaki_token', loginData.token)
         localStorage.setItem('tobaki_user',  JSON.stringify(loginData.user))
 
-        // Mark age verified
         fetch('/api/auth/verify-age', {
           method:  'PATCH',
           headers: { Authorization: `Bearer ${loginData.token}` },
@@ -111,7 +105,6 @@ export default function RegisterPage() {
         setAuthToken(loginData.token)
         setStep(2)
       } else {
-        // Customer — go to login
         router.push('/login')
       }
     } catch {
@@ -147,18 +140,17 @@ export default function RegisterPage() {
     }
   }
 
-  // ── Success screen ──────────────────────────────────────────────────────────
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <div className="bg-teal-400 px-6 py-4">
+      <div className="min-h-screen bg-[#f9f7ff] flex flex-col">
+        <div className="bg-purple-700 px-6 py-4">
           <Link href="/" className="text-white font-black text-xl tracking-tight">
-            toba<span className="text-yellow-300">ki</span>
+            toba<span className="text-amber-300">ki</span>
           </Link>
         </div>
         <div className="flex-1 flex items-center justify-center px-4 py-12">
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 w-full max-w-md p-8 text-center">
-            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white rounded-3xl shadow-lg border border-purple-50 w-full max-w-md p-8 text-center">
+            <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-7 h-7 text-green-600">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
               </svg>
@@ -169,7 +161,7 @@ export default function RegisterPage() {
             </p>
             <Link
               href="/"
-              className="inline-block mt-6 bg-teal-400 hover:bg-teal-500 text-white font-black px-6 py-2.5 rounded-xl text-sm transition-colors"
+              className="inline-block mt-6 bg-purple-700 hover:bg-purple-800 active:scale-95 text-white font-black px-6 py-2.5 rounded-2xl text-sm transition-all duration-200"
             >
               Back to Tobaki
             </Link>
@@ -180,19 +172,17 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[#f9f7ff] flex flex-col">
 
-      {/* Top bar */}
-      <div className="bg-teal-400 px-6 py-4">
+      <div className="bg-purple-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
-          toba<span className="text-yellow-300">ki</span>
+          toba<span className="text-amber-300">ki</span>
         </Link>
       </div>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 w-full max-w-md p-8">
+        <div className="bg-white rounded-3xl shadow-lg border border-purple-50 w-full max-w-md p-8">
 
-          {/* ── Step 1: Registration ── */}
           {step === 1 && (
             <>
               <div className="mb-8 text-center">
@@ -203,12 +193,11 @@ export default function RegisterPage() {
               <form onSubmit={handleStep1} className="space-y-4">
 
                 {step1Error && (
-                  <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-4 py-3">
+                  <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl px-4 py-3">
                     {step1Error}
                   </div>
                 )}
 
-                {/* Role selector */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">I am a…</label>
                   <div className="grid grid-cols-2 gap-2">
@@ -220,10 +209,10 @@ export default function RegisterPage() {
                         key={opt.value}
                         type="button"
                         onClick={() => setForm(p => ({ ...p, role: opt.value }))}
-                        className={`py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                        className={`py-2.5 rounded-2xl text-sm font-semibold border transition-all active:scale-95 ${
                           form.role === opt.value
-                            ? 'bg-teal-400 border-teal-400 text-white'
-                            : 'bg-white border-gray-200 text-gray-600 hover:border-teal-300'
+                            ? 'bg-purple-700 border-purple-700 text-white'
+                            : 'bg-white border-gray-200 text-gray-600 hover:border-purple-300'
                         }`}
                       >
                         {opt.label}
@@ -232,23 +221,20 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                {/* Email */}
                 <div>
                   <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">Email address</label>
                   <input id="email" type="email" autoComplete="email" required value={form.email} onChange={set('email')}
                     placeholder="you@example.com"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition" />
+                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition" />
                 </div>
 
-                {/* Password */}
                 <div>
                   <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
                   <input id="password" type="password" autoComplete="new-password" required minLength={6}
                     value={form.password} onChange={set('password')} placeholder="At least 6 characters"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition" />
+                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition" />
                 </div>
 
-                {/* Business name — seller only */}
                 {isSeller && (
                   <div>
                     <label htmlFor="businessName" className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -256,37 +242,34 @@ export default function RegisterPage() {
                     </label>
                     <input id="businessName" type="text" required value={form.businessName} onChange={set('businessName')}
                       placeholder="e.g. Dubai Vape Store"
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition" />
+                      className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition" />
                   </div>
                 )}
 
-                {/* Phone */}
                 <div>
                   <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Phone <span className="text-gray-400 font-normal">(optional)</span>
                   </label>
                   <input id="phone" type="tel" autoComplete="tel" value={form.phone} onChange={set('phone')}
                     placeholder="+971 50 000 0000"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition" />
+                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition" />
                 </div>
 
-                {/* City */}
                 <div>
                   <label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-1.5">
                     City <span className="text-gray-400 font-normal">(optional)</span>
                   </label>
                   <select id="city" value={form.city} onChange={set('city')}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition bg-white">
+                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition bg-white">
                     <option value="">Select your city</option>
                     {UAE_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
 
-                {/* Age verification */}
                 <label className="flex items-start gap-3 cursor-pointer group">
                   <div className="relative shrink-0 mt-0.5">
                     <input type="checkbox" checked={ageConfirmed} onChange={e => setAgeConfirmed(e.target.checked)} className="sr-only" />
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${ageConfirmed ? 'bg-teal-400 border-teal-400' : 'border-gray-300 group-hover:border-teal-400'}`}>
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${ageConfirmed ? 'bg-purple-700 border-purple-700' : 'border-gray-300 group-hover:border-purple-400'}`}>
                       {ageConfirmed && (
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-white">
                           <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
@@ -302,9 +285,9 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={step1Loading || !ageConfirmed}
-                  className="w-full bg-teal-400 hover:bg-teal-500 active:bg-teal-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-xl text-sm transition-colors mt-2"
+                  className="w-full bg-purple-700 hover:bg-purple-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200 mt-2"
                 >
-                  {step1Loading ? (isSeller ? 'Creating account…' : 'Creating account…') : (isSeller ? 'Continue to Subscription' : 'Create account')}
+                  {step1Loading ? 'Creating account…' : (isSeller ? 'Continue to Subscription' : 'Create account')}
                 </button>
               </form>
 
@@ -319,7 +302,7 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => signIn('google', { callbackUrl: '/auth/redirect' })}
-                    className="mt-3 w-full flex items-center justify-center gap-3 border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                    className="mt-3 w-full flex items-center justify-center gap-3 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#f9f7ff] active:bg-gray-100 active:scale-95 transition-all duration-200"
                   >
                     <svg viewBox="0 0 24 24" className="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -334,12 +317,11 @@ export default function RegisterPage() {
 
               <p className="text-center text-sm text-gray-500 mt-6">
                 Already have an account?{' '}
-                <Link href="/login" className="text-teal-600 font-semibold hover:underline">Sign in</Link>
+                <Link href="/login" className="text-purple-600 font-semibold hover:underline">Sign in</Link>
               </p>
             </>
           )}
 
-          {/* ── Step 2: Seller Subscription ── */}
           {step === 2 && (
             <>
               <div className="mb-6 text-center">
@@ -350,19 +332,18 @@ export default function RegisterPage() {
               <form onSubmit={handleStep2} className="space-y-5">
 
                 {step2Error && (
-                  <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-4 py-3">
+                  <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl px-4 py-3">
                     {step2Error}
                   </div>
                 )}
 
-                {/* Plan box */}
-                <div className="border-2 border-teal-400 rounded-2xl p-5 bg-teal-50">
+                <div className="border-2 border-purple-600 rounded-2xl p-5 bg-purple-50">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <p className="text-3xl font-black text-gray-900">AED 199</p>
                       <p className="text-sm text-gray-500 font-medium">per month</p>
                     </div>
-                    <span className="bg-teal-400 text-white text-xs font-black px-3 py-1 rounded-full">STANDARD</span>
+                    <span className="bg-purple-700 text-white text-xs font-black px-3 py-1 rounded-full">STANDARD</span>
                   </div>
                   <ul className="space-y-2">
                     {[
@@ -371,7 +352,7 @@ export default function RegisterPage() {
                       'Featured on Tobaki marketplace',
                     ].map(feature => (
                       <li key={feature} className="flex items-center gap-2 text-sm text-gray-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-teal-500 shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-purple-700 shrink-0">
                           <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
                         </svg>
                         {feature}
@@ -380,17 +361,16 @@ export default function RegisterPage() {
                   </ul>
                 </div>
 
-                {/* Payment method */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Payment Method</label>
                   <div className="space-y-3">
                     {PAYMENT_METHODS.map(pm => (
                       <label
                         key={pm.value}
-                        className={`flex items-start gap-3 cursor-pointer border-2 rounded-xl p-4 transition-all ${
+                        className={`flex items-start gap-3 cursor-pointer border-2 rounded-2xl p-4 transition-all ${
                           paymentMethod === pm.value
-                            ? 'border-teal-400 bg-teal-50'
-                            : 'border-gray-200 hover:border-teal-200'
+                            ? 'border-purple-600 bg-purple-50'
+                            : 'border-gray-200 hover:border-purple-200'
                         }`}
                       >
                         <div className="relative shrink-0 mt-0.5">
@@ -402,9 +382,9 @@ export default function RegisterPage() {
                             onChange={() => setPaymentMethod(pm.value)}
                             className="sr-only"
                           />
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === pm.value ? 'border-teal-400' : 'border-gray-300'}`}>
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === pm.value ? 'border-purple-600' : 'border-gray-300'}`}>
                             {paymentMethod === pm.value && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-teal-400" />
+                              <div className="w-2.5 h-2.5 rounded-full bg-purple-600" />
                             )}
                           </div>
                         </div>
@@ -417,11 +397,10 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                {/* Terms */}
                 <label className="flex items-start gap-3 cursor-pointer group">
                   <div className="relative shrink-0 mt-0.5">
                     <input type="checkbox" checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} className="sr-only" />
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${termsAccepted ? 'bg-teal-400 border-teal-400' : 'border-gray-300 group-hover:border-teal-400'}`}>
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${termsAccepted ? 'bg-purple-700 border-purple-700' : 'border-gray-300 group-hover:border-purple-400'}`}>
                       {termsAccepted && (
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-white">
                           <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
@@ -430,14 +409,14 @@ export default function RegisterPage() {
                     </div>
                   </div>
                   <span className="text-sm text-gray-600 leading-snug select-none">
-                    I agree to <span className="text-teal-600 font-semibold">Tobaki terms and conditions</span>
+                    I agree to <span className="text-purple-600 font-semibold">Tobaki terms and conditions</span>
                   </span>
                 </label>
 
                 <button
                   type="submit"
                   disabled={step2Loading || !termsAccepted}
-                  className="w-full bg-teal-400 hover:bg-teal-500 active:bg-teal-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-xl text-sm transition-colors"
+                  className="w-full bg-purple-700 hover:bg-purple-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200"
                 >
                   {step2Loading ? 'Submitting…' : 'Submit Registration'}
                 </button>

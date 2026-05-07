@@ -55,7 +55,7 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
       </div>
 
       {onClose && (
-        <button onClick={onClose} className="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">
+        <button onClick={onClose} className="w-full bg-purple-700 hover:bg-purple-800 active:scale-95 text-white font-bold py-2.5 rounded-2xl text-sm transition-all duration-200">
           Show results
         </button>
       )}
@@ -63,26 +63,28 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
   )
 }
 
-/* ── Left side category rail (mobile) ── */
 function CategoryRail({ categories, active, onSelect }) {
   const ALL = { id: '__all__', name: 'All' }
   const items = [ALL, ...categories]
 
   return (
-    <div className="flex flex-col bg-white border-r border-purple-100 w-14 shrink-0 sm:hidden overflow-y-auto">
+    <div
+      className="sm:hidden flex flex-col bg-white border-r border-purple-100 overflow-y-auto"
+      style={{ position: 'fixed', left: 0, top: 64, bottom: 0, width: 56, zIndex: 30 }}
+    >
       {items.map(cat => {
         const isActive = cat.id === '__all__' ? !active : active === cat.name
         return (
           <button
             key={cat.id}
             onClick={() => onSelect(cat.id === '__all__' ? '' : cat.name)}
-            className={`flex items-center justify-center py-5 transition-colors relative ${
+            className={`relative flex items-center justify-center transition-colors ${
               isActive
                 ? 'bg-purple-700 text-white'
                 : 'text-gray-500 hover:bg-purple-50 hover:text-purple-700'
             }`}
+            style={{ minHeight: 56 }}
           >
-            {/* Active indicator bar */}
             {isActive && (
               <span className="absolute right-0 top-0 bottom-0 w-1 bg-amber-400 rounded-l-full" />
             )}
@@ -115,7 +117,6 @@ function ProductsBrowser() {
 
   const hasFilters = search || brand || category || city
 
-  /* Fetch categories once */
   useEffect(() => {
     fetch('/api/categories')
       .then(r => r.json())
@@ -151,12 +152,10 @@ function ProductsBrowser() {
     <div className="min-h-screen bg-[#f9f7ff]">
       <Navbar />
 
-      {/* Mobile filter backdrop */}
       {mobileOpen && (
         <div className="fixed inset-0 bg-black/40 z-40 sm:hidden" onClick={() => setMobileOpen(false)} />
       )}
 
-      {/* Mobile filter sheet (brand / emirate) */}
       <div className={`fixed bottom-0 inset-x-0 z-50 bg-white rounded-t-3xl p-6 shadow-2xl transition-transform duration-300 sm:hidden ${mobileOpen ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-black text-gray-900">Filters</h2>
@@ -172,8 +171,7 @@ function ProductsBrowser() {
         <FilterPanel brand={brand} setBrand={setBrand} city={city} setCity={setCity} onClose={() => setMobileOpen(false)} />
       </div>
 
-      {/* ── Page header (above the side-rail layout) ── */}
-      <div className="max-w-7xl mx-auto px-4 pt-6 pb-3">
+      <div className="max-w-7xl mx-auto px-4 pt-6 pb-3 sm:pl-4 pl-18">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-2xl font-black text-gray-900">Browse Products</h1>
@@ -196,10 +194,9 @@ function ProductsBrowser() {
               ))}
             </select>
 
-            {/* Mobile filter toggle (brand/emirate) */}
             <button
               onClick={() => setMobileOpen(true)}
-              className="sm:hidden flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm"
+              className="sm:hidden flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm min-h-11 active:scale-95 transition-all duration-200"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
@@ -212,7 +209,6 @@ function ProductsBrowser() {
           </div>
         </div>
 
-        {/* Active filter chips */}
         {hasFilters && (
           <div className="flex flex-wrap gap-2 mt-3">
             {[
@@ -222,7 +218,7 @@ function ProductsBrowser() {
               city     && { label: city,           clear: () => setCity('') },
             ].filter(Boolean).map(chip => (
               <button key={chip.label} onClick={chip.clear}
-                className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-purple-100 transition-colors">
+                className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-purple-100 active:scale-95 transition-all duration-200">
                 {chip.label}
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-purple-400">
                   <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
@@ -234,10 +230,8 @@ function ProductsBrowser() {
         )}
       </div>
 
-      {/* ── Main layout: side rail + content ── */}
-      <div className="max-w-7xl mx-auto flex" style={{ minHeight: 'calc(100vh - 160px)' }}>
+      <div className="max-w-7xl mx-auto" style={{ minHeight: 'calc(100vh - 160px)' }}>
 
-        {/* Mobile category side rail */}
         {categories.length > 0 && (
           <CategoryRail
             categories={categories}
@@ -246,11 +240,9 @@ function ProductsBrowser() {
           />
         )}
 
-        {/* Desktop sidebar + product grid */}
-        <div className="flex-1 min-w-0 px-4 pb-10">
+        <div className="sm:pl-0 pl-14 px-4 pb-10">
           <div className="flex gap-6 pt-2">
 
-            {/* Desktop sidebar */}
             <aside className="hidden sm:block w-52 shrink-0">
               <div className="bg-white rounded-2xl border border-purple-50 shadow-sm p-5 sticky top-24">
                 <div className="flex items-center justify-between mb-4">
@@ -258,7 +250,6 @@ function ProductsBrowser() {
                   {hasFilters && <button onClick={clearFilters} className="text-xs text-red-400 hover:text-red-600 font-semibold">Clear</button>}
                 </div>
 
-                {/* Desktop category list */}
                 {categories.length > 0 && (
                   <div className="mb-5">
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Category</p>
@@ -290,7 +281,6 @@ function ProductsBrowser() {
               </div>
             </aside>
 
-            {/* Product grid */}
             <main className="flex-1 min-w-0">
               {loading ? (
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
@@ -325,7 +315,7 @@ export default function ProductsPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-[#f9f7ff]">
         <div className="h-16 bg-purple-700" />
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto px-4 py-6 pl-18 sm:pl-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-10">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>

@@ -12,7 +12,7 @@ const ABBR = {
 // Per-category gradient + border colour
 const GRADIENT = {
   'Devices':                'from-purple-50 to-purple-100 border-purple-200 hover:border-purple-300',
-  'Disposables':            'from-teal-50   to-teal-100   border-teal-200   hover:border-teal-300',
+  'Disposables':            'from-purple-50   to-purple-100   border-purple-200   hover:border-purple-300',
   'Juices & E-Liquids':     'from-blue-50   to-blue-100   border-blue-200   hover:border-blue-300',
   'Spareparts':             'from-yellow-50 to-yellow-100 border-yellow-200 hover:border-yellow-300',
   'Other Smoking Products': 'from-gray-50   to-gray-100   border-gray-200   hover:border-gray-300',
@@ -21,7 +21,7 @@ const GRADIENT = {
 // Badge colour for the abbreviation circle
 const BADGE = {
   'Devices':                'bg-purple-200 text-purple-700',
-  'Disposables':            'bg-teal-200   text-teal-700',
+  'Disposables':            'bg-purple-200   text-purple-700',
   'Juices & E-Liquids':     'bg-blue-200   text-blue-700',
   'Spareparts':             'bg-yellow-200 text-yellow-700',
   'Other Smoking Products': 'bg-gray-200   text-gray-600',

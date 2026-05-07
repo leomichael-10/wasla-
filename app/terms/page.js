@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 
 export const metadata = {
@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f9f7ff]">
       <Navbar />
       <div className="max-w-3xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-black text-gray-900 mb-2">Terms of Service</h1>
@@ -108,7 +108,7 @@ export default function TermsPage() {
         </div>
 
         <div className="mt-8 text-center">
-          <Link href="/privacy" className="text-sm font-semibold text-teal-600 hover:underline">
+          <Link href="/privacy" className="text-sm font-semibold text-purple-700 hover:underline">
             Read our Privacy Policy
           </Link>
         </div>
