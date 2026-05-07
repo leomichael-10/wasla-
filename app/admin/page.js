@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import Navbar from '../../components/Navbar'
 
 const SUB_STATUS = {
@@ -581,9 +580,8 @@ export default function AdminPage() {
                         <tr key={seller.id} className="hover:bg-[#f9f7ff] transition-colors">
                           <td className="px-5 py-2.5">
                             {seller.logoUrl ? (
-                              <div className="relative w-10 h-10 rounded-full overflow-hidden bg-purple-50 shrink-0">
-                                <Image src={seller.logoUrl} alt={seller.businessName} fill className="object-cover" sizes="40px" />
-                              </div>
+                              <img src={seller.logoUrl} alt={seller.businessName}
+                                  className="w-10 h-10 rounded-full object-cover bg-purple-50 shrink-0" />
                             ) : (
                               <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
                                 <span className="text-purple-600 font-black text-sm">{(seller.businessName ?? 'S')[0].toUpperCase()}</span>
@@ -636,9 +634,8 @@ export default function AdminPage() {
                         <tr key={seller.id} className="hover:bg-[#f9f7ff] transition-colors">
                           <td className="px-5 py-2.5">
                             {seller.logoUrl ? (
-                              <div className="relative w-10 h-10 rounded-full overflow-hidden bg-purple-50 shrink-0">
-                                <Image src={seller.logoUrl} alt={seller.businessName} fill className="object-cover" sizes="40px" />
-                              </div>
+                              <img src={seller.logoUrl} alt={seller.businessName}
+                                  className="w-10 h-10 rounded-full object-cover bg-purple-50 shrink-0" />
                             ) : (
                               <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
                                 <span className="text-purple-600 font-black text-sm">{(seller.businessName ?? 'S')[0].toUpperCase()}</span>
@@ -843,9 +840,8 @@ export default function AdminPage() {
                               {(() => {
                                 const thumb = p.images?.[0] || p.variants?.find(v => v.image)?.image || null
                                 return thumb ? (
-                                  <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-purple-50 shrink-0">
-                                    <Image src={thumb} alt={p.name} fill className="object-cover" sizes="40px" />
-                                  </div>
+                                  <img src={thumb} alt={p.name}
+                                    className="w-10 h-10 rounded-lg object-cover bg-purple-50 shrink-0" />
                                 ) : (
                                   <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
                                     <span className="text-purple-600 font-black text-sm">{(p.brand ?? p.name ?? 'P')[0].toUpperCase()}</span>
