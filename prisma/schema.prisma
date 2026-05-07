@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int               @id @default(autoincrement())
+  email           String            @unique
+  passwordHash    String?
+  role            String
+  phone           String?
+  whatsapp        String?
+  city            String?
+  ageVerified     Boolean           @default(false)
+  isBanned        Boolean           @default(false)
+  isOnboarded     Boolean           @default(false)
+  gender          String?
+  createdAt       DateTime          @default(now())
+  customerProfile CustomerProfile?
+  sellerProfile   SellerProfile?
+  orders          Order[]
+  reviews         Review[]
+  wishlist        Wishlist[]
+}
+
+model CustomerProfile {
+  id              Int     @id @default(autoincrement())
+  userId          Int     @unique
+  fullName        String?
+  deliveryAddress String?
+  reviewerScore   Decimal @default(0)
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SellerProfile {
+  id                   Int      @id @default(autoincrement())
+  userId               Int      @unique
+  businessName         String
+  tradeLicense         String?
+  city                 String?
+  area                 String?
+  latitude             Decimal?
+  longitude            Decimal?
+  workingDays          String?
+  workingHours         String?
+  deliveryAvailable    Boolean  @default(false)
+  warrantyAvailable    Boolean  @default(false)
+  warrantyDuration     String?
+  maintenanceAvailable Boolean  @default(false)
+  approvedByAdmin      Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products             Product[]
+  orders               Order[]
+  reviews              Review[]
+  adCampaigns          AdCampaign[]
+  stockMovements       StockMovement[]
+  subscriptions        Subscription[]
+}
+
+model Subscription {
+  id            Int           @id @default(autoincrement())
+  sellerId      Int
+  priceAed      Decimal       @default(199)
+  status        String        @default("pending")
+  paymentMethod String?
+  paymentStatus String        @default("unpaid")
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime      @default(now())
+  seller        SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id            Int           @id @default(autoincrement())
+  name          String
+  icon          String?
+  subCategories SubCategory[]
+  products      Product[]
+}
+
+model SubCategory {
+  id         Int       @id @default(autoincrement())
+  categoryId Int
+  name       String
+  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products   Product[]
+}
+
+model Product {
+  id            Int              @id @default(autoincrement())
+  sellerId      Int
+  categoryId    Int
+  subCategoryId Int?
+  brand         String?
+  name          String
+  description   String?
+  images        String[]         @default([])
+  isActive      Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+  seller        SellerProfile    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  category      Category         @relation(fields: [categoryId], references: [id])
+  subCategory   SubCategory?     @relation(fields: [subCategoryId], references: [id])
+  variants      ProductVariant[]
+  reviews       Review[]
+  wishlists     Wishlist[]
+}
+
+model ProductVariant {
+  id             Int             @id @default(autoincrement())
+  productId      Int
+  flavor         String?
+  nicotineLevel  String?
+  sizeMl         Int?
+  puffCount      Int?
+  resistanceOhm  Decimal?
+  priceAed       Decimal
+  stockQty       Int             @default(0)
+  skuCode        String?         @unique
+  image          String?
+  createdAt      DateTime        @default(now())
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems     OrderItem[]
+  stockMovements StockMovement[]
+}
+
+model Order {
+  id              Int           @id @default(autoincrement())
+  customerId      Int
+  sellerId        Int
+  status          String        @default("pending")
+  totalAed        Decimal
+  commissionAed   Decimal       @default(0)
+  commissionRate  Decimal       @default(0.10)
+  deliveryAddress String
+  paymentMethod   String?
+  paymentStatus   String        @default("unpaid")
+  createdAt       DateTime      @default(now())
+  customer        User          @relation(fields: [customerId], references: [id])
+  seller          SellerProfile @relation(fields: [sellerId], references: [id])
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id               Int            @id @default(autoincrement())
+  orderId          Int
+  productVariantId Int
+  quantity         Int
+  priceAtPurchase  Decimal
+  order            Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
+}
+
+model Review {
+  id         Int           @id @default(autoincrement())
+  customerId Int
+  sellerId   Int
+  productId  Int?
+  rating     Int
+  comment    String?
+  createdAt  DateTime      @default(now())
+  customer   User          @relation(fields: [customerId], references: [id])
+  seller     SellerProfile @relation(fields: [sellerId], references: [id])
+  product    Product?      @relation(fields: [productId], references: [id])
+}
+
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model AdCampaign {
+  id         Int           @id @default(autoincrement())
+  sellerId   Int
+  type       String
+  targetCity String?
+  budgetAed  Decimal?
+  startDate  DateTime
+  endDate    DateTime
+  status     String        @default("active")
+  createdAt  DateTime      @default(now())
+  seller     SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  stats      AdStat[]
+}
+
+model AdStat {
+  id          Int        @id @default(autoincrement())
+  campaignId  Int
+  impressions Int        @default(0)
+  clicks      Int        @default(0)
+  conversions Int        @default(0)
+  date        DateTime   @default(now())
+  campaign    AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+}
+
+model StockMovement {
+  id               Int            @id @default(autoincrement())
+  sellerId         Int
+  productVariantId Int
+  movementType     String
+  quantity         Int
+  note             String?
+  createdAt        DateTime       @default(now())
+  seller           SellerProfile  @relation(fields: [sellerId], references: [id])
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
+}

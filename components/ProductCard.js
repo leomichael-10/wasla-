@@ -1,0 +1,184 @@
+'use client'
+import Link from 'next/link'
+import { useState, useEffect, useLayoutEffect } from 'react'
+import { addToCart } from '../lib/cart'
+
+function StarRating({ rating, count }) {
+  const rounded = Math.round(rating * 2) / 2
+  return (
+    <div className="flex items-center gap-1">
+      <div className="flex gap-0.5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <span key={i} className={`text-xs ${i < rounded ? 'text-yellow-400' : 'text-gray-200'}`}>&#9733;</span>
+        ))}
+      </div>
+      {count > 0 && <span className="text-[11px] text-gray-400">({count})</span>}
+    </div>
+  )
+}
+
+export default function ProductCard({ product }) {
+  const [feedback,    setFeedback]    = useState(false)
+  const [wishlisted,  setWishlisted]  = useState(false)
+  const [wishLoading, setWishLoading] = useState(false)
+  const [isCustomer,  setIsCustomer]  = useState(false)
+  const [userId,      setUserId]      = useState('guest')
+
+  const prices     = product.variants.map(v => Number(v.priceAed))
+  const minPrice   = Math.min(...prices)
+  const maxPrice   = Math.max(...prices)
+  const priceLabel = minPrice === maxPrice
+    ? `AED ${minPrice.toFixed(0)}`
+    : `AED ${minPrice.toFixed(0)}–${maxPrice.toFixed(0)}`
+
+  const flavors        = product.variants.map(v => v.flavor).filter(Boolean)
+  const inStockVariant = product.variants.find(v => v.inStock ?? v.stockQty > 0) ?? null
+  const mainImage      = product.images?.[0] ?? null
+
+  const reviews     = product.reviews ?? []
+  const avgRating   = reviews.length
+    ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+    : (product.averageRating ?? 0)
+  const reviewCount = product.reviewCount ?? reviews.length
+
+  useLayoutEffect(() => {
+    try {
+      const raw  = localStorage.getItem('tobaki_user')
+      const user = raw ? JSON.parse(raw) : null
+      if (user?.id) setUserId(user.id)
+      if (user?.role === 'customer') setIsCustomer(true)
+    } catch { /* ignore */ }
+  }, [])
+
+  useEffect(() => {
+    if (!isCustomer) return
+    const token = localStorage.getItem('tobaki_token')
+    fetch('/api/wishlist', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(data => {
+        const ids = (data.wishlist ?? []).map(w => w.id)
+        setWishlisted(ids.includes(product.id))
+      })
+      .catch(() => {})
+  }, [product.id, isCustomer])
+
+  function handleAddToCart(e) {
+    e.preventDefault()
+    if (!inStockVariant) return
+    addToCart({
+      productVariantId: inStockVariant.id,
+      productId:        product.id,
+      productName:      product.name,
+      brand:            product.brand ?? '',
+      flavor:           inStockVariant.flavor ?? '',
+      nicotineLevel:    inStockVariant.nicotineLevel ?? '',
+      puffCount:        inStockVariant.puffCount ?? 0,
+      priceAed:         Number(inStockVariant.priceAed),
+      quantity:         1,
+      sellerId:         product.seller?.id ?? 0,
+      sellerName:       product.seller?.businessName ?? '',
+    }, userId)
+    setFeedback(true)
+    setTimeout(() => setFeedback(false), 2000)
+  }
+
+  async function handleWishlist(e) {
+    e.preventDefault()
+    if (!isCustomer || wishLoading) return
+    setWishLoading(true)
+    const token  = localStorage.getItem('tobaki_token')
+    const method = wishlisted ? 'DELETE' : 'POST'
+    try {
+      const res = await fetch('/api/wishlist', {
+        method,
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ productId: product.id }),
+      })
+      if (res.ok) setWishlisted(prev => !prev)
+    } catch { /* ignore */ } finally {
+      setWishLoading(false)
+    }
+  }
+
+  return (
+    <div className="relative group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col h-full">
+
+      {/* Full-card link */}
+      <Link href={`/products/${product.id}`} className="absolute inset-0 z-0" aria-label={`View ${product.name}`} />
+
+      {/* Wishlist button */}
+      {isCustomer && (
+        <button
+          onClick={handleWishlist}
+          disabled={wishLoading}
+          className="absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors"
+          aria-label={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+            fill={wishlisted ? '#ef4444' : 'none'}
+            stroke={wishlisted ? '#ef4444' : '#9ca3af'}
+            strokeWidth={2} className="w-4 h-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+          </svg>
+        </button>
+      )}
+
+      {/* Image */}
+      <div className="aspect-square overflow-hidden">
+        {mainImage ? (
+          <img src={mainImage} alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        ) : (
+          <div className="w-full h-full bg-linear-to-br from-teal-50 via-teal-100 to-cyan-100 flex items-center justify-center">
+            <span className="text-4xl font-black text-teal-200 group-hover:scale-110 transition-transform duration-200 select-none tracking-tighter">
+              {(product.brand ?? 'V')[0].toUpperCase()}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Card body */}
+      <div className="p-3 flex flex-col flex-1 gap-1.5">
+        {product.brand && (
+          <span className="text-[11px] font-bold text-teal-600 uppercase tracking-wide">{product.brand}</span>
+        )}
+        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{product.name}</h3>
+        {flavors.length > 0 && (
+          <p className="text-xs text-gray-400 leading-tight">
+            {flavors.length} flavor{flavors.length !== 1 ? 's' : ''}{' · '}
+            {flavors.slice(0, 2).join(', ')}{flavors.length > 2 ? '…' : ''}
+          </p>
+        )}
+        {reviewCount > 0 && <StarRating rating={avgRating} count={reviewCount} />}
+        {product.seller && (
+          <Link
+            href={`/shops/${product.seller.id}`}
+            className="relative z-10 text-xs text-gray-400 hover:text-teal-600 transition-colors"
+            onClick={e => e.stopPropagation()}
+          >
+            {product.seller.businessName}{product.seller.city ? ` · ${product.seller.city}` : ''}
+          </Link>
+        )}
+
+        {/* Price + CTA */}
+        <div className="mt-auto pt-2 flex items-center justify-between gap-2">
+          <span className="font-black text-gray-900 text-sm tabular-nums">{priceLabel}</span>
+          <button
+            className={`relative z-10 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors shrink-0 ${
+              feedback
+                ? 'bg-green-500'
+                : inStockVariant
+                  ? 'bg-teal-400 hover:bg-teal-500 active:bg-teal-600'
+                  : 'bg-gray-300 cursor-not-allowed'
+            }`}
+            onClick={handleAddToCart}
+            disabled={!inStockVariant}
+          >
+            {feedback ? 'Added!' : inStockVariant ? 'Add to cart' : 'Out of stock'}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  )
+}

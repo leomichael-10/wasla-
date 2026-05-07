@@ -1,65 +1,308 @@
-import Image from "next/image";
+import Link from 'next/link'
+import { prisma } from '../lib/prisma'
+import Navbar from '../components/Navbar'
+import ProductCard from '../components/ProductCard'
 
-export default function Home() {
+// ── Data helpers ──────────────────────────────────────────────────────────────
+
+async function getShops() {
+  try {
+    const sellers = await prisma.sellerProfile.findMany({
+      where:   { approvedByAdmin: true },
+      orderBy: { businessName: 'asc' },
+      take:    12,
+      include: {
+        reviews:  { select: { rating: true } },
+        products: { where: { isActive: true }, select: { id: true } },
+      },
+    })
+    return sellers.map(s => {
+      const avg = s.reviews.length
+        ? s.reviews.reduce((a, r) => a + r.rating, 0) / s.reviews.length
+        : 0
+      return {
+        id:                s.id,
+        businessName:      s.businessName,
+        city:              s.city,
+        area:              s.area,
+        workingHours:      s.workingHours,
+        workingDays:       s.workingDays,
+        deliveryAvailable: s.deliveryAvailable,
+        warrantyAvailable: s.warrantyAvailable,
+        productCount:      s.products.length,
+        reviewCount:       s.reviews.length,
+        averageRating:     Math.round(avg * 10) / 10,
+      }
+    })
+  } catch { return [] }
+}
+
+async function getCategories() {
+  try {
+    const cats = await prisma.category.findMany({
+      orderBy: { name: 'asc' },
+      include: { _count: { select: { products: { where: { isActive: true } } } } },
+    })
+    return JSON.parse(JSON.stringify(cats))
+  } catch { return [] }
+}
+
+async function getFeaturedProducts() {
+  try {
+    const raw = await prisma.product.findMany({
+      where:   { isActive: true },
+      orderBy: { createdAt: 'desc' },
+      take:    8,
+      include: {
+        variants: {
+          select: { id: true, flavor: true, priceAed: true, stockQty: true, puffCount: true, nicotineLevel: true },
+          orderBy: { flavor: 'asc' },
+        },
+        seller:   { select: { id: true, businessName: true, city: true } },
+        category: { select: { id: true, name: true } },
+      },
+    })
+    return JSON.parse(JSON.stringify(raw))
+  } catch { return [] }
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function ShopCard({ shop }) {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <Link
+      href={`/shops/${shop.id}`}
+      className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-teal-200 transition-all duration-200 flex flex-col overflow-hidden"
+    >
+      {/* Shop banner / avatar area */}
+      <div className="h-24 bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center relative">
+        <span className="text-5xl font-black text-white/30 select-none group-hover:text-white/40 transition-colors">
+          {shop.businessName[0].toUpperCase()}
+        </span>
+        {shop.deliveryAvailable && (
+          <span className="absolute top-3 right-3 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            Delivery
+          </span>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-4 flex flex-col flex-1 gap-2">
+        <h3 className="font-black text-gray-900 text-base leading-snug group-hover:text-teal-600 transition-colors">
+          {shop.businessName}
+        </h3>
+
+        {(shop.city || shop.area) && (
+          <p className="text-xs text-gray-500 flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 shrink-0">
+              <path fillRule="evenodd" d="M8 1.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM2.5 6a5.5 5.5 0 1 1 9.5 3.774l2.614 2.613a.75.75 0 0 1-1.06 1.06L11 11.061A5.5 5.5 0 0 1 2.5 6Z" clipRule="evenodd" />
+            </svg>
+            {[shop.city, shop.area].filter(Boolean).join(', ')}
           </p>
+        )}
+
+        <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
+          <div className="flex items-center gap-1">
+            {shop.averageRating > 0 ? (
+              <>
+                <span className="text-yellow-400 text-sm">&#9733;</span>
+                <span className="text-xs font-bold text-gray-700">{shop.averageRating.toFixed(1)}</span>
+                <span className="text-[10px] text-gray-400">({shop.reviewCount})</span>
+              </>
+            ) : (
+              <span className="text-[11px] text-gray-400">No reviews yet</span>
+            )}
+          </div>
+          <span className="text-[11px] text-gray-400 font-medium">{shop.productCount} products</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {shop.workingHours && (
+          <p className="text-[11px] text-gray-400">{shop.workingHours}</p>
+        )}
+      </div>
+    </Link>
+  )
+}
+
+const CATEGORY_ICONS = {
+  'Disposables':        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" /></svg>,
+  'Devices':            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>,
+  'Juices & E-Liquids': <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15m-1.8-3.5-3.75-3.75m0 0L10.5 11.5M19.8 15 21 16.5m0 0-1.5 1.5M21 18l-1.5-1.5" /></svg>,
+  'Spareparts':         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z" /></svg>,
+  'Other':              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" /></svg>,
+}
+
+function CategoryPill({ category }) {
+  const icon = CATEGORY_ICONS[category.name] ?? CATEGORY_ICONS['Other']
+  return (
+    <Link
+      href={`/products?category=${encodeURIComponent(category.name)}`}
+      className="group shrink-0 flex flex-col items-center gap-2 w-24 py-4 px-2 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-teal-300 hover:shadow-md transition-all duration-200"
+    >
+      <span className="text-teal-500 group-hover:text-teal-600 transition-colors">{icon}</span>
+      <span className="text-xs font-bold text-gray-700 text-center leading-tight group-hover:text-teal-600 transition-colors">
+        {category.name}
+      </span>
+      {category._count?.products > 0 && (
+        <span className="text-[10px] text-gray-400">{category._count.products}</span>
+      )}
+    </Link>
+  )
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export default async function HomePage() {
+  const [shops, categories, products] = await Promise.all([
+    getShops(),
+    getCategories(),
+    getFeaturedProducts(),
+  ])
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <section className="bg-gradient-to-br from-teal-500 via-teal-400 to-cyan-400 text-white">
+        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+          <div className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-4 tracking-wide uppercase">
+            UAE&apos;s First Vape Marketplace
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight mb-3">
+            Order from the best<br className="hidden sm:block" /> vape shops in Dubai
+          </h1>
+          <p className="text-teal-50 text-base sm:text-lg mb-8 max-w-xl mx-auto">
+            Disposables, devices &amp; e-liquids from verified sellers — delivered to your door.
+          </p>
+
+          <form action="/products" method="GET" className="max-w-xl mx-auto">
+            <div className="flex bg-white rounded-2xl shadow-xl overflow-hidden p-1.5 gap-1">
+              <input
+                type="text"
+                name="search"
+                placeholder="Search products, brands, flavors..."
+                className="flex-1 pl-4 py-2.5 text-gray-800 text-sm focus:outline-none bg-transparent placeholder-gray-400"
+              />
+              <button
+                type="submit"
+                className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-gray-900 font-black px-6 py-2.5 rounded-xl text-sm transition-colors shrink-0"
+              >
+                Search
+              </button>
+            </div>
+          </form>
+
+          <div className="flex justify-center gap-6 mt-10 flex-wrap">
+            {[
+              { label: `${shops.length}+ Verified Shops` },
+              { label: 'Cash on Delivery' },
+              { label: 'UAE-Wide Delivery' },
+            ].map(b => (
+              <div key={b.label} className="flex items-center gap-1.5 text-teal-50 text-sm font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-yellow-300 shrink-0">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+                </svg>
+                {b.label}
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* ── Categories ────────────────────────────────────────────────────── */}
+      {categories.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 pt-10 pb-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-black text-gray-900">Browse by Category</h2>
+            <Link href="/products" className="text-sm text-teal-600 font-semibold hover:underline">
+              View all
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+            {categories.map(cat => (
+              <CategoryPill key={cat.id} category={cat} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Shops Near You ────────────────────────────────────────────────── */}
+      <section className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-xl font-black text-gray-900">Shops Near You</h2>
+            <p className="text-sm text-gray-500 mt-0.5">{shops.length} verified shop{shops.length !== 1 ? 's' : ''} available</p>
+          </div>
+          <Link href="/shops" className="text-sm text-teal-600 font-semibold hover:underline">
+            View all shops
+          </Link>
+        </div>
+
+        {shops.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+            <p className="text-gray-500 font-semibold">No shops available in your area yet.</p>
+            <p className="text-sm text-gray-400 mt-1">Check back soon as new sellers join daily.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {shops.map(shop => (
+              <ShopCard key={shop.id} shop={shop} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ── Popular Products ──────────────────────────────────────────────── */}
+      {products.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xl font-black text-gray-900">Popular Products</h2>
+            <Link href="/products" className="text-sm text-teal-600 font-semibold hover:underline">
+              View all
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {products.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── How It Works ──────────────────────────────────────────────────── */}
+      <section className="bg-white border-t border-gray-100 mt-4">
+        <div className="max-w-4xl mx-auto px-4 py-14 text-center">
+          <h2 className="text-xl font-black text-gray-900 mb-10">How It Works</h2>
+          <div className="grid sm:grid-cols-3 gap-8">
+            {[
+              {
+                step:  '1',
+                title: 'Browse Shops',
+                desc:  'Explore verified vape shops in your city. See ratings, products, and delivery options.',
+              },
+              {
+                step:  '2',
+                title: 'Add to Cart',
+                desc:  'Choose your products, select flavors and nicotine levels, then proceed to checkout.',
+              },
+              {
+                step:  '3',
+                title: 'Get Delivered',
+                desc:  'Pay cash on delivery. Track your order status directly from your account.',
+              },
+            ].map(item => (
+              <div key={item.step} className="flex flex-col items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-teal-400 text-white font-black text-lg flex items-center justify-center shadow-sm">
+                  {item.step}
+                </div>
+                <h3 className="font-black text-gray-900">{item.title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed max-w-xs mx-auto">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
-  );
+  )
 }
