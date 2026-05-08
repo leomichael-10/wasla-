@@ -61,6 +61,7 @@ model SellerProfile {
   adCampaigns          AdCampaign[]
   stockMovements       StockMovement[]
   subscriptions        Subscription[]
+  trackingPixel        TrackingPixel?
 }
 
 model Subscription {
@@ -202,6 +203,26 @@ model AdStat {
   conversions Int        @default(0)
   date        DateTime   @default(now())
   campaign    AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+}
+
+model TrackingPixel {
+  id        String        @id @default(uuid())
+  sellerId  Int           @unique
+  createdAt DateTime      @default(now())
+  seller    SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  events    PixelEvent[]
+}
+
+model PixelEvent {
+  id        Int           @id @default(autoincrement())
+  pixelId   String
+  sellerId  Int
+  ip        String?
+  userAgent String?
+  referrer  String?
+  country   String?
+  createdAt DateTime      @default(now())
+  pixel     TrackingPixel @relation(fields: [pixelId], references: [id], onDelete: Cascade)
 }
 
 model StockMovement {
