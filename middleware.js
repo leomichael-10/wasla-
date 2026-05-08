@@ -10,6 +10,7 @@ const PUBLIC_ROUTES = [
 // Route prefixes that are always public (next-auth internals, etc.)
 const PUBLIC_PREFIXES = [
   '/api/auth/',
+  '/api/track/pixel/',
 ]
 
 // Route prefixes where GET requests are public (token optional, verified if present)
