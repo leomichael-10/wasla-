@@ -235,7 +235,12 @@ model MasterProduct {
   description String?
   images      String[]          @default([])
   categoryId  Int
+  brand       String?
+  productType String?
+  sku         String?
+  tags        String[]          @default([])
   specs       Json?
+  variants    Json?
   priceMin    Decimal?
   priceMax    Decimal?
   isActive    Boolean           @default(true)

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
+import MasterProductForm from '../../components/MasterProductForm'
 
 const SUB_STATUS = {
   pending:  'bg-yellow-100 text-yellow-700',
@@ -27,8 +28,8 @@ export default function AdminPage() {
   const [masterProducts,  setMasterProducts]  = useState([])
   const [pendingApprovals,setPendingApprovals] = useState([])
   const [productRequests, setProductRequests]  = useState([])
-  const [catFormMaster,   setCatFormMaster]    = useState({ name: '', description: '', categoryId: '', priceMin: '', priceMax: '' })
-  const [masterSaving,    setMasterSaving]     = useState(false)
+  const [showMasterForm,  setShowMasterForm]   = useState(false)
+  const [editingMaster,   setEditingMaster]    = useState(null)
   const [actioningRP,     setActioningRP]      = useState(null)
   const [noteRP,          setNoteRP]           = useState({})
   const [subActioning,    setSubActioning]     = useState(null)
@@ -317,33 +318,6 @@ export default function AdminPage() {
       setError(err.message || 'Failed to update subscription.')
     } finally {
       setSubActioning(null)
-    }
-  }
-
-  async function handleSaveMasterProduct(e) {
-    e.preventDefault()
-    setMasterSaving(true)
-    const token = localStorage.getItem('tobaki_token')
-    try {
-      const res  = await fetch('/api/admin/master-products', {
-        method:  'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          name:       catFormMaster.name,
-          description:catFormMaster.description || null,
-          categoryId: catFormMaster.categoryId,
-          priceMin:   catFormMaster.priceMin || null,
-          priceMax:   catFormMaster.priceMax || null,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setMasterProducts(prev => [data.product, ...prev])
-      setCatFormMaster({ name: '', description: '', categoryId: '', priceMin: '', priceMax: '' })
-    } catch (err) {
-      setError(err.message || 'Failed to save product.')
-    } finally {
-      setMasterSaving(false)
     }
   }
 
@@ -1311,56 +1285,37 @@ export default function AdminPage() {
         {/* ── CATALOG TAB ── */}
         {activeTab === 'Catalog' && (
           <div className="space-y-6">
-            {/* Add master product form */}
-            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <h2 className="text-base font-black text-gray-900 mb-4">Add to Catalog</h2>
-              <form onSubmit={handleSaveMasterProduct} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Name *</label>
-                  <input type="text" required value={catFormMaster.name}
-                    onChange={e => setCatFormMaster(f => ({ ...f, name: e.target.value }))}
-                    placeholder="e.g. Elf Bar 600"
-                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Category *</label>
-                  <select required value={catFormMaster.categoryId}
-                    onChange={e => setCatFormMaster(f => ({ ...f, categoryId: e.target.value }))}
-                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
-                    <option value="">Select category</option>
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Description</label>
-                  <input type="text" value={catFormMaster.description}
-                    onChange={e => setCatFormMaster(f => ({ ...f, description: e.target.value }))}
-                    placeholder="Short description"
-                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Price Min (AED)</label>
-                  <input type="number" step="0.01" value={catFormMaster.priceMin}
-                    onChange={e => setCatFormMaster(f => ({ ...f, priceMin: e.target.value }))}
-                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Price Max (AED)</label>
-                  <input type="number" step="0.01" value={catFormMaster.priceMax}
-                    onChange={e => setCatFormMaster(f => ({ ...f, priceMax: e.target.value }))}
-                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400" />
-                </div>
-                <div className="flex items-end">
-                  <button type="submit" disabled={masterSaving}
-                    className="w-full bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors">
-                    {masterSaving ? 'Saving…' : 'Add Product'}
-                  </button>
-                </div>
-              </form>
-            </section>
+            {/* Form: shown when adding or editing */}
+            {showMasterForm ? (
+              <MasterProductForm
+                key={editingMaster?.id ?? 'new'}
+                categories={categories}
+                initial={editingMaster}
+                onSave={product => {
+                  if (editingMaster) {
+                    setMasterProducts(prev => prev.map(p => p.id === product.id ? product : p))
+                  } else {
+                    setMasterProducts(prev => [product, ...prev])
+                  }
+                  setShowMasterForm(false)
+                  setEditingMaster(null)
+                }}
+                onCancel={() => { setShowMasterForm(false); setEditingMaster(null) }}
+              />
+            ) : (
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-500">{masterProducts.length} product{masterProducts.length !== 1 ? 's' : ''} in catalog</p>
+                <button
+                  onClick={() => { setEditingMaster(null); setShowMasterForm(true) }}
+                  className="bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors"
+                >
+                  + Add to Catalog
+                </button>
+              </div>
+            )}
 
             {/* Master products list */}
-            {loading ? (
+            {!showMasterForm && (loading ? (
               <div className="bg-white rounded-2xl border border-gray-100 animate-pulse h-40" />
             ) : masterProducts.length === 0 ? (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-12 text-center">
@@ -1373,7 +1328,9 @@ export default function AdminPage() {
                     <thead>
                       <tr className="border-b border-gray-100 bg-[#f9f7ff]">
                         <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
+                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Type</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Category</th>
+                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Brand</th>
                         <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Price Range</th>
                         <th className="text-center px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Status</th>
                         <th className="px-4 py-3.5" />
@@ -1382,11 +1339,24 @@ export default function AdminPage() {
                     <tbody className="divide-y divide-gray-50">
                       {masterProducts.map(p => (
                         <tr key={p.id} className={`hover:bg-[#f9f7ff] transition-colors ${!p.isActive ? 'opacity-50' : ''}`}>
-                          <td className="px-5 py-3.5 font-semibold text-gray-900">{p.name}</td>
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-3">
+                              {p.images?.[0] ? (
+                                <img src={p.images[0]} alt={p.name} className="w-9 h-9 rounded-lg object-cover bg-gray-50 shrink-0" />
+                              ) : (
+                                <div className="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center shrink-0">
+                                  <span className="text-purple-300 font-black text-sm">{p.name[0]}</span>
+                                </div>
+                              )}
+                              <span className="font-semibold text-gray-900">{p.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3.5 text-gray-500 text-xs">{p.productType ?? '—'}</td>
                           <td className="px-4 py-3.5 text-gray-600">{p.category?.name ?? '—'}</td>
+                          <td className="px-4 py-3.5 text-gray-600">{p.brand ?? '—'}</td>
                           <td className="px-4 py-3.5 text-right tabular-nums text-gray-600">
                             {p.priceMin != null ? `AED ${Number(p.priceMin).toFixed(0)}` : '—'}
-                            {p.priceMax != null && p.priceMax !== p.priceMin ? `–${Number(p.priceMax).toFixed(0)}` : ''}
+                            {p.priceMax != null && Number(p.priceMax) !== Number(p.priceMin) ? `–${Number(p.priceMax).toFixed(0)}` : ''}
                           </td>
                           <td className="px-4 py-3.5 text-center">
                             <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${p.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -1394,12 +1364,20 @@ export default function AdminPage() {
                             </span>
                           </td>
                           <td className="px-4 py-3.5 text-right">
-                            <button
-                              onClick={() => handleToggleMaster(p.id, p.isActive)}
-                              className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-colors ${p.isActive ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'}`}
-                            >
-                              {p.isActive ? 'Deactivate' : 'Activate'}
-                            </button>
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => { setEditingMaster(p); setShowMasterForm(true) }}
+                                className="text-xs font-semibold text-purple-700 hover:text-purple-800 transition-colors"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleToggleMaster(p.id, p.isActive)}
+                                className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-colors ${p.isActive ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'}`}
+                              >
+                                {p.isActive ? 'Deactivate' : 'Activate'}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1407,7 +1385,7 @@ export default function AdminPage() {
                   </table>
                 </div>
               </div>
-            )}
+            ))}
           </div>
         )}
 

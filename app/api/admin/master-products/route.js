@@ -20,7 +20,7 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await request.json()
-  const { name, description, images, categoryId, specs, priceMin, priceMax } = body
+  const { name, description, images, categoryId, brand, productType, sku, tags, specs, variants, priceMin, priceMax } = body
   if (!name || !categoryId)
     return NextResponse.json({ error: 'name and categoryId are required' }, { status: 400 })
 
@@ -30,7 +30,12 @@ export async function POST(request) {
       description: description ?? null,
       images:      Array.isArray(images) ? images : [],
       categoryId:  parseInt(categoryId, 10),
+      brand:       brand ?? null,
+      productType: productType ?? null,
+      sku:         sku ?? null,
+      tags:        Array.isArray(tags) ? tags : [],
       specs:       specs ?? null,
+      variants:    variants ?? null,
       priceMin:    priceMin != null ? parseFloat(priceMin) : null,
       priceMax:    priceMax != null ? parseFloat(priceMax) : null,
     },

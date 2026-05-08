@@ -16,7 +16,12 @@ export async function PATCH(request, { params }) {
   if (body.description !== undefined) data.description = body.description ?? null
   if (body.images      !== undefined) data.images      = Array.isArray(body.images) ? body.images : []
   if (body.categoryId  !== undefined) data.categoryId  = parseInt(body.categoryId, 10)
+  if (body.brand       !== undefined) data.brand       = body.brand ?? null
+  if (body.productType !== undefined) data.productType = body.productType ?? null
+  if (body.sku         !== undefined) data.sku         = body.sku ?? null
+  if (body.tags        !== undefined) data.tags        = Array.isArray(body.tags) ? body.tags : []
   if (body.specs       !== undefined) data.specs       = body.specs ?? null
+  if (body.variants    !== undefined) data.variants    = body.variants ?? null
   if (body.priceMin    !== undefined) data.priceMin    = body.priceMin != null ? parseFloat(body.priceMin) : null
   if (body.priceMax    !== undefined) data.priceMax    = body.priceMax != null ? parseFloat(body.priceMax) : null
   if (body.isActive    !== undefined) data.isActive    = Boolean(body.isActive)
