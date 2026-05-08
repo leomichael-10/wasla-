@@ -11,7 +11,7 @@ const SUB_STATUS = {
   rejected: 'bg-red-100    text-red-600',
 }
 
-const TABS = ['Overview', 'Sellers', 'Users', 'Products', 'Categories', 'Commission', 'Traffic']
+const TABS = ['Overview', 'Sellers', 'Users', 'Products', 'Categories', 'Commission', 'Traffic', 'Catalog', 'Approvals']
 
 export default function AdminPage() {
   const router = useRouter()
@@ -24,6 +24,14 @@ export default function AdminPage() {
   const [products,      setProducts]      = useState([])
   const [commission,    setCommission]    = useState(null)
   const [traffic,       setTraffic]       = useState(null)
+  const [masterProducts,  setMasterProducts]  = useState([])
+  const [pendingApprovals,setPendingApprovals] = useState([])
+  const [productRequests, setProductRequests]  = useState([])
+  const [catFormMaster,   setCatFormMaster]    = useState({ name: '', description: '', categoryId: '', priceMin: '', priceMax: '' })
+  const [masterSaving,    setMasterSaving]     = useState(false)
+  const [actioningRP,     setActioningRP]      = useState(null)
+  const [noteRP,          setNoteRP]           = useState({})
+  const [subActioning,    setSubActioning]     = useState(null)
   const [loading,       setLoading]       = useState(true)
   const [error,         setError]         = useState('')
   const [ready,         setReady]         = useState(false)
@@ -68,28 +76,34 @@ export default function AdminPage() {
     const token   = localStorage.getItem('tobaki_token')
     const headers = { Authorization: `Bearer ${token}` }
     try {
-      const [selRes, subRes, stRes, usrRes, prdRes, comRes, catRes, trafRes] = await Promise.all([
-        fetch('/api/admin/sellers',       { headers }),
-        fetch('/api/admin/subscriptions', { headers }),
-        fetch('/api/admin/stats',         { headers }),
-        fetch('/api/admin/users',         { headers }),
-        fetch('/api/admin/products',      { headers }),
-        fetch('/api/admin/commission',    { headers }),
-        fetch('/api/admin/categories',    { headers }),
-        fetch('/api/admin/traffic',       { headers }),
+      const [selRes, subRes, stRes, usrRes, prdRes, comRes, catRes, trafRes, mpRes, rpRes, prRes] = await Promise.all([
+        fetch('/api/admin/sellers',          { headers }),
+        fetch('/api/admin/subscriptions',    { headers }),
+        fetch('/api/admin/stats',            { headers }),
+        fetch('/api/admin/users',            { headers }),
+        fetch('/api/admin/products',         { headers }),
+        fetch('/api/admin/commission',       { headers }),
+        fetch('/api/admin/categories',       { headers }),
+        fetch('/api/admin/traffic',          { headers }),
+        fetch('/api/admin/master-products',  { headers }),
+        fetch('/api/admin/retailer-products?status=PENDING', { headers }),
+        fetch('/api/admin/product-requests', { headers }),
       ])
-      const [selData, subData, stData, usrData, prdData, comData, catData, trafData] = await Promise.all([
-        selRes.json(), subRes.json(), stRes.json(), usrRes.json(), prdRes.json(), comRes.json(), catRes.json(), trafRes.json(),
+      const [selData, subData, stData, usrData, prdData, comData, catData, trafData, mpData, rpData, prData] = await Promise.all([
+        selRes.json(), subRes.json(), stRes.json(), usrRes.json(), prdRes.json(), comRes.json(), catRes.json(), trafRes.json(), mpRes.json(), rpRes.json(), prRes.json(),
       ])
       if (!selRes.ok) throw new Error(selData.error)
-      setSellers(      (selData.sellers       ?? []).sort((a,b) => a.businessName.localeCompare(b.businessName)))
-      setSubscriptions( subData.subscriptions ?? [])
-      setStats(         stData)
-      setUsers(         usrData.users         ?? [])
-      setProducts(      prdData.products      ?? [])
-      setCommission(    comData)
-      setCategories(    catData.categories    ?? [])
+      setSellers(       (selData.sellers       ?? []).sort((a,b) => a.businessName.localeCompare(b.businessName)))
+      setSubscriptions(  subData.subscriptions ?? [])
+      setStats(          stData)
+      setUsers(          usrData.users         ?? [])
+      setProducts(       prdData.products      ?? [])
+      setCommission(     comData)
+      setCategories(     catData.categories    ?? [])
       if (trafRes.ok) setTraffic(trafData)
+      if (mpRes.ok)   setMasterProducts(  mpData.products  ?? [])
+      if (rpRes.ok)   setPendingApprovals(rpData.items     ?? [])
+      if (prRes.ok)   setProductRequests( prData.requests  ?? [])
     } catch (err) {
       setError(err.message || 'Failed to load admin data.')
     } finally {
@@ -287,6 +301,98 @@ export default function AdminPage() {
     finally { setDeletingSub(null) }
   }
 
+  async function handleSubscription(sellerId, action) {
+    setSubActioning(sellerId)
+    const token = localStorage.getItem('tobaki_token')
+    try {
+      const res  = await fetch(`/api/admin/sellers/${sellerId}/subscription`, {
+        method:  'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ action }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setSellers(prev => prev.map(s => s.id === sellerId ? { ...s, subscriptionStatus: data.seller.subscriptionStatus } : s))
+    } catch (err) {
+      setError(err.message || 'Failed to update subscription.')
+    } finally {
+      setSubActioning(null)
+    }
+  }
+
+  async function handleSaveMasterProduct(e) {
+    e.preventDefault()
+    setMasterSaving(true)
+    const token = localStorage.getItem('tobaki_token')
+    try {
+      const res  = await fetch('/api/admin/master-products', {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          name:       catFormMaster.name,
+          description:catFormMaster.description || null,
+          categoryId: catFormMaster.categoryId,
+          priceMin:   catFormMaster.priceMin || null,
+          priceMax:   catFormMaster.priceMax || null,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setMasterProducts(prev => [data.product, ...prev])
+      setCatFormMaster({ name: '', description: '', categoryId: '', priceMin: '', priceMax: '' })
+    } catch (err) {
+      setError(err.message || 'Failed to save product.')
+    } finally {
+      setMasterSaving(false)
+    }
+  }
+
+  async function handleToggleMaster(id, isActive) {
+    const token = localStorage.getItem('tobaki_token')
+    try {
+      const res  = await fetch(`/api/admin/master-products/${id}`, {
+        method:  'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ isActive: !isActive }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setMasterProducts(prev => prev.map(p => p.id === id ? { ...p, isActive: !isActive } : p))
+    } catch (err) {
+      setError(err.message || 'Failed to update.')
+    }
+  }
+
+  async function handleRetailerProductAction(id, action) {
+    setActioningRP(id)
+    const token = localStorage.getItem('tobaki_token')
+    try {
+      const res  = await fetch(`/api/admin/retailer-products/${id}`, {
+        method:  'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ action, adminNote: noteRP[id] ?? null }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setPendingApprovals(prev => prev.filter(i => i.id !== id))
+    } catch (err) {
+      setError(err.message || 'Failed to action.')
+    } finally {
+      setActioningRP(null)
+    }
+  }
+
+  async function handleMarkRequestReviewed(id) {
+    const token = localStorage.getItem('tobaki_token')
+    try {
+      const res  = await fetch(`/api/admin/product-requests/${id}`, {
+        method:  'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) setProductRequests(prev => prev.map(r => r.id === id ? { ...r, status: 'REVIEWED' } : r))
+    } catch { /* ignore */ }
+  }
+
   if (!ready) {
     return (
       <div className="min-h-screen bg-[#f9f7ff] flex items-center justify-center">
@@ -352,6 +458,11 @@ export default function AdminPage() {
               {tab === 'Sellers' && pendingSubs.length > 0 && (
                 <span className="ml-1.5 bg-yellow-400 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
                   {pendingSubs.length}
+                </span>
+              )}
+              {tab === 'Approvals' && pendingApprovals.length > 0 && (
+                <span className="ml-1.5 bg-purple-400 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                  {pendingApprovals.length}
                 </span>
               )}
             </button>
@@ -629,21 +740,21 @@ export default function AdminPage() {
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Business</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Email</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">City</th>
-                        <th className="text-center px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Status</th>
+                        <th className="text-center px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Approval</th>
+                        <th className="text-center px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Subscription</th>
+                        <th className="px-4 py-3.5" />
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                      {sellers.map(seller => (
+                      {sellers.map(seller => {
+                        const subStatus = seller.subscriptionStatus ?? 'PENDING'
+                        const subColors = { ACTIVE: 'bg-green-100 text-green-700', SUSPENDED: 'bg-red-100 text-red-600', PENDING: 'bg-yellow-100 text-yellow-700' }
+                        return (
                         <tr key={seller.id} className="hover:bg-[#f9f7ff] transition-colors">
                           <td className="px-5 py-2.5">
-                            {seller.logoUrl ? (
-                              <img src={seller.logoUrl} alt={seller.businessName}
-                                  className="w-10 h-10 rounded-full object-cover bg-purple-50 shrink-0" />
-                            ) : (
-                              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
-                                <span className="text-purple-600 font-black text-sm">{(seller.businessName ?? 'S')[0].toUpperCase()}</span>
-                              </div>
-                            )}
+                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                              <span className="text-purple-600 font-black text-sm">{(seller.businessName ?? 'S')[0].toUpperCase()}</span>
+                            </div>
                           </td>
                           <td className="px-4 py-2.5 font-semibold text-gray-900">{seller.businessName}</td>
                           <td className="px-4 py-2.5 text-gray-600">{seller.user?.email ?? '—'}</td>
@@ -653,8 +764,36 @@ export default function AdminPage() {
                               {seller.approvedByAdmin ? 'Approved' : 'Pending'}
                             </span>
                           </td>
+                          <td className="px-4 py-2.5 text-center">
+                            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${subColors[subStatus]}`}>
+                              {subStatus}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <div className="flex items-center gap-1.5">
+                              {subStatus !== 'ACTIVE' && (
+                                <button
+                                  onClick={() => handleSubscription(seller.id, 'activate')}
+                                  disabled={subActioning === seller.id}
+                                  className="text-xs font-bold px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 disabled:opacity-50 transition-colors"
+                                >
+                                  Activate
+                                </button>
+                              )}
+                              {subStatus === 'ACTIVE' && (
+                                <button
+                                  onClick={() => handleSubscription(seller.id, 'suspend')}
+                                  disabled={subActioning === seller.id}
+                                  className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 disabled:opacity-50 transition-colors"
+                                >
+                                  Suspend
+                                </button>
+                              )}
+                            </div>
+                          </td>
                         </tr>
-                      ))}
+                        )
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -1166,6 +1305,246 @@ export default function AdminPage() {
                 <p className="text-sm text-gray-500 font-semibold">No commission data yet</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── CATALOG TAB ── */}
+        {activeTab === 'Catalog' && (
+          <div className="space-y-6">
+            {/* Add master product form */}
+            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+              <h2 className="text-base font-black text-gray-900 mb-4">Add to Catalog</h2>
+              <form onSubmit={handleSaveMasterProduct} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Name *</label>
+                  <input type="text" required value={catFormMaster.name}
+                    onChange={e => setCatFormMaster(f => ({ ...f, name: e.target.value }))}
+                    placeholder="e.g. Elf Bar 600"
+                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Category *</label>
+                  <select required value={catFormMaster.categoryId}
+                    onChange={e => setCatFormMaster(f => ({ ...f, categoryId: e.target.value }))}
+                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                    <option value="">Select category</option>
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Description</label>
+                  <input type="text" value={catFormMaster.description}
+                    onChange={e => setCatFormMaster(f => ({ ...f, description: e.target.value }))}
+                    placeholder="Short description"
+                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Price Min (AED)</label>
+                  <input type="number" step="0.01" value={catFormMaster.priceMin}
+                    onChange={e => setCatFormMaster(f => ({ ...f, priceMin: e.target.value }))}
+                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Price Max (AED)</label>
+                  <input type="number" step="0.01" value={catFormMaster.priceMax}
+                    onChange={e => setCatFormMaster(f => ({ ...f, priceMax: e.target.value }))}
+                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                </div>
+                <div className="flex items-end">
+                  <button type="submit" disabled={masterSaving}
+                    className="w-full bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors">
+                    {masterSaving ? 'Saving…' : 'Add Product'}
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            {/* Master products list */}
+            {loading ? (
+              <div className="bg-white rounded-2xl border border-gray-100 animate-pulse h-40" />
+            ) : masterProducts.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-12 text-center">
+                <p className="text-sm text-gray-400">No catalog products yet — add one above.</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                        <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
+                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Category</th>
+                        <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Price Range</th>
+                        <th className="text-center px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Status</th>
+                        <th className="px-4 py-3.5" />
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {masterProducts.map(p => (
+                        <tr key={p.id} className={`hover:bg-[#f9f7ff] transition-colors ${!p.isActive ? 'opacity-50' : ''}`}>
+                          <td className="px-5 py-3.5 font-semibold text-gray-900">{p.name}</td>
+                          <td className="px-4 py-3.5 text-gray-600">{p.category?.name ?? '—'}</td>
+                          <td className="px-4 py-3.5 text-right tabular-nums text-gray-600">
+                            {p.priceMin != null ? `AED ${Number(p.priceMin).toFixed(0)}` : '—'}
+                            {p.priceMax != null && p.priceMax !== p.priceMin ? `–${Number(p.priceMax).toFixed(0)}` : ''}
+                          </td>
+                          <td className="px-4 py-3.5 text-center">
+                            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${p.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                              {p.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 text-right">
+                            <button
+                              onClick={() => handleToggleMaster(p.id, p.isActive)}
+                              className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-colors ${p.isActive ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'}`}
+                            >
+                              {p.isActive ? 'Deactivate' : 'Activate'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── APPROVALS TAB ── */}
+        {activeTab === 'Approvals' && (
+          <div className="space-y-8">
+            {/* Pending retailer product selections */}
+            <section>
+              <h2 className="text-base font-black text-gray-900 mb-4">
+                Pending Product Selections
+                {pendingApprovals.length > 0 && (
+                  <span className="ml-2 bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-0.5 rounded-full">{pendingApprovals.length}</span>
+                )}
+              </h2>
+              {loading ? (
+                <div className="bg-white rounded-2xl border border-gray-100 animate-pulse h-32" />
+              ) : pendingApprovals.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-10 text-center">
+                  <p className="text-sm text-gray-400">No pending product approvals</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                          <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
+                          <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Retailer</th>
+                          <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Price AED</th>
+                          <th className="text-center px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Stock</th>
+                          <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Admin Note</th>
+                          <th className="px-4 py-3.5" />
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {pendingApprovals.map(item => (
+                          <tr key={item.id} className="hover:bg-[#f9f7ff] transition-colors">
+                            <td className="px-5 py-3.5 font-semibold text-gray-900">{item.masterProduct?.name ?? '—'}</td>
+                            <td className="px-4 py-3.5 text-gray-600">{item.retailer?.businessName ?? '—'} {item.retailer?.city ? `· ${item.retailer.city}` : ''}</td>
+                            <td className="px-4 py-3.5 text-right tabular-nums font-semibold">{Number(item.priceAed).toFixed(0)}</td>
+                            <td className="px-4 py-3.5 text-center text-gray-600">{item.stockQty}</td>
+                            <td className="px-4 py-3.5">
+                              <input
+                                type="text"
+                                placeholder="Optional note…"
+                                value={noteRP[item.id] ?? ''}
+                                onChange={e => setNoteRP(n => ({ ...n, [item.id]: e.target.value }))}
+                                className="border border-gray-200 rounded-lg px-2 py-1 text-xs w-36 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                              />
+                            </td>
+                            <td className="px-4 py-3.5">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleRetailerProductAction(item.id, 'approve')}
+                                  disabled={actioningRP === item.id}
+                                  className="bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() => handleRetailerProductAction(item.id, 'reject')}
+                                  disabled={actioningRP === item.id}
+                                  className="border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50 text-xs font-bold px-3 py-1.5 rounded-full transition-colors"
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            {/* Product requests (new products not in catalog) */}
+            <section>
+              <h2 className="text-base font-black text-gray-900 mb-4">
+                New Product Requests
+                {productRequests.filter(r => r.status === 'PENDING').length > 0 && (
+                  <span className="ml-2 bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                    {productRequests.filter(r => r.status === 'PENDING').length}
+                  </span>
+                )}
+              </h2>
+              {loading ? (
+                <div className="bg-white rounded-2xl border border-gray-100 animate-pulse h-24" />
+              ) : productRequests.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-10 text-center">
+                  <p className="text-sm text-gray-400">No product requests</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                        <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product Name</th>
+                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Retailer</th>
+                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Notes</th>
+                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Date</th>
+                        <th className="text-center px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Status</th>
+                        <th className="px-4 py-3.5" />
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {productRequests.map(r => (
+                        <tr key={r.id} className="hover:bg-[#f9f7ff] transition-colors">
+                          <td className="px-5 py-3.5 font-semibold text-gray-900">{r.name}</td>
+                          <td className="px-4 py-3.5 text-gray-600">{r.retailer?.businessName ?? '—'}</td>
+                          <td className="px-4 py-3.5 text-gray-500 text-xs max-w-48 truncate">{r.notes ?? '—'}</td>
+                          <td className="px-4 py-3.5 text-gray-400 text-xs">
+                            {new Date(r.createdAt).toLocaleDateString('en-AE', { day: 'numeric', month: 'short' })}
+                          </td>
+                          <td className="px-4 py-3.5 text-center">
+                            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${r.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500'}`}>
+                              {r.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5">
+                            {r.status === 'PENDING' && (
+                              <button
+                                onClick={() => handleMarkRequestReviewed(r.id)}
+                                className="text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                              >
+                                Mark Reviewed
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
           </div>
         )}
 

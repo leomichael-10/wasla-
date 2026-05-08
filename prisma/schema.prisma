@@ -53,6 +53,7 @@ model SellerProfile {
   warrantyDuration     String?
   maintenanceAvailable Boolean  @default(false)
   approvedByAdmin      Boolean  @default(false)
+  subscriptionStatus   String   @default("PENDING")
   createdAt            DateTime @default(now())
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   products             Product[]
@@ -62,6 +63,8 @@ model SellerProfile {
   stockMovements       StockMovement[]
   subscriptions        Subscription[]
   trackingPixel        TrackingPixel?
+  retailerProducts     RetailerProduct[]
+  productRequests      ProductRequest[]
 }
 
 model Subscription {
@@ -78,11 +81,12 @@ model Subscription {
 }
 
 model Category {
-  id            Int           @id @default(autoincrement())
-  name          String
-  icon          String?
-  subCategories SubCategory[]
-  products      Product[]
+  id             Int             @id @default(autoincrement())
+  name           String
+  icon           String?
+  subCategories  SubCategory[]
+  products       Product[]
+  masterProducts MasterProduct[]
 }
 
 model SubCategory {
@@ -223,6 +227,46 @@ model PixelEvent {
   country   String?
   createdAt DateTime      @default(now())
   pixel     TrackingPixel @relation(fields: [pixelId], references: [id], onDelete: Cascade)
+}
+
+model MasterProduct {
+  id          Int               @id @default(autoincrement())
+  name        String
+  description String?
+  images      String[]          @default([])
+  categoryId  Int
+  specs       Json?
+  priceMin    Decimal?
+  priceMax    Decimal?
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  category    Category          @relation(fields: [categoryId], references: [id])
+  retailerProducts RetailerProduct[]
+}
+
+model RetailerProduct {
+  id              Int           @id @default(autoincrement())
+  retailerId      Int
+  masterProductId Int
+  priceAed        Decimal
+  stockQty        Int           @default(0)
+  status          String        @default("PENDING")
+  adminNote       String?
+  createdAt       DateTime      @default(now())
+  retailer        SellerProfile @relation(fields: [retailerId], references: [id], onDelete: Cascade)
+  masterProduct   MasterProduct @relation(fields: [masterProductId], references: [id])
+
+  @@unique([retailerId, masterProductId])
+}
+
+model ProductRequest {
+  id         Int           @id @default(autoincrement())
+  retailerId Int
+  name       String
+  notes      String?
+  status     String        @default("PENDING")
+  createdAt  DateTime      @default(now())
+  retailer   SellerProfile @relation(fields: [retailerId], references: [id], onDelete: Cascade)
 }
 
 model GlobalEvent {

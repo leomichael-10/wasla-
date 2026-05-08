@@ -33,11 +33,11 @@ function NavIcon({ name, className = 'w-4 h-4' }) {
 }
 
 const NAV = [
-  { href: '/dashboard',              icon: 'overview',  label: 'Overview'    },
-  { href: '/dashboard/products',     icon: 'products',  label: 'My Products' },
-  { href: '/dashboard/products/add', icon: 'add',       label: 'Add Product' },
-  { href: '/dashboard/orders',       icon: 'orders',    label: 'My Orders'   },
-  { href: '/dashboard/pixel',        icon: 'pixel',     label: 'Tracking Pixel' },
+  { href: '/dashboard',          icon: 'overview',  label: 'Overview'    },
+  { href: '/dashboard/catalog',  icon: 'add',       label: 'Browse Catalog' },
+  { href: '/dashboard/products', icon: 'products',  label: 'My Products' },
+  { href: '/dashboard/orders',   icon: 'orders',    label: 'My Orders'   },
+  { href: '/dashboard/pixel',    icon: 'pixel',     label: 'Tracking Pixel' },
 ]
 
 export default function DashboardLayout({ children }) {

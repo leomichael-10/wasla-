@@ -204,25 +204,36 @@ export default function ShopPage() {
           </div>
         )}
 
-        {/* ── Products grid ──────────────────────────────────────────────── */}
-        <div>
-          <h2 className="text-lg font-black text-gray-900 mb-4">
-            {activeTab === 'All' ? `All Products` : activeTab}
-            <span className="ml-2 text-base font-normal text-gray-400">({filteredProducts.length})</span>
-          </h2>
+        {/* ── Coming soon gate ───────────────────────────────────────────── */}
+        {shop.comingSoon ? (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-24 text-center">
+            <p className="text-4xl mb-4">🏪</p>
+            <h2 className="text-xl font-black text-gray-900 mb-2">Coming Soon</h2>
+            <p className="text-sm text-gray-500">This store is not yet open. Check back later.</p>
+          </div>
+        ) : (
+          <>
+            {/* ── Products grid ──────────────────────────────────────────── */}
+            <div>
+              <h2 className="text-lg font-black text-gray-900 mb-4">
+                {activeTab === 'All' ? `All Products` : activeTab}
+                <span className="ml-2 text-base font-normal text-gray-400">({filteredProducts.length})</span>
+              </h2>
 
-          {filteredProducts.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
-              <p className="text-gray-400 font-medium">No products in this category yet.</p>
+              {filteredProducts.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+                  <p className="text-gray-400 font-medium">No products in this category yet.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {filteredProducts.map(product => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-        </div>
+          </>
+        )}
 
         {/* ── Reviews ────────────────────────────────────────────────────── */}
         {shop.reviews?.length > 0 && (
