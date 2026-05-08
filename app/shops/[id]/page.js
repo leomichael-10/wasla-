@@ -32,6 +32,9 @@ export default function ShopPage() {
       .then(data => {
         if (data.error) throw new Error(data.error)
         setShop(data.shop)
+        if (data.shop?.trackingPixel?.id) {
+          fetch(`/api/track/pixel/${data.shop.trackingPixel.id}`).catch(() => {})
+        }
       })
       .catch(err => setError(err.message || 'Failed to load shop.'))
       .finally(() => setLoading(false))

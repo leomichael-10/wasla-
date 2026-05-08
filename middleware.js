@@ -11,6 +11,7 @@ const PUBLIC_ROUTES = [
 const PUBLIC_PREFIXES = [
   '/api/auth/',
   '/api/track/pixel/',
+  '/api/track/global',
 ]
 
 // Route prefixes where GET requests are public (token optional, verified if present)

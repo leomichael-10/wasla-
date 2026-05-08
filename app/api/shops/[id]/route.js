@@ -11,7 +11,8 @@ export async function GET(request, { params }) {
     const seller = await prisma.sellerProfile.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true } },
+        user:          { select: { id: true } },
+        trackingPixel: { select: { id: true } },
         products: {
           where:   { isActive: true },
           orderBy: { name: 'asc' },

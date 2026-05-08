@@ -11,7 +11,7 @@ const SUB_STATUS = {
   rejected: 'bg-red-100    text-red-600',
 }
 
-const TABS = ['Overview', 'Sellers', 'Users', 'Products', 'Categories', 'Commission']
+const TABS = ['Overview', 'Sellers', 'Users', 'Products', 'Categories', 'Commission', 'Traffic']
 
 export default function AdminPage() {
   const router = useRouter()
@@ -23,6 +23,7 @@ export default function AdminPage() {
   const [users,         setUsers]         = useState([])
   const [products,      setProducts]      = useState([])
   const [commission,    setCommission]    = useState(null)
+  const [traffic,       setTraffic]       = useState(null)
   const [loading,       setLoading]       = useState(true)
   const [error,         setError]         = useState('')
   const [ready,         setReady]         = useState(false)
@@ -67,7 +68,7 @@ export default function AdminPage() {
     const token   = localStorage.getItem('tobaki_token')
     const headers = { Authorization: `Bearer ${token}` }
     try {
-      const [selRes, subRes, stRes, usrRes, prdRes, comRes, catRes] = await Promise.all([
+      const [selRes, subRes, stRes, usrRes, prdRes, comRes, catRes, trafRes] = await Promise.all([
         fetch('/api/admin/sellers',       { headers }),
         fetch('/api/admin/subscriptions', { headers }),
         fetch('/api/admin/stats',         { headers }),
@@ -75,9 +76,10 @@ export default function AdminPage() {
         fetch('/api/admin/products',      { headers }),
         fetch('/api/admin/commission',    { headers }),
         fetch('/api/admin/categories',    { headers }),
+        fetch('/api/admin/traffic',       { headers }),
       ])
-      const [selData, subData, stData, usrData, prdData, comData, catData] = await Promise.all([
-        selRes.json(), subRes.json(), stRes.json(), usrRes.json(), prdRes.json(), comRes.json(), catRes.json(),
+      const [selData, subData, stData, usrData, prdData, comData, catData, trafData] = await Promise.all([
+        selRes.json(), subRes.json(), stRes.json(), usrRes.json(), prdRes.json(), comRes.json(), catRes.json(), trafRes.json(),
       ])
       if (!selRes.ok) throw new Error(selData.error)
       setSellers(      (selData.sellers       ?? []).sort((a,b) => a.businessName.localeCompare(b.businessName)))
@@ -87,6 +89,7 @@ export default function AdminPage() {
       setProducts(      prdData.products      ?? [])
       setCommission(    comData)
       setCategories(    catData.categories    ?? [])
+      if (trafRes.ok) setTraffic(trafData)
     } catch (err) {
       setError(err.message || 'Failed to load admin data.')
     } finally {
@@ -1163,6 +1166,99 @@ export default function AdminPage() {
                 <p className="text-sm text-gray-500 font-semibold">No commission data yet</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── TRAFFIC TAB ── */}
+        {activeTab === 'Traffic' && (
+          <div className="space-y-6">
+            {/* Summary cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { label: 'Total Page Views', value: traffic?.totalHits  ?? '—', color: 'text-purple-700' },
+                { label: 'Unique IPs',        value: traffic?.uniqueIps ?? '—', color: 'text-blue-700'   },
+                { label: 'Days Tracked',      value: traffic?.dailyHits?.length ?? '—', color: 'text-gray-900' },
+              ].map(s => (
+                <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{s.label}</p>
+                  {loading
+                    ? <div className="h-8 w-20 bg-purple-50 rounded animate-pulse mt-1" />
+                    : <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+                  }
+                </div>
+              ))}
+            </div>
+
+            {/* Daily chart */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+              <h2 className="font-black text-gray-900 text-sm mb-4">Hits — Last 30 Days</h2>
+              {loading ? (
+                <div className="h-24 bg-purple-50 rounded-xl animate-pulse" />
+              ) : traffic?.dailyHits?.length ? (
+                <div className="flex items-end gap-1 h-28">
+                  {(() => {
+                    const max = Math.max(...traffic.dailyHits.map(d => d.count), 1)
+                    return traffic.dailyHits.map(d => (
+                      <div key={d.date} className="flex-1 flex flex-col items-center gap-1 min-w-0" title={`${d.date}: ${d.count}`}>
+                        <div
+                          className="w-full bg-purple-600 rounded-t"
+                          style={{ height: `${Math.max((d.count / max) * 96, 2)}px` }}
+                        />
+                      </div>
+                    ))
+                  })()}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 text-center py-8">No traffic data yet</p>
+              )}
+            </div>
+
+            {/* Top pages + top countries side by side */}
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-50">
+                  <h2 className="font-black text-gray-900 text-sm">Top Pages</h2>
+                </div>
+                {loading ? (
+                  <div className="p-5 space-y-2">{[1,2,3].map(i => <div key={i} className="h-5 bg-purple-50 rounded animate-pulse" />)}</div>
+                ) : traffic?.topPages?.length ? (
+                  <table className="w-full text-sm">
+                    <tbody className="divide-y divide-gray-50">
+                      {traffic.topPages.map((r, i) => (
+                        <tr key={i} className="hover:bg-[#f9f7ff] transition-colors">
+                          <td className="px-5 py-3 text-gray-700 font-medium truncate max-w-[180px]">{r.page}</td>
+                          <td className="px-5 py-3 text-right font-black text-purple-700 tabular-nums">{r.count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p className="px-5 py-8 text-center text-sm text-gray-400">No data yet</p>
+                )}
+              </div>
+
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-50">
+                  <h2 className="font-black text-gray-900 text-sm">Top Countries</h2>
+                </div>
+                {loading ? (
+                  <div className="p-5 space-y-2">{[1,2,3].map(i => <div key={i} className="h-5 bg-purple-50 rounded animate-pulse" />)}</div>
+                ) : traffic?.topCountries?.length ? (
+                  <table className="w-full text-sm">
+                    <tbody className="divide-y divide-gray-50">
+                      {traffic.topCountries.map((r, i) => (
+                        <tr key={i} className="hover:bg-[#f9f7ff] transition-colors">
+                          <td className="px-5 py-3 text-gray-700 font-medium">{r.country}</td>
+                          <td className="px-5 py-3 text-right font-black text-purple-700 tabular-nums">{r.count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p className="px-5 py-8 text-center text-sm text-gray-400">No data yet</p>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

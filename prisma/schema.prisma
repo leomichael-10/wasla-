@@ -225,6 +225,16 @@ model PixelEvent {
   pixel     TrackingPixel @relation(fields: [pixelId], references: [id], onDelete: Cascade)
 }
 
+model GlobalEvent {
+  id        Int      @id @default(autoincrement())
+  ip        String?
+  userAgent String?
+  referrer  String?
+  country   String?
+  page      String?
+  createdAt DateTime @default(now())
+}
+
 model StockMovement {
   id               Int            @id @default(autoincrement())
   sellerId         Int
