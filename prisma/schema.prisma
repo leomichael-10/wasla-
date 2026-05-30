@@ -82,7 +82,7 @@ model Subscription {
 
 model Category {
   id             Int             @id @default(autoincrement())
-  name           String
+  name           String          @unique
   icon           String?
   subCategories  SubCategory[]
   products       Product[]
@@ -231,7 +231,7 @@ model PixelEvent {
 
 model MasterProduct {
   id          Int               @id @default(autoincrement())
-  name        String
+  name        String            @unique
   description String?
   images      String[]          @default([])
   categoryId  Int
@@ -294,4 +294,47 @@ model StockMovement {
   createdAt        DateTime       @default(now())
   seller           SellerProfile  @relation(fields: [sellerId], references: [id])
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
+}
+
+// ── SKU catalogue tables (seeded from TSH_SKU's.xlsx) ──────────────────────
+
+model Vape {
+  id                Int      @id @default(autoincrement())
+  brand             String
+  product           String
+  priceVapeCenter   Decimal?
+  priceVgod         Decimal?
+  priceEnergyVape   Decimal?
+  createdAt         DateTime @default(now())
+
+  @@unique([brand, product])
+}
+
+model Sparepart {
+  id              Int      @id @default(autoincrement())
+  brand           String
+  device          String?
+  sparepart       String
+  variant         String?
+  priceVapeCenter Decimal?
+  createdAt       DateTime @default(now())
+
+  @@unique([brand, sparepart, variant])
+}
+
+model Dokha {
+  id          Int      @id @default(autoincrement())
+  supplier    String?
+  variant     String
+  costPerKg   Decimal
+  createdAt   DateTime @default(now())
+
+  @@unique([variant])
+}
+
+model Cigarette {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  price     Decimal?
+  createdAt DateTime @default(now())
 }

@@ -28,6 +28,13 @@ export default function AdminPage() {
   const [masterProducts,  setMasterProducts]  = useState([])
   const [pendingApprovals,setPendingApprovals] = useState([])
   const [productRequests, setProductRequests]  = useState([])
+
+  // SKU catalogue
+  const [skuVapes,       setSkuVapes]       = useState([])
+  const [skuSpareparts,  setSkuSpareparts]  = useState([])
+  const [skuDokhas,      setSkuDokhas]      = useState([])
+  const [skuCigarettes,  setSkuCigarettes]  = useState([])
+  const [productType,    setProductType]    = useState('marketplace') // marketplace | vapes | spareparts | dokha | cigarettes
   const [showMasterForm,  setShowMasterForm]   = useState(false)
   const [editingMaster,   setEditingMaster]    = useState(null)
   const [actioningRP,     setActioningRP]      = useState(null)
@@ -77,7 +84,7 @@ export default function AdminPage() {
     const token   = localStorage.getItem('tobaki_token')
     const headers = { Authorization: `Bearer ${token}` }
     try {
-      const [selRes, subRes, stRes, usrRes, prdRes, comRes, catRes, trafRes, mpRes, rpRes, prRes] = await Promise.all([
+      const [selRes, subRes, stRes, usrRes, prdRes, comRes, catRes, trafRes, mpRes, rpRes, prRes, skuRes] = await Promise.all([
         fetch('/api/admin/sellers',          { headers }),
         fetch('/api/admin/subscriptions',    { headers }),
         fetch('/api/admin/stats',            { headers }),
@@ -89,9 +96,10 @@ export default function AdminPage() {
         fetch('/api/admin/master-products',  { headers }),
         fetch('/api/admin/retailer-products?status=PENDING', { headers }),
         fetch('/api/admin/product-requests', { headers }),
+        fetch('/api/admin/sku-catalogue',    { headers }),
       ])
-      const [selData, subData, stData, usrData, prdData, comData, catData, trafData, mpData, rpData, prData] = await Promise.all([
-        selRes.json(), subRes.json(), stRes.json(), usrRes.json(), prdRes.json(), comRes.json(), catRes.json(), trafRes.json(), mpRes.json(), rpRes.json(), prRes.json(),
+      const [selData, subData, stData, usrData, prdData, comData, catData, trafData, mpData, rpData, prData, skuData] = await Promise.all([
+        selRes.json(), subRes.json(), stRes.json(), usrRes.json(), prdRes.json(), comRes.json(), catRes.json(), trafRes.json(), mpRes.json(), rpRes.json(), prRes.json(), skuRes.json(),
       ])
       if (!selRes.ok) throw new Error(selData.error)
       setSellers(       (selData.sellers       ?? []).sort((a,b) => a.businessName.localeCompare(b.businessName)))
@@ -105,6 +113,12 @@ export default function AdminPage() {
       if (mpRes.ok)   setMasterProducts(  mpData.products  ?? [])
       if (rpRes.ok)   setPendingApprovals(rpData.items     ?? [])
       if (prRes.ok)   setProductRequests( prData.requests  ?? [])
+      if (skuRes.ok) {
+        setSkuVapes(      skuData.vapes       ?? [])
+        setSkuSpareparts( skuData.spareparts  ?? [])
+        setSkuDokhas(     skuData.dokhas      ?? [])
+        setSkuCigarettes( skuData.cigarettes  ?? [])
+      }
     } catch (err) {
       setError(err.message || 'Failed to load admin data.')
     } finally {
@@ -896,113 +910,283 @@ export default function AdminPage() {
         {/* ── PRODUCTS TAB ── */}
         {activeTab === 'Products' && (
           <div className="space-y-4">
-            {/* Filters */}
-            <div className="flex flex-wrap gap-3">
-              <input
-                type="text"
-                placeholder="Search by name or brand…"
-                value={productSearch}
-                onChange={e => setProductSearch(e.target.value)}
-                className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 w-64"
-              />
-              <select
-                value={productStatus}
-                onChange={e => setProductStatus(e.target.value)}
-                className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
-              >
-                <option value="">All status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-              <span className="text-sm text-gray-500 self-center">
-                {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
-              </span>
+
+            {/* Product-type sub-tabs */}
+            <div className="flex gap-1.5 flex-wrap">
+              {[
+                { key: 'marketplace', label: 'Marketplace',  count: products.length },
+                { key: 'vapes',       label: 'Vapes',        count: skuVapes.length },
+                { key: 'spareparts',  label: 'Spare Parts',  count: skuSpareparts.length },
+                { key: 'dokha',       label: 'Dokha',        count: skuDokhas.length },
+                { key: 'cigarettes',  label: 'Cigarettes',   count: skuCigarettes.length },
+              ].map(t => (
+                <button
+                  key={t.key}
+                  onClick={() => setProductType(t.key)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors border ${
+                    productType === t.key
+                      ? 'bg-purple-700 text-white border-purple-700'
+                      : 'border-gray-200 text-gray-500 hover:text-gray-900 hover:bg-[#f9f7ff]'
+                  }`}
+                >
+                  {t.label}
+                  <span className={`ml-1.5 text-xs ${productType === t.key ? 'text-purple-200' : 'text-gray-400'}`}>
+                    {t.count}
+                  </span>
+                </button>
+              ))}
             </div>
 
-            {loading ? (
-              <div className="bg-white rounded-2xl border border-gray-100 animate-pulse h-40" />
-            ) : filteredProducts.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
-                <p className="text-sm text-gray-500 font-semibold">No products found</p>
-              </div>
-            ) : (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-100 bg-[#f9f7ff]">
-                        <th className="px-5 py-3.5 w-12" />
-                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
-                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Brand</th>
-                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Category</th>
-                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Seller</th>
-                        <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Price AED</th>
-                        <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Listed</th>
-                        <th className="text-center px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Status</th>
-                        <th className="px-4 py-3.5" />
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {filteredProducts.map(p => {
-                        const prices = p.variants?.map(v => Number(v.priceAed)) ?? []
-                        const minP   = prices.length ? Math.min(...prices) : null
-                        const maxP   = prices.length ? Math.max(...prices) : null
-                        const priceStr = minP === null ? '—'
-                          : minP === maxP ? `${minP.toFixed(0)}`
-                          : `${minP.toFixed(0)}–${maxP.toFixed(0)}`
-                        return (
-                          <tr key={p.id} className={`hover:bg-[#f9f7ff] transition-colors ${!p.isActive ? 'opacity-60' : ''}`}>
-                            <td className="px-5 py-2.5">
-                              {(() => {
-                                const thumb = p.images?.[0] || p.variants?.find(v => v.image)?.image || null
-                                return thumb ? (
-                                  <img src={thumb} alt={p.name}
-                                    className="w-10 h-10 rounded-lg object-cover bg-purple-50 shrink-0" />
-                                ) : (
-                                  <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
-                                    <span className="text-purple-600 font-black text-sm">{(p.brand ?? p.name ?? 'P')[0].toUpperCase()}</span>
-                                  </div>
-                                )
-                              })()}
-                            </td>
-                            <td className="px-4 py-2.5">
-                              <Link href={`/products/${p.id}`} className="font-semibold text-gray-900 hover:text-purple-700 transition-colors">
-                                {p.name}
-                              </Link>
-                            </td>
-                            <td className="px-4 py-2.5 text-gray-600">{p.brand ?? '—'}</td>
-                            <td className="px-4 py-2.5 text-gray-600 capitalize">{p.category?.name ?? '—'}</td>
-                            <td className="px-4 py-2.5 text-gray-600">{p.seller?.businessName ?? '—'}</td>
-                            <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{priceStr}</td>
-                            <td className="px-4 py-2.5 text-gray-500 text-xs">
-                              {new Date(p.createdAt).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            </td>
-                            <td className="px-4 py-2.5 text-center">
-                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                                {p.isActive ? 'Active' : 'Inactive'}
-                              </span>
-                            </td>
-                            <td className="px-4 py-2.5">
-                              <button
-                                onClick={() => handleToggleProduct(p.id, p.isActive)}
-                                disabled={toggling === p.id}
-                                className={`text-xs font-bold px-3 py-1.5 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed border ${
-                                  p.isActive
-                                    ? 'bg-red-50 text-red-600 hover:bg-red-100 border-red-200'
-                                    : 'bg-green-50 text-green-700 hover:bg-green-100 border-green-200'
-                                }`}
-                              >
-                                {toggling === p.id ? '…' : p.isActive ? 'Deactivate' : 'Activate'}
-                              </button>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
+            {/* ── Marketplace products ── */}
+            {productType === 'marketplace' && (
+              <>
+                <div className="flex flex-wrap gap-3">
+                  <input
+                    type="text"
+                    placeholder="Search by name or brand…"
+                    value={productSearch}
+                    onChange={e => setProductSearch(e.target.value)}
+                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 w-64"
+                  />
+                  <select
+                    value={productStatus}
+                    onChange={e => setProductStatus(e.target.value)}
+                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  >
+                    <option value="">All status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                  <span className="text-sm text-gray-500 self-center">
+                    {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+                  </span>
                 </div>
-              </div>
+
+                {loading ? (
+                  <div className="bg-white rounded-2xl border border-gray-100 animate-pulse h-40" />
+                ) : filteredProducts.length === 0 ? (
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+                    <p className="text-sm text-gray-500 font-semibold">No products found</p>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                            <th className="px-5 py-3.5 w-12" />
+                            <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
+                            <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Brand</th>
+                            <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Category</th>
+                            <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Seller</th>
+                            <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Price AED</th>
+                            <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Listed</th>
+                            <th className="text-center px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Status</th>
+                            <th className="px-4 py-3.5" />
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {filteredProducts.map(p => {
+                            const prices = p.variants?.map(v => Number(v.priceAed)) ?? []
+                            const minP   = prices.length ? Math.min(...prices) : null
+                            const maxP   = prices.length ? Math.max(...prices) : null
+                            const priceStr = minP === null ? '—'
+                              : minP === maxP ? `${minP.toFixed(0)}`
+                              : `${minP.toFixed(0)}–${maxP.toFixed(0)}`
+                            return (
+                              <tr key={p.id} className={`hover:bg-[#f9f7ff] transition-colors ${!p.isActive ? 'opacity-60' : ''}`}>
+                                <td className="px-5 py-2.5">
+                                  {(() => {
+                                    const thumb = p.images?.[0] || p.variants?.find(v => v.image)?.image || null
+                                    return thumb ? (
+                                      <img src={thumb} alt={p.name}
+                                        className="w-10 h-10 rounded-lg object-cover bg-purple-50 shrink-0" />
+                                    ) : (
+                                      <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
+                                        <span className="text-purple-600 font-black text-sm">{(p.brand ?? p.name ?? 'P')[0].toUpperCase()}</span>
+                                      </div>
+                                    )
+                                  })()}
+                                </td>
+                                <td className="px-4 py-2.5">
+                                  <Link href={`/products/${p.id}`} className="font-semibold text-gray-900 hover:text-purple-700 transition-colors">
+                                    {p.name}
+                                  </Link>
+                                </td>
+                                <td className="px-4 py-2.5 text-gray-600">{p.brand ?? '—'}</td>
+                                <td className="px-4 py-2.5 text-gray-600 capitalize">{p.category?.name ?? '—'}</td>
+                                <td className="px-4 py-2.5 text-gray-600">{p.seller?.businessName ?? '—'}</td>
+                                <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{priceStr}</td>
+                                <td className="px-4 py-2.5 text-gray-500 text-xs">
+                                  {new Date(p.createdAt).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </td>
+                                <td className="px-4 py-2.5 text-center">
+                                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                    {p.isActive ? 'Active' : 'Inactive'}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-2.5">
+                                  <button
+                                    onClick={() => handleToggleProduct(p.id, p.isActive)}
+                                    disabled={toggling === p.id}
+                                    className={`text-xs font-bold px-3 py-1.5 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed border ${
+                                      p.isActive
+                                        ? 'bg-red-50 text-red-600 hover:bg-red-100 border-red-200'
+                                        : 'bg-green-50 text-green-700 hover:bg-green-100 border-green-200'
+                                    }`}
+                                  >
+                                    {toggling === p.id ? '…' : p.isActive ? 'Deactivate' : 'Activate'}
+                                  </button>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
+
+            {/* ── Vapes SKU ── */}
+            {productType === 'vapes' && (
+              loading ? <div className="bg-white rounded-2xl border border-gray-100 animate-pulse h-40" /> :
+              skuVapes.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+                  <p className="text-sm text-gray-400">No vapes in SKU catalogue</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                          <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Brand</th>
+                          <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
+                          <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Vape Center</th>
+                          <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">VGOD</th>
+                          <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Energy Vape</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {skuVapes.map(v => (
+                          <tr key={v.id} className="hover:bg-[#f9f7ff] transition-colors">
+                            <td className="px-5 py-3 font-semibold text-gray-900">{v.brand}</td>
+                            <td className="px-4 py-3 text-gray-700">{v.product}</td>
+                            <td className="px-4 py-3 text-right tabular-nums text-gray-600">{v.priceVapeCenter != null ? `AED ${Number(v.priceVapeCenter).toFixed(0)}` : '—'}</td>
+                            <td className="px-4 py-3 text-right tabular-nums text-gray-600">{v.priceVgod != null ? `AED ${Number(v.priceVgod).toFixed(0)}` : '—'}</td>
+                            <td className="px-4 py-3 text-right tabular-nums text-gray-600">{v.priceEnergyVape != null ? `AED ${Number(v.priceEnergyVape).toFixed(0)}` : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )
+            )}
+
+            {/* ── Spare Parts SKU ── */}
+            {productType === 'spareparts' && (
+              loading ? <div className="bg-white rounded-2xl border border-gray-100 animate-pulse h-40" /> :
+              skuSpareparts.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+                  <p className="text-sm text-gray-400">No spare parts in SKU catalogue</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                          <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Brand</th>
+                          <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Device</th>
+                          <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Spare Part</th>
+                          <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Variant</th>
+                          <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Vape Center</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {skuSpareparts.map(s => (
+                          <tr key={s.id} className="hover:bg-[#f9f7ff] transition-colors">
+                            <td className="px-5 py-3 font-semibold text-gray-900">{s.brand}</td>
+                            <td className="px-4 py-3 text-gray-600">{s.device ?? '—'}</td>
+                            <td className="px-4 py-3 text-gray-700">{s.sparepart}</td>
+                            <td className="px-4 py-3 text-gray-500">{s.variant ?? '—'}</td>
+                            <td className="px-4 py-3 text-right tabular-nums text-gray-600">{s.priceVapeCenter != null ? `AED ${Number(s.priceVapeCenter).toFixed(2)}` : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )
+            )}
+
+            {/* ── Dokha SKU ── */}
+            {productType === 'dokha' && (
+              loading ? <div className="bg-white rounded-2xl border border-gray-100 animate-pulse h-40" /> :
+              skuDokhas.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+                  <p className="text-sm text-gray-400">No dokha in SKU catalogue</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                          <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Variant</th>
+                          <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Supplier</th>
+                          <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Cost / KG (AED)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {skuDokhas.map(d => (
+                          <tr key={d.id} className="hover:bg-[#f9f7ff] transition-colors">
+                            <td className="px-5 py-3 font-semibold text-gray-900">{d.variant}</td>
+                            <td className="px-4 py-3 text-gray-600">{d.supplier ?? '—'}</td>
+                            <td className="px-4 py-3 text-right tabular-nums font-semibold text-gray-700">AED {Number(d.costPerKg).toFixed(0)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )
+            )}
+
+            {/* ── Cigarettes SKU ── */}
+            {productType === 'cigarettes' && (
+              loading ? <div className="bg-white rounded-2xl border border-gray-100 animate-pulse h-40" /> :
+              skuCigarettes.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
+                  <p className="text-sm text-gray-400">No cigarettes in SKU catalogue</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                          <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Name</th>
+                          <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Price (AED)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {skuCigarettes.map(c => (
+                          <tr key={c.id} className="hover:bg-[#f9f7ff] transition-colors">
+                            <td className="px-5 py-3 font-semibold text-gray-900">{c.name}</td>
+                            <td className="px-4 py-3 text-right tabular-nums text-gray-700">{c.price != null ? `AED ${Number(c.price).toFixed(2)}` : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )
+            )}
+
           </div>
         )}
 
