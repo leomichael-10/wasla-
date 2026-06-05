@@ -175,13 +175,31 @@ async function seedCigarettes(ws) {
   }
 }
 
+// ─── DISPOSABLES ───────────────────────────────────────────────────────────
+
+async function seedDisposables() {
+  const seedDir  = path.dirname(fileURLToPath(import.meta.url));
+  const jsonPath = path.join(seedDir, 'disposables.json');
+  const { products } = JSON.parse(require('fs').readFileSync(jsonPath, 'utf8'));
+
+  console.log(`  Disposables: upserting ${products.length} rows…`);
+  for (const p of products) {
+    await prisma.disposable.upsert({
+      where:  { brand_puffs_flavour: { brand: p.brand, puffs: p.puffs, flavour: p.flavour } },
+      create: { brand: p.brand, puffs: p.puffs, flavour: p.flavour, imageUrl: p.image_url ?? null, pricesAed: p.prices_aed },
+      update: { imageUrl: p.image_url ?? null, pricesAed: p.prices_aed },
+    });
+  }
+  return products;
+}
+
 // ─── MASTER PRODUCTS (retailer catalog) ────────────────────────────────────
 // Ensures each SKU row is also visible as a MasterProduct so retailers can
 // browse and select products from the catalog page.
 
 async function seedMasterProducts(wb) {
-  // 1. Upsert the 4 categories we need
-  const categoryNames = ['Vapes', 'Spare Parts', 'Dokha', 'Cigarettes'];
+  // 1. Upsert the 5 categories we need
+  const categoryNames = ['Vapes', 'Spare Parts', 'Dokha', 'Cigarettes', 'Disposables'];
   const catMap = {};
   for (const name of categoryNames) {
     const cat = await prisma.category.upsert({
@@ -291,6 +309,30 @@ async function seedMasterProducts(wb) {
     }
   }
 
+  // ── Disposables ────────────────────────────────────────────────────────
+  {
+    const seedDir  = path.dirname(fileURLToPath(import.meta.url));
+    const jsonPath = path.join(seedDir, 'disposables.json');
+    const { products } = JSON.parse(require('fs').readFileSync(jsonPath, 'utf8'));
+
+    for (const p of products) {
+      const prices = Object.values(p.prices_aed ?? {}).filter(v => typeof v === 'number');
+      const priceMin = prices.length ? Math.min(...prices) : null;
+      const priceMax = prices.length ? Math.max(...prices) : null;
+
+      toUpsert.push({
+        name:        `${p.brand} ${p.puffs} ${p.flavour}`,
+        brand:       p.brand,
+        categoryId:  catMap['Disposables'],
+        productType: 'disposable',
+        images:      p.image_url ? [p.image_url] : [],
+        priceMin:    priceMin !== null ? priceMin : undefined,
+        priceMax:    priceMax !== null ? priceMax : undefined,
+        isActive:    true,
+      });
+    }
+  }
+
   console.log(`  MasterProducts: upserting ${toUpsert.length} rows…`);
   for (const rec of toUpsert) {
     await prisma.masterProduct.upsert({
@@ -300,6 +342,7 @@ async function seedMasterProducts(wb) {
         brand:       rec.brand,
         categoryId:  rec.categoryId,
         productType: rec.productType,
+        images:      rec.images ?? [],
         priceMin:    rec.priceMin ?? null,
         priceMax:    rec.priceMax ?? null,
         isActive:    true,
@@ -323,6 +366,7 @@ async function main() {
   await seedSpareparts(wb.Sheets['SPAREPARTS']);
   await seedDokha(wb.Sheets['DOKHA']);
   await seedCigarettes(wb.Sheets['CIGGS']);
+  await seedDisposables();
   await seedMasterProducts(wb);
 
   console.log('✅ Seed complete.');

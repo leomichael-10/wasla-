@@ -296,7 +296,7 @@ model StockMovement {
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
 }
 
-// ── SKU catalogue tables (seeded from TSH_SKU's.xlsx) ──────────────────────
+// ── SKU catalogue tables (seeded from TSH_SKU's.xlsx / disposables.json) ───
 
 model Vape {
   id                Int      @id @default(autoincrement())
@@ -337,4 +337,16 @@ model Cigarette {
   name      String   @unique
   price     Decimal?
   createdAt DateTime @default(now())
+}
+
+model Disposable {
+  id        Int      @id @default(autoincrement())
+  brand     String
+  puffs     String
+  flavour   String
+  imageUrl  String?
+  pricesAed Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  @@unique([brand, puffs, flavour])
 }
