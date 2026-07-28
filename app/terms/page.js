@@ -62,7 +62,18 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-black text-gray-900 mb-3">5. Platform Commission</h2>
+            <h2 className="text-base font-black text-gray-900 mb-3">5. Food Safety Disclaimer</h2>
+            <p>
+              Wasla does not prepare, inspect, or store any food product sold on the platform. Each shop is solely
+              responsible for the sourcing, handling, storage temperature, and shelf life of the products it lists,
+              including compliance with Egyptian food-safety law. Customers with food allergies or sensitivities
+              should contact the shop directly before ordering to confirm ingredients. Report any food-safety concern
+              to us immediately so we can investigate the shop involved.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-black text-gray-900 mb-3">6. Platform Commission</h2>
             <p>
               Wasla charges shops a commission on the total value of each completed (delivered) order. This fee is
               automatically calculated and recorded at the time of purchase.
@@ -70,7 +81,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-black text-gray-900 mb-3">6. Limitation of Liability</h2>
+            <h2 className="text-base font-black text-gray-900 mb-3">7. Limitation of Liability</h2>
             <p>
               Wasla is a marketplace platform and is not the seller of record for any product. We are not liable for
               the quality, safety, legality, or delivery of products sold by third-party shops. Our total liability
@@ -79,7 +90,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-black text-gray-900 mb-3">7. Governing Law</h2>
+            <h2 className="text-base font-black text-gray-900 mb-3">8. Governing Law</h2>
             <p>
               These terms are governed by the laws of the Arab Republic of Egypt. Any disputes shall be subject to the
               exclusive jurisdiction of the courts of Cairo, Egypt.
@@ -87,7 +98,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-black text-gray-900 mb-3">8. Changes to These Terms</h2>
+            <h2 className="text-base font-black text-gray-900 mb-3">9. Changes to These Terms</h2>
             <p>
               We may update these terms from time to time. Continued use of the platform after changes are posted
               constitutes acceptance of the revised terms.

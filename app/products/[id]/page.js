@@ -172,8 +172,25 @@ export default function ProductDetailPage() {
   const outOfStock = selectedVariant?.stockQty === 0
   const images     = product.images ?? []
 
+  const jsonLd = {
+    '@context':    'https://schema.org',
+    '@type':       'Product',
+    name:          product.name,
+    description:   product.description ?? undefined,
+    image:         product.images?.[0] ?? undefined,
+    brand:         product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
+    offers: product.variants?.length ? {
+      '@type':         'AggregateOffer',
+      priceCurrency:   'EGP',
+      lowPrice:        Math.min(...product.variants.map(v => Number(v.price))),
+      highPrice:       Math.max(...product.variants.map(v => Number(v.price))),
+      availability:    product.variants.some(v => v.stockQty > 0) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    } : undefined,
+  }
+
   return (
     <div className="min-h-screen bg-[#f9f7ff]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar />
       <div className="max-w-4xl mx-auto px-4 py-8">
 

@@ -85,8 +85,21 @@ export default function ShopPage() {
     </div>
   )
 
+  const jsonLd = {
+    '@context':  'https://schema.org',
+    '@type':     'GroceryStore',
+    name:        shop.businessName,
+    address:     shop.city ? { '@type': 'PostalAddress', addressLocality: shop.city, addressRegion: shop.area ?? undefined, addressCountry: 'EG' } : undefined,
+    aggregateRating: shop.reviewCount > 0 ? {
+      '@type':      'AggregateRating',
+      ratingValue:  shop.averageRating,
+      reviewCount:  shop.reviewCount,
+    } : undefined,
+  }
+
   return (
     <div className="min-h-screen bg-[#f9f7ff]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar />
 
       {/* ── Shop hero banner ─────────────────────────────────────────────── */}

@@ -242,13 +242,13 @@ export default function AddProductPage() {
           <h2 className="font-black text-gray-900">Product Details</h2>
           <div>
             <label className={labelCls}>Product Name <span className="text-red-400">*</span></label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Elf Bar BC5000"
+            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Bun Kassala 500g"
               className={`${inputCls} ${fieldErrors.name ? 'border-red-300 ring-red-200' : ''}`} />
             {fieldErrors.name && <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>}
           </div>
           <div>
             <label className={labelCls}>Brand</label>
-            <input type="text" value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. Elf Bar" className={inputCls} />
+            <input type="text" value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. Kassala" className={inputCls} />
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>

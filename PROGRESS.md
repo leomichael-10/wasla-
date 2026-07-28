@@ -70,3 +70,16 @@ Brand renamed Tobaki→Wasla, age-gate deleted, vape SKU tables/admin screen dro
 - Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅.
 
 ---
+
+## Phase 8 — Cleanup
+- Expanded `app/terms/page.js` with a dedicated food-safety disclaimer section (shops solely responsible for sourcing/handling/shelf-life; allergy guidance; how to report a concern).
+- Added `app/sitemap.js` (static routes + all active products from open shops + all approved+open shops) and `app/robots.js` (disallow `/dashboard`, `/admin`, `/api`).
+- Added Product/GroceryStore JSON-LD structured data to `app/products/[id]/page.js` and `app/shops/[id]/page.js`.
+- Dead-code sweep: fixed two leftover vape-era placeholder strings ("Elf Bar") in `app/dashboard/products/add/page.js`, and the stale `"tobaki"` package name in `package-lock.json`.
+- Rewrote `README.md` — it was still 100% untouched `create-next-app` boilerplate (with a stray literal `#tobaki` heading from a shell-escaping accident) through every prior phase.
+- Wrote `MIGRATION_REPORT.md` — final summary of what changed per phase, what's stubbed, and what you need to supply.
+- Gate: `npm run build` ✅ (sitemap.xml/robots.txt now compile as static routes), `prisma migrate diff --exit-code` reports no difference ✅ (no schema change this phase).
+
+---
+
+**End of Phase 2–8 continuous execution.** See MIGRATION_REPORT.md for the consolidated summary.
