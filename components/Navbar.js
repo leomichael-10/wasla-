@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { getCartCount } from '../lib/cart'
 import { useUser } from '../lib/UserContext'
+import { getLocaleCookie, setLocaleCookie, t } from '../lib/i18n'
 import MobileMenu from './MobileMenu'
 
 function navLinksFor(user) {
@@ -44,6 +45,9 @@ export default function Navbar() {
   const [cartCount,   setCartCount]   = useState(0)
   const [menuOpen,    setMenuOpen]    = useState(false)
   const [searchOpen,  setSearchOpen]  = useState(false)
+  const [locale,      setLocale]      = useState('ar')
+
+  useEffect(() => { setLocale(getLocaleCookie()) }, [])
 
   useEffect(() => {
     const uid = user?.id ?? 'guest'
@@ -88,7 +92,7 @@ export default function Navbar() {
 
           <Link href="/" className="shrink-0 leading-none lg:mr-0 absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
             <span className="text-white font-black text-xl tracking-tight">
-              toba<span className="text-amber-300">ki</span>
+              was<span className="text-amber-300">la</span>
             </span>
           </Link>
 
@@ -120,7 +124,7 @@ export default function Navbar() {
                 type="text"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="Search products, brands, options..."
+                placeholder={t('nav.search', locale)}
                 className="w-full rounded-2xl pl-4 pr-10 py-2 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
               <button type="submit" aria-label="Search"
@@ -153,6 +157,14 @@ export default function Navbar() {
                 <Link href="/register" className="hidden lg:block bg-amber-400 hover:bg-amber-500 active:scale-95 text-gray-900 text-sm font-black px-4 py-1.5 rounded-full transition-all duration-200">Register</Link>
               </>
             )}
+
+            <button
+              onClick={() => setLocaleCookie(locale === 'ar' ? 'en' : 'ar')}
+              className="text-white/90 hover:text-white text-xs font-bold px-2 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
+              aria-label="Toggle language"
+            >
+              {locale === 'ar' ? 'EN' : 'AR'}
+            </button>
 
             <button
               onClick={() => setSearchOpen(v => !v)}
@@ -193,7 +205,7 @@ export default function Navbar() {
                 type="text"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="Search products, brands, options..."
+                placeholder={t('nav.search', locale)}
                 autoFocus={searchOpen}
                 className="w-full rounded-2xl pl-4 pr-10 py-2.5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
               />

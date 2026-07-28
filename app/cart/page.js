@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 import { getCart, removeFromCart, updateQuantity, clearCart } from '../../lib/cart'
 import { getZoneCookie } from '../../lib/zone'
+import { getLocaleCookie, t } from '../../lib/i18n'
 
 export default function CartPage() {
   const router = useRouter()
@@ -18,6 +19,9 @@ export default function CartPage() {
   const [zone,        setZone]        = useState(null)
   const [quotes,      setQuotes]      = useState({})
   const [paymentMethod, setPaymentMethod] = useState('cod')
+  const [locale,      setLocale]      = useState('ar')
+
+  useEffect(() => { setLocale(getLocaleCookie()) }, [])
 
   const reload = useCallback((uid) => {
     const sorted = [...getCart(uid ?? 'guest')].sort((a, b) => a.productName.localeCompare(b.productName))
@@ -156,7 +160,7 @@ export default function CartPage() {
       <Navbar />
 
       <div className="max-w-5xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-black text-gray-900 mb-6">Your Cart</h1>
+        <h1 className="text-2xl font-black text-gray-900 mb-6">{t('cart.title', locale)}</h1>
 
         {cartItems.length === 0 ? (
           <div className="bg-white rounded-3xl border border-purple-50 shadow-sm py-20 text-center">
@@ -264,15 +268,15 @@ export default function CartPage() {
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between text-gray-600">
-                    <span>Subtotal</span>
+                    <span>{t('cart.subtotal', locale)}</span>
                     <span className="font-semibold tabular-nums">EGP {subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
-                    <span>Delivery</span>
+                    <span>{t('cart.delivery', locale)}</span>
                     <span className="font-semibold tabular-nums">EGP {deliveryFee.toFixed(2)}</span>
                   </div>
                   <div className="border-t border-purple-50 pt-2 flex justify-between font-black text-gray-900 text-base">
-                    <span>Total</span>
+                    <span>{t('cart.total', locale)}</span>
                     <span className="tabular-nums">EGP {total.toFixed(2)}</span>
                   </div>
                 </div>
@@ -327,7 +331,7 @@ export default function CartPage() {
                       disabled={placing}
                       className="w-full bg-purple-700 hover:bg-purple-800 disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 text-white font-black py-3 rounded-2xl text-sm transition-all duration-200"
                     >
-                      {placing ? 'Placing Order…' : 'Confirm Order'}
+                      {placing ? 'Placing Order…' : t('cart.checkout', locale)}
                     </button>
                   </>
                 ) : (

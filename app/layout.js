@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Cairo } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
@@ -7,6 +7,7 @@ import SessionProviderWrapper from '../components/SessionProviderWrapper'
 import AuthSync from '../components/AuthSync'
 import GlobalTracker from '../components/GlobalTracker'
 import ZoneGate from '../components/ZoneGate'
+import { DEFAULT_LOCALE, LOCALE_COOKIE, t } from '../lib/i18n'
 import './globals.css'
 
 const geistSans = Geist({
@@ -17,6 +18,11 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets:  ['latin'],
+})
+
+const cairo = Cairo({
+  variable: '--font-cairo',
+  subsets:  ['arabic', 'latin'],
 })
 
 export const metadata = {
@@ -44,9 +50,12 @@ export default async function RootLayout({ children }) {
     try { initialUser = JSON.parse(raw) } catch { /* ignore */ }
   }
 
+  const locale = cookieStore.get(LOCALE_COOKIE)?.value ?? DEFAULT_LOCALE
+  const dir    = locale === 'ar' ? 'rtl' : 'ltr'
+
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[#f9f7ff] text-gray-900">
+    <html lang={locale} dir={dir} className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} h-full antialiased`}>
+      <body className={`min-h-full flex flex-col bg-[#f9f7ff] text-gray-900 ${locale === 'ar' ? 'font-(family-name:--font-cairo)' : ''}`}>
         <SessionProviderWrapper>
         <UserProvider initialUser={initialUser}>
         <AuthSync />
@@ -72,15 +81,15 @@ export default async function RootLayout({ children }) {
               <div className="flex items-center gap-2">
                 <span className="text-lg font-black text-purple-600">Wasla</span>
                 <span className="text-gray-300">|</span>
-                <span className="text-xs text-gray-400">منتجات سودانية توصلك</span>
+                <span className="text-xs text-gray-400">{t('footer.tagline', locale)}</span>
               </div>
               <nav className="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500">
-                <Link href="/products"          className="hover:text-purple-600 transition-colors">Products</Link>
-                <Link href="/terms"             className="hover:text-purple-600 transition-colors">Terms of Service</Link>
-                <Link href="/privacy"           className="hover:text-purple-600 transition-colors">Privacy Policy</Link>
+                <Link href="/products"          className="hover:text-purple-600 transition-colors">{t('footer.products', locale)}</Link>
+                <Link href="/terms"             className="hover:text-purple-600 transition-colors">{t('footer.terms', locale)}</Link>
+                <Link href="/privacy"           className="hover:text-purple-600 transition-colors">{t('footer.privacy', locale)}</Link>
               </nav>
               <p className="text-xs text-gray-400">
-                &copy; {new Date().getFullYear()} Wasla. All rights reserved.
+                &copy; {new Date().getFullYear()} Wasla. {t('footer.rights', locale)}.
               </p>
             </div>
           </div>

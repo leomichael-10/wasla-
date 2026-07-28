@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
+import { isEgyptianPhone, normalizeDigits } from '../../lib/phone'
 
 const EGYPT_CITIES = [
   'Cairo', 'Giza', '6th of October', 'Alexandria',
@@ -54,13 +55,19 @@ export default function RegisterPage() {
   async function handleStep1(e) {
     e.preventDefault()
     setStep1Error('')
+
+    if (form.phone && !isEgyptianPhone(form.phone)) {
+      setStep1Error('Please enter a valid Egyptian mobile number (e.g. 01012345678).')
+      return
+    }
+
     setStep1Loading(true)
 
     const body = {
       email:    form.email,
       password: form.password,
       role:     form.role,
-      phone:    form.phone || undefined,
+      phone:    form.phone ? normalizeDigits(form.phone) : undefined,
       city:     form.city  || undefined,
     }
     if (isSeller) body.businessName = form.businessName

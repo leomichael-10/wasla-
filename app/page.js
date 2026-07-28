@@ -1,7 +1,9 @@
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import { prisma } from '../lib/prisma'
 import Navbar from '../components/Navbar'
 import ProductCard from '../components/ProductCard'
+import { DEFAULT_LOCALE, LOCALE_COOKIE, t } from '../lib/i18n'
 
 async function getShops() {
   try {
@@ -145,6 +147,9 @@ function CategoryPill({ category }) {
 }
 
 export default async function HomePage() {
+  const cookieStore = await cookies()
+  const locale = cookieStore.get(LOCALE_COOKIE)?.value ?? DEFAULT_LOCALE
+
   const [shops, categories, products] = await Promise.all([
     getShops(),
     getCategories(),
@@ -160,13 +165,13 @@ export default async function HomePage() {
         <div className="absolute -bottom-20 right-0 w-72 h-72 rounded-full bg-white/5 pointer-events-none" />
         <div className="relative max-w-4xl mx-auto px-4 py-20 sm:py-28 text-center">
           <div className="inline-block bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-bold px-4 py-1.5 rounded-full mb-5 tracking-wide uppercase">
-            منتجات سودانية توصلك
+            {t('home.tag', locale)}
           </div>
           <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-tight mb-4">
-            Order from the best<br className="hidden sm:block" /> Sudanese shops in Cairo
+            {t('home.heading1', locale)}<br className="hidden sm:block" /> {t('home.heading2', locale)}
           </h1>
           <p className="text-purple-100 text-base sm:text-lg mb-8 max-w-xl mx-auto">
-            Coffee, spices, and heritage goods from verified Sudanese shops — delivered to your door.
+            {t('home.subheading', locale)}
           </p>
 
           <form action="/products" method="GET" className="max-w-xl mx-auto">
@@ -174,23 +179,23 @@ export default async function HomePage() {
               <input
                 type="text"
                 name="search"
-                placeholder="Search products, brands, options..."
+                placeholder={t('home.searchPlaceholder', locale)}
                 className="flex-1 pl-4 py-3 text-gray-800 text-sm focus:outline-none bg-transparent placeholder-gray-400"
               />
               <button
                 type="submit"
                 className="bg-amber-400 hover:bg-amber-500 active:scale-95 active:bg-amber-600 text-gray-900 font-black px-6 py-3 rounded-xl text-sm transition-all duration-200 shrink-0"
               >
-                Search
+                {t('home.search', locale)}
               </button>
             </div>
           </form>
 
           <div className="flex justify-center gap-6 mt-10 flex-wrap">
             {[
-              { label: `${shops.length}+ Verified Shops` },
-              { label: 'Cash on Delivery' },
-              { label: 'Same-Day Cairo Delivery' },
+              { label: `${shops.length}+ ${t('home.verifiedShops', locale)}` },
+              { label: t('home.cod', locale) },
+              { label: t('home.sameDay', locale) },
             ].map(b => (
               <div key={b.label} className="flex items-center gap-1.5 text-purple-100 text-sm font-medium">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-amber-300 shrink-0">

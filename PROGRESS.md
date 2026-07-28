@@ -50,3 +50,14 @@ Brand renamed Tobaki→Wasla, age-gate deleted, vape SKU tables/admin screen dro
 - Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅.
 
 ---
+
+## Phase 6 — Arabic-First i18n + RTL
+- **Scoped down from "translate every string in every component"** — see DECISIONS.md. Built real infrastructure and translated the highest-traffic surfaces; did not mechanically translate all ~70 routes.
+- `lib/i18n.js`: a `t(key, locale)` dictionary helper, Arabic as `DEFAULT_LOCALE`, a `wasla_locale` cookie read server-side in `app/layout.js` and `app/page.js`, and client-side via `getLocaleCookie()`/`setLocaleCookie()` in `Navbar.js`, `ZoneGate.js`, `app/cart/page.js`.
+- `app/layout.js` now sets `<html lang dir>` from the cookie (`rtl`/`ar` by default, `ltr`/`en` when toggled) and loads the `Cairo` Arabic font via `next/font/google`, applied when locale is `ar`.
+- Translated: root layout footer, `Navbar` (added an AR/EN toggle button, translated search placeholder, fixed the "toba<span>ki</span>" wordmark leftover from Phase 1's brand sed pass that split across a nested span and wasn't caught), the homepage hero section (tag/heading/subheading/search/feature badges), `ZoneGate`, and the cart summary (subtotal/delivery/total/checkout button).
+- Egyptian phone validation: `lib/phone.js` (`isEgyptianPhone`, `normalizeDigits` for Arabic-Indic digit input), wired into `/register` and `/onboarding` phone fields with inline validation errors.
+- **Not done**: dashboard, admin, and product-detail pages remain English-only; there is no locale-aware currency/number formatting beyond the flat "EGP" prefix from Phase 2/5. Flagging explicitly rather than claiming full RTL/i18n coverage.
+- Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema change this phase).
+
+---

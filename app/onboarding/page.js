@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSession } from 'next-auth/react'
 import Link from 'next/link'
+import { isEgyptianPhone, normalizeDigits } from '../../lib/phone'
 
 const EGYPT_CITIES = [
   'Cairo', 'Giza', '6th of October', 'Alexandria',
@@ -43,13 +44,17 @@ export default function OnboardingPage() {
       setError('Business name is required for sellers.')
       return
     }
+    if (phone && !isEgyptianPhone(phone)) {
+      setError('Please enter a valid Egyptian mobile number (e.g. 01012345678).')
+      return
+    }
 
     setSubmitting(true)
     try {
       const res  = await fetch('/api/onboarding', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ fullName, phone, city, becomeSeller, businessName }),
+        body:    JSON.stringify({ fullName, phone: phone ? normalizeDigits(phone) : phone, city, becomeSeller, businessName }),
       })
       const data = await res.json()
 

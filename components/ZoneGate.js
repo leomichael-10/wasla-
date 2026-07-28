@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { getZoneCookie, setZoneCookie } from '../lib/zone'
+import { getLocaleCookie, t } from '../lib/i18n'
 
 export default function ZoneGate() {
   const [open,    setOpen]    = useState(false)
@@ -8,6 +9,9 @@ export default function ZoneGate() {
   const [loading, setLoading] = useState(true)
   const [waitlistDistrict, setWaitlistDistrict] = useState('')
   const [waitlistDone,     setWaitlistDone]     = useState(false)
+  const [locale,           setLocale]           = useState('ar')
+
+  useEffect(() => { setLocale(getLocaleCookie()) }, [])
 
   useEffect(() => {
     if (getZoneCookie()) return
@@ -42,8 +46,8 @@ export default function ZoneGate() {
   return (
     <div className="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center px-4">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 max-h-[85vh] overflow-y-auto">
-        <h2 className="text-lg font-black text-gray-900">Where should we deliver?</h2>
-        <p className="text-sm text-gray-500 mt-1">اختر منطقتك — same-day delivery is available in these areas of Cairo &amp; Giza.</p>
+        <h2 className="text-lg font-black text-gray-900">{t('zone.title', locale)}</h2>
+        <p className="text-sm text-gray-500 mt-1">{t('zone.subtitle', locale)}</p>
 
         {loading ? (
           <div className="mt-6 space-y-2">
