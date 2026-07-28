@@ -8,7 +8,7 @@ export default function OrderConfirmationPage() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('tobaki_last_orders')
+      const raw = localStorage.getItem('wasla_last_orders')
       if (raw) setOrders(JSON.parse(raw))
     } catch { /* ignore */ }
   }, [])
@@ -45,7 +45,7 @@ export default function OrderConfirmationPage() {
                     <div key={i} className="flex items-center justify-between text-sm">
                       <span className="text-gray-700">
                         {item.productVariant?.product?.name ?? 'Product'}
-                        {item.productVariant?.flavor ? ` · ${item.productVariant.flavor}` : ''}
+                        {item.productVariant?.label ? ` · ${item.productVariant.label}` : ''}
                       </span>
                       <span className="text-gray-500">×{item.quantity}</span>
                     </div>

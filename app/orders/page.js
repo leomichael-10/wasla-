@@ -27,7 +27,7 @@ export default function OrdersPage() {
     if (!order.items?.length) return
     let uid = 'guest'
     try {
-      const raw = localStorage.getItem('tobaki_user')
+      const raw = localStorage.getItem('wasla_user')
       uid = raw ? (JSON.parse(raw)?.id ?? 'guest') : 'guest'
     } catch { /* ignore */ }
 
@@ -40,9 +40,7 @@ export default function OrdersPage() {
         productId:        v.product?.id ?? 0,
         productName:      v.product?.name ?? 'Product',
         brand:            v.product?.brand ?? '',
-        flavor:           v.flavor        ?? '',
-        nicotineLevel:    v.nicotineLevel  ?? '',
-        puffCount:        v.puffCount      ?? 0,
+        label:            v.label         ?? '',
         priceAed:         Number(item.priceAtPurchase),
         quantity:         item.quantity,
         sellerId:         order.sellerId ?? 0,
@@ -60,7 +58,7 @@ export default function OrdersPage() {
   // Auth guard — customers only
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('tobaki_user')
+      const raw = localStorage.getItem('wasla_user')
       if (!raw) { router.replace('/login?redirect=/orders'); return }
       const u = JSON.parse(raw)
       if (u.role !== 'customer') { router.replace('/'); return }
@@ -72,7 +70,7 @@ export default function OrdersPage() {
 
   const fetchOrders = useCallback(async () => {
     setLoading(true)
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     try {
       const res  = await fetch('/api/orders', { headers: { Authorization: `Bearer ${token}` } })
       const data = await res.json()
@@ -156,7 +154,7 @@ export default function OrdersPage() {
                       <div key={item.id} className="flex items-center justify-between text-sm gap-2">
                         <span className="text-gray-700 truncate">
                           {item.productVariant?.product?.name ?? 'Product'}
-                          {item.productVariant?.flavor ? ` · ${item.productVariant.flavor}` : ''}
+                          {item.productVariant?.label ? ` · ${item.productVariant.label}` : ''}
                         </span>
                         <span className="shrink-0 text-gray-500 font-medium">×{item.quantity}</span>
                       </div>

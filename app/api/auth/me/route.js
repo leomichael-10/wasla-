@@ -19,7 +19,6 @@ export async function GET(request) {
         whatsapp:       true,
         city:           true,
         gender:         true,
-        ageVerified:    true,
         createdAt:      true,
         customerProfile: {
           select: {

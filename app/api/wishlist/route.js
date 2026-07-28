@@ -11,8 +11,8 @@ const PRODUCT_SELECT = {
   seller:   { select: { id: true, businessName: true, city: true } },
   category: { select: { id: true, name: true } },
   variants: {
-    select:  { id: true, priceAed: true, flavor: true, stockQty: true },
-    orderBy: { flavor: 'asc' },
+    select:  { id: true, priceAed: true, label: true, stockQty: true },
+    orderBy: { label: 'asc' },
   },
 }
 

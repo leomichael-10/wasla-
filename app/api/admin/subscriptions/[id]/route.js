@@ -60,7 +60,7 @@ export async function PATCH(request, { params }) {
       if (sellerUser?.email) {
         sendEmail(
           sellerUser.email,
-          'Tobaki — Your subscription is now active!',
+          'Wasla — Your subscription is now active!',
           subscriptionActivated(subscription.seller?.businessName ?? 'Seller')
         )
       }

@@ -53,8 +53,8 @@ async function getFeaturedProducts() {
       take:    8,
       include: {
         variants: {
-          select: { id: true, flavor: true, priceAed: true, stockQty: true, puffCount: true, nicotineLevel: true },
-          orderBy: { flavor: 'asc' },
+          select: { id: true, label: true, priceAed: true, stockQty: true },
+          orderBy: { label: 'asc' },
         },
         seller:   { select: { id: true, businessName: true, city: true } },
         category: { select: { id: true, name: true } },
@@ -160,13 +160,13 @@ export default async function HomePage() {
         <div className="absolute -bottom-20 right-0 w-72 h-72 rounded-full bg-white/5 pointer-events-none" />
         <div className="relative max-w-4xl mx-auto px-4 py-20 sm:py-28 text-center">
           <div className="inline-block bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-bold px-4 py-1.5 rounded-full mb-5 tracking-wide uppercase">
-            UAE&apos;s First Vape Marketplace
+            منتجات سودانية توصلك
           </div>
           <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-tight mb-4">
-            Order from the best<br className="hidden sm:block" /> vape shops in Dubai
+            Order from the best<br className="hidden sm:block" /> Sudanese shops in Cairo
           </h1>
           <p className="text-purple-100 text-base sm:text-lg mb-8 max-w-xl mx-auto">
-            Disposables, devices &amp; e-liquids from verified sellers — delivered to your door.
+            Coffee, spices, and heritage goods from verified Sudanese shops — delivered to your door.
           </p>
 
           <form action="/products" method="GET" className="max-w-xl mx-auto">
@@ -174,7 +174,7 @@ export default async function HomePage() {
               <input
                 type="text"
                 name="search"
-                placeholder="Search products, brands, flavors..."
+                placeholder="Search products, brands, options..."
                 className="flex-1 pl-4 py-3 text-gray-800 text-sm focus:outline-none bg-transparent placeholder-gray-400"
               />
               <button
@@ -190,7 +190,7 @@ export default async function HomePage() {
             {[
               { label: `${shops.length}+ Verified Shops` },
               { label: 'Cash on Delivery' },
-              { label: 'UAE-Wide Delivery' },
+              { label: 'Same-Day Cairo Delivery' },
             ].map(b => (
               <div key={b.label} className="flex items-center gap-1.5 text-purple-100 text-sm font-medium">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-amber-300 shrink-0">
@@ -268,12 +268,12 @@ export default async function HomePage() {
               {
                 step:  '1',
                 title: 'Browse Shops',
-                desc:  'Explore verified vape shops in your city. See ratings, products, and delivery options.',
+                desc:  'Explore verified Sudanese shops in your area. See ratings, products, and delivery options.',
               },
               {
                 step:  '2',
                 title: 'Add to Cart',
-                desc:  'Choose your products, select flavors and nicotine levels, then proceed to checkout.',
+                desc:  'Choose your products, select the options you need, then proceed to checkout.',
               },
               {
                 step:  '3',

@@ -11,19 +11,12 @@ export default function LoginPage() {
 
   const [email,        setEmail]        = useState('')
   const [password,     setPassword]     = useState('')
-  const [ageConfirmed, setAgeConfirmed] = useState(false)
   const [error,        setError]        = useState('')
   const [loading,      setLoading]      = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
-
-    if (!ageConfirmed) {
-      setError('You must be 18 or older to use Tobaki.')
-      return
-    }
-
     setLoading(true)
 
     try {
@@ -39,14 +32,9 @@ export default function LoginPage() {
         return
       }
 
-      localStorage.setItem('tobaki_token', data.token)
-      localStorage.setItem('tobaki_user',  JSON.stringify(data.user))
+      localStorage.setItem('wasla_token', data.token)
+      localStorage.setItem('wasla_user',  JSON.stringify(data.user))
       login(data.user)
-
-      fetch('/api/auth/verify-age', {
-        method:  'PATCH',
-        headers: { Authorization: `Bearer ${data.token}` },
-      }).catch(() => {})
 
       const { role } = data.user
       if (role === 'admin') {
@@ -68,7 +56,7 @@ export default function LoginPage() {
 
       <div className="bg-purple-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
-          toba<span className="text-amber-300">ki</span>
+          was<span className="text-amber-300">la</span>
         </Link>
       </div>
 
@@ -77,7 +65,7 @@ export default function LoginPage() {
 
           <div className="mb-8 text-center">
             <h1 className="text-2xl font-black text-gray-900">Welcome back</h1>
-            <p className="text-gray-500 text-sm mt-1">Sign in to your Tobaki account</p>
+            <p className="text-gray-500 text-sm mt-1">Sign in to your Wasla account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -120,34 +108,9 @@ export default function LoginPage() {
               />
             </div>
 
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <div className="relative shrink-0 mt-0.5">
-                <input
-                  type="checkbox"
-                  checked={ageConfirmed}
-                  onChange={e => setAgeConfirmed(e.target.checked)}
-                  className="sr-only"
-                />
-                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                  ageConfirmed
-                    ? 'bg-purple-700 border-purple-700'
-                    : 'border-gray-300 group-hover:border-purple-400'
-                }`}>
-                  {ageConfirmed && (
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-white">
-                      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </div>
-              </div>
-              <span className="text-sm text-gray-600 leading-snug select-none">
-                I confirm that I am <span className="font-semibold">18 years of age or older</span>
-              </span>
-            </label>
-
             <button
               type="submit"
-              disabled={loading || !ageConfirmed}
+              disabled={loading}
               className="w-full bg-purple-700 hover:bg-purple-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200 mt-2"
             >
               {loading ? 'Signing in…' : 'Sign in'}

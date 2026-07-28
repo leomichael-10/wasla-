@@ -9,18 +9,17 @@ datasource db {
 }
 
 model User {
-  id              Int               @id @default(autoincrement())
-  email           String            @unique
+  id              Int              @id @default(autoincrement())
+  email           String           @unique
   passwordHash    String?
   role            String
   phone           String?
   whatsapp        String?
   city            String?
-  ageVerified     Boolean           @default(false)
-  isBanned        Boolean           @default(false)
-  isOnboarded     Boolean           @default(false)
+  isBanned        Boolean          @default(false)
+  isOnboarded     Boolean          @default(false)
   gender          String?
-  createdAt       DateTime          @default(now())
+  createdAt       DateTime         @default(now())
   customerProfile CustomerProfile?
   sellerProfile   SellerProfile?
   orders          Order[]
@@ -38,8 +37,8 @@ model CustomerProfile {
 }
 
 model SellerProfile {
-  id                   Int      @id @default(autoincrement())
-  userId               Int      @unique
+  id                   Int               @id @default(autoincrement())
+  userId               Int               @unique
   businessName         String
   tradeLicense         String?
   city                 String?
@@ -48,14 +47,14 @@ model SellerProfile {
   longitude            Decimal?
   workingDays          String?
   workingHours         String?
-  deliveryAvailable    Boolean  @default(false)
-  warrantyAvailable    Boolean  @default(false)
+  deliveryAvailable    Boolean           @default(false)
+  warrantyAvailable    Boolean           @default(false)
   warrantyDuration     String?
-  maintenanceAvailable Boolean  @default(false)
-  approvedByAdmin      Boolean  @default(false)
-  subscriptionStatus   String   @default("PENDING")
-  createdAt            DateTime @default(now())
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  maintenanceAvailable Boolean           @default(false)
+  approvedByAdmin      Boolean           @default(false)
+  subscriptionStatus   String            @default("PENDING")
+  createdAt            DateTime          @default(now())
+  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   products             Product[]
   orders               Order[]
   reviews              Review[]
@@ -119,11 +118,7 @@ model Product {
 model ProductVariant {
   id             Int             @id @default(autoincrement())
   productId      Int
-  flavor         String?
-  nicotineLevel  String?
-  sizeMl         Int?
-  puffCount      Int?
-  resistanceOhm  Decimal?
+  label          String?
   priceAed       Decimal
   stockQty       Int             @default(0)
   skuCode        String?         @unique
@@ -230,22 +225,22 @@ model PixelEvent {
 }
 
 model MasterProduct {
-  id          Int               @id @default(autoincrement())
-  name        String            @unique
-  description String?
-  images      String[]          @default([])
-  categoryId  Int
-  brand       String?
-  productType String?
-  sku         String?
-  tags        String[]          @default([])
-  specs       Json?
-  variants    Json?
-  priceMin    Decimal?
-  priceMax    Decimal?
-  isActive    Boolean           @default(true)
-  createdAt   DateTime          @default(now())
-  category    Category          @relation(fields: [categoryId], references: [id])
+  id               Int               @id @default(autoincrement())
+  name             String            @unique
+  description      String?
+  images           String[]          @default([])
+  categoryId       Int
+  brand            String?
+  productType      String?
+  sku              String?
+  tags             String[]          @default([])
+  specs            Json?
+  variants         Json?
+  priceMin         Decimal?
+  priceMax         Decimal?
+  isActive         Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  category         Category          @relation(fields: [categoryId], references: [id])
   retailerProducts RetailerProduct[]
 }
 
@@ -294,59 +289,4 @@ model StockMovement {
   createdAt        DateTime       @default(now())
   seller           SellerProfile  @relation(fields: [sellerId], references: [id])
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
-}
-
-// ── SKU catalogue tables (seeded from TSH_SKU's.xlsx / disposables.json) ───
-
-model Vape {
-  id                Int      @id @default(autoincrement())
-  brand             String
-  product           String
-  priceVapeCenter   Decimal?
-  priceVgod         Decimal?
-  priceEnergyVape   Decimal?
-  createdAt         DateTime @default(now())
-
-  @@unique([brand, product])
-}
-
-model Sparepart {
-  id              Int      @id @default(autoincrement())
-  brand           String
-  device          String?
-  sparepart       String
-  variant         String?
-  priceVapeCenter Decimal?
-  createdAt       DateTime @default(now())
-
-  @@unique([brand, sparepart, variant])
-}
-
-model Dokha {
-  id          Int      @id @default(autoincrement())
-  supplier    String?
-  variant     String
-  costPerKg   Decimal
-  createdAt   DateTime @default(now())
-
-  @@unique([variant])
-}
-
-model Cigarette {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  price     Decimal?
-  createdAt DateTime @default(now())
-}
-
-model Disposable {
-  id        Int      @id @default(autoincrement())
-  brand     String
-  puffs     String
-  flavour   String
-  imageUrl  String?
-  pricesAed Json     @default("{}")
-  createdAt DateTime @default(now())
-
-  @@unique([brand, puffs, flavour])
 }

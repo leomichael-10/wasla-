@@ -25,7 +25,7 @@ export default function CatalogPage() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     try {
       const res  = await fetch('/api/seller/catalog', { headers: { Authorization: `Bearer ${token}` } })
       const data = await res.json()
@@ -44,7 +44,7 @@ export default function CatalogPage() {
     const f = form[masterProductId] ?? {}
     if (!f.price) { setError('Enter your price before selecting.'); return }
     setSelecting(masterProductId); setError(''); setSuccess('')
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     try {
       const res  = await fetch('/api/seller/retailer-products', {
         method:  'POST',
@@ -66,7 +66,7 @@ export default function CatalogPage() {
   async function handleRequest(e) {
     e.preventDefault()
     setReqSaving(true); setError('')
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     try {
       const res  = await fetch('/api/seller/product-requests', {
         method:  'POST',

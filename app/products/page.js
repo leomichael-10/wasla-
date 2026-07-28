@@ -4,8 +4,8 @@ import { useSearchParams } from 'next/navigation'
 import Navbar from '../../components/Navbar'
 import ProductCard from '../../components/ProductCard'
 
-const BRANDS = ['Elf Bar', 'Vozol', 'Lost Mary']
-const EMIRATES = ['Abu Dhabi', 'Ajman', 'Dubai', 'Fujairah', 'Ras Al Khaimah', 'Sharjah', 'Umm Al Quwain']
+const BRANDS = ['Kassala', 'Gedaref', 'El Obeid']
+const CITIES = ['Cairo', 'Giza', '6th of October', 'Alexandria']
 const SORT_OPTIONS = [
   { value: 'az',         label: 'A to Z'            },
   { value: 'popular',    label: 'Most Popular'       },
@@ -45,7 +45,7 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
       <div>
         <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Emirate</p>
         <div className="space-y-2.5">
-          {EMIRATES.map(c => (
+          {CITIES.map(c => (
             <label key={c} className="flex items-center gap-2.5 cursor-pointer group">
               <input type="radio" name="city" checked={city === c} onChange={() => setCity(city === c ? '' : c)} className="accent-purple-600 w-4 h-4" />
               <span className="text-sm text-gray-700 group-hover:text-purple-600 transition-colors">{c}</span>

@@ -120,7 +120,7 @@ export default function Navbar() {
                 type="text"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="Search products, brands, flavors..."
+                placeholder="Search products, brands, options..."
                 className="w-full rounded-2xl pl-4 pr-10 py-2 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
               <button type="submit" aria-label="Search"
@@ -193,7 +193,7 @@ export default function Navbar() {
                 type="text"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="Search products, brands, flavors..."
+                placeholder="Search products, brands, options..."
                 autoFocus={searchOpen}
                 className="w-full rounded-2xl pl-4 pr-10 py-2.5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
               />

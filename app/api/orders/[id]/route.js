@@ -96,14 +96,14 @@ export async function PATCH(request, { params }) {
       if (customerEmail) {
         sendEmail(
           customerEmail,
-          `Tobaki — Order #${orderId} accepted`,
+          `Wasla — Order #${orderId} accepted`,
           orderAccepted(updated)
         )
       }
       if (customerWa) {
         sendWhatsApp(
           customerWa,
-          `Your Tobaki order #${orderId} has been accepted and is being prepared. Estimated delivery: 2-4 hours.`
+          `Your Wasla order #${orderId} has been accepted and is being prepared. Estimated delivery: 2-4 hours.`
         )
       }
     }
@@ -112,14 +112,14 @@ export async function PATCH(request, { params }) {
       if (customerEmail) {
         sendEmail(
           customerEmail,
-          `Tobaki — Order #${orderId} delivered`,
+          `Wasla — Order #${orderId} delivered`,
           orderDelivered(updated)
         )
       }
       if (customerWa) {
         sendWhatsApp(
           customerWa,
-          `Your Tobaki order #${orderId} has been delivered. Thank you for shopping with Tobaki!`
+          `Your Wasla order #${orderId} has been delivered. Thank you for shopping with Wasla!`
         )
       }
     }

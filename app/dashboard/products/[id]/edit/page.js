@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 
-const EMPTY_VARIANT = { flavor: '', nicotineLevel: '', puffCount: '', sizeMl: '', priceAed: '', stockQty: '', skuCode: '' }
+const EMPTY_VARIANT = { label: '', priceAed: '', stockQty: '', skuCode: '' }
 
 function VariantRow({ index, variant, onChange, onRemove, canRemove, isNew }) {
   const inputCls = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition'
@@ -14,7 +14,7 @@ function VariantRow({ index, variant, onChange, onRemove, canRemove, isNew }) {
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-black text-gray-700">
           {isNew ? 'New Variant' : `Variant ${index + 1}`}
-          {variant.flavor ? ` — ${variant.flavor}` : ''}
+          {variant.label ? ` — ${variant.label}` : ''}
         </span>
         {canRemove && (
           <button type="button" onClick={() => onRemove(index)}
@@ -24,14 +24,8 @@ function VariantRow({ index, variant, onChange, onRemove, canRemove, isNew }) {
         )}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        <div><label className={labelCls}>Flavor</label>
-          <input type="text" value={variant.flavor} onChange={field('flavor')} placeholder="Watermelon Ice" className={inputCls} /></div>
-        <div><label className={labelCls}>Nicotine Level</label>
-          <input type="text" value={variant.nicotineLevel} onChange={field('nicotineLevel')} placeholder="5%" className={inputCls} /></div>
-        <div><label className={labelCls}>Puff Count</label>
-          <input type="number" value={variant.puffCount} onChange={field('puffCount')} placeholder="5000" min={0} className={inputCls} /></div>
-        <div><label className={labelCls}>Size (ml)</label>
-          <input type="number" value={variant.sizeMl} onChange={field('sizeMl')} placeholder="10" min={0} className={inputCls} /></div>
+        <div><label className={labelCls}>Label</label>
+          <input type="text" value={variant.label} onChange={field('label')} placeholder="500g" className={inputCls} /></div>
         <div><label className={labelCls}>Price AED *</label>
           <input type="number" value={variant.priceAed} onChange={field('priceAed')} placeholder="25" min={0} step="0.01" className={inputCls} /></div>
         <div><label className={labelCls}>Stock Qty</label>
@@ -59,7 +53,7 @@ function ImageManager({ images, setImages }) {
     if (images.length + files.length > 5) { setErr('Maximum 5 images.'); return }
     setErr('')
     setUploading(true)
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     const results = await Promise.allSettled(
       files.map(async f => {
         const fd = new FormData(); fd.append('image', f)
@@ -128,7 +122,7 @@ export default function EditProductPage() {
   const [error,         setError]         = useState('')
 
   useEffect(() => {
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     Promise.all([
       fetch(`/api/products/${id}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
       fetch('/api/categories').then(r => r.json()),
@@ -143,10 +137,7 @@ export default function EditProductPage() {
       setImages(p.images ?? [])
       setVariants(p.variants.map(v => ({
         id:            v.id,
-        flavor:        v.flavor        ?? '',
-        nicotineLevel: v.nicotineLevel ?? '',
-        puffCount:     v.puffCount     ?? '',
-        sizeMl:        v.sizeMl        ?? '',
+        label:         v.label         ?? '',
         priceAed:      String(Number(v.priceAed)),
         stockQty:      String(v.stockQty),
         skuCode:       v.skuCode       ?? '',
@@ -173,7 +164,7 @@ export default function EditProductPage() {
     e.preventDefault()
     setSaving(true)
     setError('')
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     const body  = {
       name:          name.trim(),
       brand:         brand.trim()       || null,
@@ -184,19 +175,13 @@ export default function EditProductPage() {
       variants: [
         ...variants.map(v => ({
           id:            v.id,
-          flavor:        v.flavor        || null,
-          nicotineLevel: v.nicotineLevel || null,
-          puffCount:     v.puffCount     ? parseInt(v.puffCount, 10) : null,
-          sizeMl:        v.sizeMl        ? parseInt(v.sizeMl, 10)    : null,
+          label:         v.label         || null,
           priceAed:      parseFloat(v.priceAed),
           stockQty:      parseInt(v.stockQty, 10) || 0,
           isActive:      v.isActive,
         })),
         ...newVariants.filter(v => v.priceAed).map(v => ({
-          flavor:        v.flavor        || null,
-          nicotineLevel: v.nicotineLevel || null,
-          puffCount:     v.puffCount     ? parseInt(v.puffCount, 10) : null,
-          sizeMl:        v.sizeMl        ? parseInt(v.sizeMl, 10)    : null,
+          label:         v.label         || null,
           priceAed:      parseFloat(v.priceAed),
           stockQty:      parseInt(v.stockQty, 10) || 0,
         })),

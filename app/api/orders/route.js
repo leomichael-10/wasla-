@@ -197,7 +197,7 @@ export async function POST(request) {
     if (customerEmail) {
       sendEmail(
         customerEmail,
-        `Tobaki — Order #${order.id} confirmed`,
+        `Wasla — Order #${order.id} confirmed`,
         orderConfirmation(order, order.items)
       )
     }
@@ -205,7 +205,7 @@ export async function POST(request) {
     if (sellerEmail) {
       sendEmail(
         sellerEmail,
-        `New order on Tobaki — Order #${order.id}`,
+        `New order on Wasla — Order #${order.id}`,
         newOrderAlert(order, order.items)
       )
     }
@@ -213,7 +213,7 @@ export async function POST(request) {
     if (sellerWa) {
       sendWhatsApp(
         sellerWa,
-        `New order on Tobaki! Order #${order.id} — ${order.items.length} item${order.items.length !== 1 ? 's' : ''} — AED ${totalAed.toFixed(2)}. Login to your dashboard to accept.`
+        `New order on Wasla! Order #${order.id} — ${order.items.length} item${order.items.length !== 1 ? 's' : ''} — AED ${totalAed.toFixed(2)}. Login to your dashboard to accept.`
       )
     }
 

@@ -1,15 +1,14 @@
 'use client'
 import { useState, useRef } from 'react'
 
-const PRODUCT_TYPES = ['Disposable', 'Pod System', 'Mod', 'E-Liquid', 'Accessory', 'Other']
-const NICOTINE_TYPES = new Set(['Disposable', 'E-Liquid'])
-const NICOTINE_SUGGESTIONS = ['0%', '2%', '3%', '5%', '20mg', '50mg']
+const PRODUCT_TYPES = ['Packaged Food', 'Fresh / Perishable', 'Beverage', 'Spice & Seasoning', 'Heritage Good', 'Other']
+const WEIGHT_TYPES = new Set(['Packaged Food', 'Fresh / Perishable', 'Spice & Seasoning'])
 
 function getDefaultVariants(productType) {
   const base = {}
   if (!productType) return base
-  if (['Disposable', 'Pod System', 'Mod', 'Accessory'].includes(productType)) base.Colour = []
-  if (NICOTINE_TYPES.has(productType)) base.Nicotine = []
+  if (['Heritage Good'].includes(productType)) base.Size = []
+  if (WEIGHT_TYPES.has(productType)) base.Weight = []
   return base
 }
 
@@ -18,30 +17,6 @@ function Chip({ label, onRemove }) {
     <span className="inline-flex items-center gap-1 bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-1 rounded-full">
       {label}
       <button type="button" onClick={onRemove} className="text-purple-400 hover:text-purple-700 leading-none">×</button>
-    </span>
-  )
-}
-
-function NicotineWarning() {
-  const [show, setShow] = useState(false)
-  return (
-    <span className="relative inline-block">
-      <button
-        type="button"
-        onMouseEnter={() => setShow(true)}
-        onMouseLeave={() => setShow(false)}
-        className="text-amber-500 hover:text-amber-600"
-        aria-label="Nicotine warning"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-          <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
-        </svg>
-      </button>
-      {show && (
-        <div className="absolute left-6 top-0 z-10 w-52 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg">
-          Products with nicotine will require age verification at checkout.
-        </div>
-      )}
     </span>
   )
 }
@@ -102,7 +77,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
     const files = Array.from(e.target.files ?? [])
     if (!files.length) return
     setUploading(true); setError('')
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     try {
       const urls = await Promise.all(files.map(async file => {
         const fd = new FormData()
@@ -140,7 +115,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
     if (!name.trim()) { setError('Name is required.'); return }
     if (!categoryId)  { setError('Category is required.'); return }
     setSaving(true); setError('')
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     const body = {
       name:        name.trim(),
       description: description.trim() || null,
@@ -172,8 +147,6 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
     }
   }
 
-  const hasNicotine = 'Nicotine' in variants
-
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 shadow-sm">
       {/* Header */}
@@ -195,7 +168,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Name *</label>
             <input
               type="text" required value={name} onChange={e => setName(e.target.value)}
-              placeholder="e.g. Elf Bar 600"
+              placeholder="e.g. Bun Kassala 500g"
               className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
           </div>
@@ -235,7 +208,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Brand</label>
             <input
               type="text" value={brand} onChange={e => setBrand(e.target.value)}
-              placeholder="e.g. Elf Bar"
+              placeholder="e.g. Kassala"
               className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
           </div>
@@ -244,13 +217,13 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">SKU (optional)</label>
             <input
               type="text" value={sku} onChange={e => setSku(e.target.value)}
-              placeholder="e.g. ELF-600-BLK"
+              placeholder="e.g. BUN-KSL-500G"
               className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Price Min (AED)</label>
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Price Min (EGP)</label>
             <input
               type="number" step="0.01" min="0" value={priceMin} onChange={e => setPriceMin(e.target.value)}
               placeholder="0.00"
@@ -259,7 +232,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Price Max (AED)</label>
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Price Max (EGP)</label>
             <input
               type="number" step="0.01" min="0" value={priceMax} onChange={e => setPriceMax(e.target.value)}
               placeholder="0.00"
@@ -271,7 +244,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Tags (comma-separated)</label>
             <input
               type="text" value={tags} onChange={e => setTags(e.target.value)}
-              placeholder="e.g. disposable, fruity, bestseller"
+              placeholder="e.g. coffee, kassala, bestseller"
               className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
           </div>
@@ -340,15 +313,6 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
         <section>
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Variant Attributes</p>
-            {!hasNicotine && !NICOTINE_TYPES.has(productType) && (
-              <button
-                type="button"
-                onClick={() => setVariants(prev => ({ ...prev, Nicotine: [] }))}
-                className="text-xs text-amber-600 font-semibold hover:text-amber-700 flex items-center gap-1"
-              >
-                <NicotineWarning /> Add Nicotine
-              </button>
-            )}
           </div>
 
           <div className="space-y-4">
@@ -357,7 +321,6 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
                 <div className="flex items-center gap-2 mb-3">
                   <p className="text-sm font-bold text-gray-800 flex items-center gap-1.5">
                     {attr}
-                    {attr === 'Nicotine' && <NicotineWarning />}
                   </p>
                   <button
                     type="button"
@@ -368,13 +331,13 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
                   </button>
                 </div>
 
-                {/* Nicotine suggestions */}
-                {attr === 'Nicotine' && (
+                {/* Weight suggestions */}
+                {attr === 'Weight' && (
                   <div className="flex flex-wrap gap-1.5 mb-3">
-                    {NICOTINE_SUGGESTIONS.map(s => (
+                    {['100g', '250g', '500g', '1kg', '2kg'].map(s => (
                       <button
                         key={s} type="button"
-                        onClick={() => addVariantValue('Nicotine', s)}
+                        onClick={() => addVariantValue('Weight', s)}
                         disabled={values.includes(s)}
                         className={`text-xs px-2.5 py-1 rounded-full border font-semibold transition-colors ${
                           values.includes(s)

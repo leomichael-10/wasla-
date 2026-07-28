@@ -16,7 +16,7 @@ export default function DashboardProductsPage() {
 
   const fetchItems = useCallback(async () => {
     setLoading(true)
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     try {
       const res  = await fetch('/api/seller/retailer-products', { headers: { Authorization: `Bearer ${token}` } })
       const data = await res.json()
@@ -34,7 +34,7 @@ export default function DashboardProductsPage() {
   async function handleRemove(id, name) {
     if (!confirm(`Remove "${name}" from your store?`)) return
     setRemoving(id)
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     try {
       const res  = await fetch(`/api/seller/retailer-products/${id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` },

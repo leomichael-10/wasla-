@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 
-const EMIRATES = ['All Emirates', 'Abu Dhabi', 'Ajman', 'Dubai', 'Fujairah', 'Ras Al Khaimah', 'Sharjah', 'Umm Al Quwain']
+const CITIES = ['All Cities', 'Cairo', 'Giza', '6th of October', 'Alexandria']
 
 function Stars({ rating }) {
   const rounded = Math.round(rating)
@@ -129,7 +129,7 @@ export default function ShopsPage() {
           <h1 className="text-2xl font-black text-gray-900">All Shops</h1>
           {!loading && (
             <p className="text-sm text-gray-500 mt-0.5">
-              {shops.length} verified shop{shops.length !== 1 ? 's' : ''} on Tobaki
+              {shops.length} verified shop{shops.length !== 1 ? 's' : ''} on Wasla
             </p>
           )}
         </div>
@@ -153,7 +153,7 @@ export default function ShopsPage() {
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
-            {EMIRATES.map(c => (
+            {CITIES.map(c => (
               <button
                 key={c}
                 onClick={() => setCity(c)}

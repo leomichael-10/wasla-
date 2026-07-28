@@ -80,7 +80,7 @@ export async function POST(request) {
     if (userRecord?.email) {
       sendEmail(
         userRecord.email,
-        'Tobaki — Subscription received',
+        'Wasla — Subscription received',
         subscriptionConfirmation(sellerProfile.businessName, 199)
       )
     }

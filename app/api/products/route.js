@@ -45,7 +45,7 @@ export async function GET(request) {
       variants: [{
         id:       rp.id,
         priceAed: rp.priceAed,
-        flavor:   null,
+        label:    null,
         inStock:  rp.stockQty > 0,
       }],
       _retailerProductId: rp.id,

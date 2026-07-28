@@ -65,9 +65,8 @@ export async function GET(request) {
 
     const productRanking = Object.values(productUnitMap).sort((a, b) => b.units - a.units)
 
-    const bestDisposable = productRanking.find(p => p.categoryName === 'Disposables') ?? null
-    const bestLiquid     = productRanking.find(p => p.categoryName === 'Juices & E-Liquids') ?? null
-    const topProducts    = productRanking.slice(0, 5)
+    const bestSelling = productRanking[0] ?? null
+    const topProducts = productRanking.slice(0, 5)
 
     // Top sellers by revenue
     const revenueBySellerRaw = await prisma.order.groupBy({
@@ -102,8 +101,7 @@ export async function GET(request) {
         orders:   totalOrders,
         revenue:  totalRevenue,
       },
-      bestDisposable,
-      bestLiquid,
+      bestSelling,
       topProducts,
       topSellers,
     })

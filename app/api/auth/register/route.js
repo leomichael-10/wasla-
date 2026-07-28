@@ -64,7 +64,6 @@ export async function POST(request) {
         whatsapp,
         city,
         gender,
-        ageVerified: false
       }
     })
 
@@ -75,14 +74,18 @@ export async function POST(request) {
       })
     }
 
-    // If seller, create seller profile
+    // If seller, create seller profile.
+    // Subscriptions are shelved for launch (NEXT_PUBLIC_SUBSCRIPTIONS_ENABLED=false) —
+    // every shop starts on the free tier instead of waiting on a subscription payment.
     if (role === 'retailer' || role === 'wholesaler') {
       const { businessName } = body
+      const subscriptionsEnabled = process.env.NEXT_PUBLIC_SUBSCRIPTIONS_ENABLED === 'true'
       await prisma.sellerProfile.create({
         data: {
           userId: user.id,
           businessName: businessName || 'My Shop',
-          approvedByAdmin: false
+          approvedByAdmin: false,
+          subscriptionStatus: subscriptionsEnabled ? 'PENDING' : 'ACTIVE',
         }
       })
     }

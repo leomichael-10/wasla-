@@ -21,14 +21,14 @@ export default function ProfilePage() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('tobaki_user')
+      const raw = localStorage.getItem('wasla_user')
       if (!raw) { router.replace('/login?redirect=/profile'); return }
     } catch {
       router.replace('/login')
       return
     }
 
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     fetch('/api/profile', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
@@ -51,7 +51,7 @@ export default function ProfilePage() {
     setSaving(true)
     setError('')
     setSuccess(false)
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     try {
       const res  = await fetch('/api/profile', {
         method:  'PATCH',
@@ -119,7 +119,7 @@ export default function ProfilePage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className={labelCls}>City</label>
-                  <input type="text" value={city} onChange={e => setCity(e.target.value)} placeholder="Dubai" className={inputCls} />
+                  <input type="text" value={city} onChange={e => setCity(e.target.value)} placeholder="Cairo" className={inputCls} />
                 </div>
                 <div>
                   <label className={labelCls}>Gender</label>
@@ -139,7 +139,7 @@ export default function ProfilePage() {
               <textarea
                 value={deliveryAddress}
                 onChange={e => setDeliveryAddress(e.target.value)}
-                placeholder="Villa 12, Street 5, Al Barsha, Dubai"
+                placeholder="Building 12, Street 5, Faisal, Cairo"
                 rows={3}
                 className={`${inputCls} resize-none`}
               />

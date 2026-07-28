@@ -4,9 +4,8 @@ import { useRouter } from 'next/navigation'
 import { getSession } from 'next-auth/react'
 import Link from 'next/link'
 
-const UAE_CITIES = [
-  'Abu Dhabi', 'Ajman', 'Al Ain', 'Dubai',
-  'Fujairah', 'Ras Al Khaimah', 'Sharjah', 'Umm Al Quwain',
+const EGYPT_CITIES = [
+  'Cairo', 'Giza', '6th of October', 'Alexandria',
 ]
 
 export default function OnboardingPage() {
@@ -85,7 +84,7 @@ export default function OnboardingPage() {
 
       <div className="bg-purple-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
-          toba<span className="text-yellow-300">ki</span>
+          was<span className="text-yellow-300">la</span>
         </Link>
       </div>
 
@@ -93,7 +92,7 @@ export default function OnboardingPage() {
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 w-full max-w-md p-8">
 
           <div className="mb-8 text-center">
-            <h1 className="text-2xl font-black text-gray-900">Welcome to Tobaki</h1>
+            <h1 className="text-2xl font-black text-gray-900">Welcome to Wasla</h1>
             <p className="text-gray-500 text-sm mt-1">Finish setting up your account</p>
           </div>
 
@@ -133,7 +132,7 @@ export default function OnboardingPage() {
                 autoComplete="tel"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
-                placeholder="+971 50 000 0000"
+                placeholder="+20 10 0000 0000"
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
               />
             </div>
@@ -150,7 +149,7 @@ export default function OnboardingPage() {
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition bg-white"
               >
                 <option value="">Select your city</option>
-                {UAE_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                {EGYPT_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
 
@@ -176,7 +175,7 @@ export default function OnboardingPage() {
                 </div>
               </div>
               <span className="text-sm text-gray-600 leading-snug select-none">
-                I want to <span className="font-semibold">sell on Tobaki</span>
+                I want to <span className="font-semibold">sell on Wasla</span>
               </span>
             </label>
 
@@ -191,7 +190,7 @@ export default function OnboardingPage() {
                   type="text"
                   value={businessName}
                   onChange={e => setBusinessName(e.target.value)}
-                  placeholder="e.g. Dubai Vape Store"
+                  placeholder="e.g. Kassala Coffee House"
                   className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
                 />
               </div>

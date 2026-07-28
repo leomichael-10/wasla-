@@ -77,7 +77,7 @@ export async function PATCH(request, { params }) {
 
     const updated = await prisma.product.findUnique({
       where:   { id: productId },
-      include: { variants: { orderBy: { flavor: 'asc' } } },
+      include: { variants: { orderBy: { label: 'asc' } } },
     })
 
     return NextResponse.json({ product: JSON.parse(JSON.stringify(updated)) })

@@ -74,7 +74,7 @@ export async function POST(request) {
 
     const userData = { id: user.id, email: user.email, role: user.role, city: user.city }
     const response = NextResponse.json({ message: 'Login successful', token, user: userData })
-    response.cookies.set('tobaki_user_info', JSON.stringify(userData), {
+    response.cookies.set('wasla_user_info', JSON.stringify(userData), {
       path:     '/',
       maxAge:   7 * 24 * 60 * 60,
       sameSite: 'lax',

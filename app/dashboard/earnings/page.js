@@ -41,7 +41,7 @@ export default function EarningsPage() {
   const [error,   setError]   = useState('')
 
   useEffect(() => {
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     fetch('/api/dashboard/earnings', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(d => { if (d.error) throw new Error(d.error); setData(d) })
@@ -93,7 +93,7 @@ export default function EarningsPage() {
         </div>
       </div>
 
-      {/* Top products + flavors */}
+      {/* Top products + variants */}
       <div className="grid sm:grid-cols-2 gap-5">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
           <h2 className="font-black text-gray-900 mb-3">Top Products</h2>
@@ -111,14 +111,14 @@ export default function EarningsPage() {
           )}
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-          <h2 className="font-black text-gray-900 mb-3">Top Flavors</h2>
-          {data.topFlavors.length === 0 ? (
+          <h2 className="font-black text-gray-900 mb-3">Top Variants</h2>
+          {data.topVariants.length === 0 ? (
             <p className="text-sm text-gray-400">No data yet.</p>
           ) : (
             <div className="space-y-2">
-              {data.topFlavors.map(f => (
-                <div key={f.flavor} className="flex items-center justify-between text-sm">
-                  <span className="text-gray-700 font-medium truncate max-w-40">{f.flavor}</span>
+              {data.topVariants.map(f => (
+                <div key={f.label} className="flex items-center justify-between text-sm">
+                  <span className="text-gray-700 font-medium truncate max-w-40">{f.label}</span>
                   <span className="font-black text-gray-900 tabular-nums shrink-0">{f.units} units</span>
                 </div>
               ))}

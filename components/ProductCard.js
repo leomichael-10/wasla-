@@ -31,7 +31,7 @@ export default function ProductCard({ product }) {
     ? `AED ${minPrice.toFixed(0)}`
     : `AED ${minPrice.toFixed(0)}–${maxPrice.toFixed(0)}`
 
-  const flavors        = product.variants.map(v => v.flavor).filter(Boolean)
+  const variantLabels  = product.variants.map(v => v.label).filter(Boolean)
   const inStockVariant = product.variants.find(v => v.inStock ?? v.stockQty > 0) ?? null
   const mainImage      = product.images?.[0] || product.variants?.find(v => v.image)?.image || null
 
@@ -43,7 +43,7 @@ export default function ProductCard({ product }) {
 
   useLayoutEffect(() => {
     try {
-      const raw  = localStorage.getItem('tobaki_user')
+      const raw  = localStorage.getItem('wasla_user')
       const user = raw ? JSON.parse(raw) : null
       if (user?.id) setUserId(user.id)
       if (user?.role === 'customer') setIsCustomer(true)
@@ -52,7 +52,7 @@ export default function ProductCard({ product }) {
 
   useEffect(() => {
     if (!isCustomer) return
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     fetch('/api/wishlist', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
@@ -70,9 +70,7 @@ export default function ProductCard({ product }) {
       productId:        product.id,
       productName:      product.name,
       brand:            product.brand ?? '',
-      flavor:           inStockVariant.flavor ?? '',
-      nicotineLevel:    inStockVariant.nicotineLevel ?? '',
-      puffCount:        inStockVariant.puffCount ?? 0,
+      label:            inStockVariant.label ?? '',
       priceAed:         Number(inStockVariant.priceAed),
       quantity:         1,
       sellerId:         product.seller?.id ?? 0,
@@ -86,7 +84,7 @@ export default function ProductCard({ product }) {
     e.preventDefault()
     if (!isCustomer || wishLoading) return
     setWishLoading(true)
-    const token  = localStorage.getItem('tobaki_token')
+    const token  = localStorage.getItem('wasla_token')
     const method = wishlisted ? 'DELETE' : 'POST'
     try {
       const res = await fetch('/api/wishlist', {
@@ -143,10 +141,10 @@ export default function ProductCard({ product }) {
           <span className="text-[11px] font-bold text-purple-500 uppercase tracking-wide">{product.brand}</span>
         )}
         <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 min-h-10">{product.name}</h3>
-        {flavors.length > 0 ? (
+        {variantLabels.length > 0 ? (
           <p className="text-xs text-gray-400 leading-tight">
-            {flavors.length} flavor{flavors.length !== 1 ? 's' : ''}{' · '}
-            {flavors.slice(0, 2).join(', ')}{flavors.length > 2 ? '…' : ''}
+            {variantLabels.length} option{variantLabels.length !== 1 ? 's' : ''}{' · '}
+            {variantLabels.slice(0, 2).join(', ')}{variantLabels.length > 2 ? '…' : ''}
           </p>
         ) : (
           <p className="text-xs text-gray-400 leading-tight min-h-4" />

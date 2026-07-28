@@ -42,10 +42,7 @@ export async function PATCH(request, { params }) {
       for (const v of variants) {
         if (v.id) {
           const vData = {}
-          if (v.flavor        !== undefined) vData.flavor        = v.flavor || null
-          if (v.nicotineLevel !== undefined) vData.nicotineLevel = v.nicotineLevel || null
-          if (v.puffCount     !== undefined) vData.puffCount     = v.puffCount ? parseInt(v.puffCount, 10) : null
-          if (v.sizeMl        !== undefined) vData.sizeMl        = v.sizeMl ? parseInt(v.sizeMl, 10) : null
+          if (v.label         !== undefined) vData.label         = v.label || null
           if (v.priceAed      !== undefined) vData.priceAed      = parseFloat(v.priceAed)
           if (v.stockQty      !== undefined) vData.stockQty      = parseInt(v.stockQty, 10) || 0
           if (v.image         !== undefined) vData.image         = v.image || null
@@ -59,10 +56,7 @@ export async function PATCH(request, { params }) {
             prisma.productVariant.create({
               data: {
                 productId:     id,
-                flavor:        v.flavor        || null,
-                nicotineLevel: v.nicotineLevel || null,
-                puffCount:     v.puffCount     ? parseInt(v.puffCount, 10)  : null,
-                sizeMl:        v.sizeMl        ? parseInt(v.sizeMl, 10)     : null,
+                label:         v.label         || null,
                 priceAed:      parseFloat(v.priceAed),
                 stockQty:      parseInt(v.stockQty, 10) || 0,
                 skuCode:       v.skuCode       || null,
@@ -86,7 +80,7 @@ export async function PATCH(request, { params }) {
       include: {
         category:    true,
         subCategory: true,
-        variants:    { orderBy: { flavor: 'asc' } },
+        variants:    { orderBy: { label: 'asc' } },
       },
     })
 
@@ -147,11 +141,7 @@ export async function GET(request, { params }) {
         variants: {
           select: {
             id:            true,
-            flavor:        true,
-            nicotineLevel: true,
-            sizeMl:        true,
-            puffCount:     true,
-            resistanceOhm: true,
+            label:         true,
             priceAed:      true,
             stockQty:      true,
             skuCode:       true,

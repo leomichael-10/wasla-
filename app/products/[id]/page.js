@@ -69,7 +69,7 @@ export default function ProductDetailPage() {
           const sorted = {
             ...data.product,
             variants: [...(data.product.variants ?? [])].sort((a, b) =>
-              (a.flavor ?? '').localeCompare(b.flavor ?? '')
+              (a.label ?? '').localeCompare(b.label ?? '')
             ),
           }
           setProduct(sorted)
@@ -84,14 +84,14 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('tobaki_user')
+      const raw = localStorage.getItem('wasla_user')
       if (raw) setUser(JSON.parse(raw))
     } catch { /* ignore */ }
   }, [])
 
   useEffect(() => {
     if (!user || user.role !== 'customer' || !product) return
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     fetch('/api/orders', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
@@ -112,9 +112,7 @@ export default function ProductDetailPage() {
       productId:        product.id,
       productName:      product.name,
       brand:            product.brand ?? '',
-      flavor:           selectedVariant.flavor ?? '',
-      nicotineLevel:    selectedVariant.nicotineLevel ?? '',
-      puffCount:        selectedVariant.puffCount ?? 0,
+      label:            selectedVariant.label ?? '',
       priceAed:         Number(selectedVariant.priceAed),
       quantity:         1,
       sellerId:         product.seller?.id ?? 0,
@@ -128,7 +126,7 @@ export default function ProductDetailPage() {
     e.preventDefault()
     setReviewError('')
     setReviewLoading(true)
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     try {
       const res  = await fetch('/api/reviews', {
         method: 'POST',
@@ -252,10 +250,10 @@ export default function ProductDetailPage() {
 
             {product.description && <p className="text-sm text-gray-600 leading-relaxed">{product.description}</p>}
 
-            {/* Flavor selector */}
+            {/* Variant selector */}
             <div>
               <p className="text-sm font-bold text-gray-800 mb-2.5">
-                Flavor{selectedVariant?.flavor && <span className="ml-2 font-normal text-purple-700">{selectedVariant.flavor}</span>}
+                Option{selectedVariant?.label && <span className="ml-2 font-normal text-purple-700">{selectedVariant.label}</span>}
               </p>
               <div className="flex flex-wrap gap-2">
                 {product.variants.map(variant => {
@@ -267,31 +265,16 @@ export default function ProductDetailPage() {
                       className={`px-3.5 py-1.5 rounded-full text-sm font-semibold border transition-all duration-150
                         ${isSelected ? 'bg-purple-700 border-purple-700 text-white shadow-sm' : 'bg-white border-gray-200 text-gray-700 hover:border-purple-400 hover:text-purple-600'}
                         ${isOutOfStock ? 'opacity-35 cursor-not-allowed line-through' : 'cursor-pointer'}`}>
-                      {variant.flavor ?? `Option ${variant.id}`}
+                      {variant.label ?? `Option ${variant.id}`}
                     </button>
                   )
                 })}
               </div>
             </div>
 
-            {/* Spec badges */}
+            {/* Stock badge */}
             {selectedVariant && (
               <div className="flex flex-wrap gap-2">
-                {selectedVariant.puffCount && (
-                  <span className="bg-purple-50 text-purple-700 text-xs font-semibold px-3 py-1 rounded-full">
-                    {selectedVariant.puffCount.toLocaleString()} puffs
-                  </span>
-                )}
-                {selectedVariant.nicotineLevel && (
-                  <span className="bg-yellow-50 text-yellow-700 text-xs font-semibold px-3 py-1 rounded-full">
-                    {selectedVariant.nicotineLevel} nic
-                  </span>
-                )}
-                {selectedVariant.sizeMl && (
-                  <span className="bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full">
-                    {selectedVariant.sizeMl} ml
-                  </span>
-                )}
                 {outOfStock ? (
                   <span className="bg-red-50 text-red-500 text-xs font-semibold px-3 py-1 rounded-full">Out of stock</span>
                 ) : (

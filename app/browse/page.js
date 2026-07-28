@@ -11,8 +11,8 @@ const SORT_OPTIONS = [
   { value: 'price_desc', label: 'Price: High to Low' },
 ]
 
-const BRANDS = ['Elf Bar', 'Vozol', 'Lost Mary']
-const CITIES = ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah']
+const BRANDS = ['Kassala', 'Gedaref', 'El Obeid']
+const CITIES = ['Cairo', 'Giza', '6th of October', 'Alexandria']
 
 function SkeletonCard() {
   return (
@@ -32,7 +32,7 @@ function BrowseProductCard({ product }) {
   const minPrice  = Math.min(...prices)
   const maxPrice  = Math.max(...prices)
   const priceLabel = minPrice === maxPrice ? `AED ${minPrice.toFixed(0)}` : `AED ${minPrice.toFixed(0)}–${maxPrice.toFixed(0)}`
-  const flavors    = product.variants.map(v => v.flavor).filter(Boolean)
+  const labels     = product.variants.map(v => v.label).filter(Boolean)
 
   return (
     <Link
@@ -49,10 +49,10 @@ function BrowseProductCard({ product }) {
           <span className="text-[11px] font-bold text-purple-700 uppercase tracking-wide">{product.brand}</span>
         )}
         <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{product.name}</h3>
-        {flavors.length > 0 && (
+        {labels.length > 0 && (
           <p className="text-xs text-gray-400">
-            {flavors.length} flavor{flavors.length !== 1 ? 's' : ''}
-            {' · '}{flavors.slice(0, 2).join(', ')}{flavors.length > 2 ? '…' : ''}
+            {labels.length} option{labels.length !== 1 ? 's' : ''}
+            {' · '}{labels.slice(0, 2).join(', ')}{labels.length > 2 ? '…' : ''}
           </p>
         )}
         {product.seller?.city && (
@@ -81,7 +81,7 @@ function BrowseBrowser() {
   // Determine back href from stored user role
   useEffect(() => {
     try {
-      const u = JSON.parse(localStorage.getItem('tobaki_user') ?? '{}')
+      const u = JSON.parse(localStorage.getItem('wasla_user') ?? '{}')
       setBackHref(u.role === 'admin' ? '/admin' : '/dashboard')
     } catch { /* ignore */ }
   }, [])
@@ -117,7 +117,7 @@ function BrowseBrowser() {
       {/* Read-only banner */}
       <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2.5 flex items-center justify-between gap-4">
         <p className="text-sm text-yellow-700 font-semibold">
-          You are viewing Tobaki as a customer. Buying is disabled in this mode.
+          You are viewing Wasla as a customer. Buying is disabled in this mode.
         </p>
         <Link
           href={backHref}

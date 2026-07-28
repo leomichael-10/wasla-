@@ -4,8 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 
 const EMPTY_VARIANT = {
-  flavor: '', nicotineLevel: '', puffCount: '', sizeMl: '',
-  priceAed: '', stockQty: '', skuCode: '',
+  label: '', priceAed: '', stockQty: '', skuCode: '',
 }
 
 function VariantRow({ index, variant, onChange, onRemove, canRemove }) {
@@ -24,14 +23,8 @@ function VariantRow({ index, variant, onChange, onRemove, canRemove }) {
         )}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        <div><label className={labelCls}>Flavor</label>
-          <input type="text" value={variant.flavor} onChange={field('flavor')} placeholder="Watermelon Ice" className={inputCls} /></div>
-        <div><label className={labelCls}>Nicotine Level</label>
-          <input type="text" value={variant.nicotineLevel} onChange={field('nicotineLevel')} placeholder="5%" className={inputCls} /></div>
-        <div><label className={labelCls}>Puff Count</label>
-          <input type="number" value={variant.puffCount} onChange={field('puffCount')} placeholder="5000" min={0} className={inputCls} /></div>
-        <div><label className={labelCls}>Size (ml)</label>
-          <input type="number" value={variant.sizeMl} onChange={field('sizeMl')} placeholder="10" min={0} className={inputCls} /></div>
+        <div><label className={labelCls}>Label</label>
+          <input type="text" value={variant.label} onChange={field('label')} placeholder="500g" className={inputCls} /></div>
         <div><label className={labelCls}>Price AED <span className="text-red-400 normal-case font-bold">*</span></label>
           <input type="number" value={variant.priceAed} onChange={field('priceAed')} placeholder="25" min={0} step="0.01" required className={inputCls} /></div>
         <div><label className={labelCls}>Stock Qty</label>
@@ -54,7 +47,7 @@ function ImageUploader({ images, setImages }) {
     }
     setUploadErr('')
     setUploading(true)
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
 
     const results = await Promise.allSettled(
       acceptedFiles.map(async file => {
@@ -201,7 +194,7 @@ export default function AddProductPage() {
     setError('')
     if (!validate()) return
     setLoading(true)
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     const body  = {
       name:          name.trim(),
       brand:         brand.trim()       || undefined,
@@ -210,10 +203,7 @@ export default function AddProductPage() {
       description:   description.trim() || undefined,
       images,
       variants: variants.map(v => ({
-        flavor:        v.flavor.trim()        || undefined,
-        nicotineLevel: v.nicotineLevel.trim() || undefined,
-        puffCount:     v.puffCount            ? parseInt(v.puffCount, 10)  : undefined,
-        sizeMl:        v.sizeMl               ? parseInt(v.sizeMl, 10)     : undefined,
+        label:         v.label.trim()         || undefined,
         priceAed:      parseFloat(v.priceAed),
         stockQty:      v.stockQty             ? parseInt(v.stockQty, 10)   : 0,
         skuCode:       v.skuCode.trim()       || undefined,
@@ -305,7 +295,7 @@ export default function AddProductPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-black text-gray-900">Variants</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Add one row per flavor / option. Price is required.</p>
+              <p className="text-xs text-gray-400 mt-0.5">Add one row per option (e.g. size, pack). Price is required.</p>
             </div>
             <button type="button" onClick={addVariant}
               className="text-sm font-bold text-purple-700 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors">

@@ -34,7 +34,7 @@ export default function DashboardOrdersPage() {
 
   const fetchOrders = useCallback(async () => {
     setLoading(true)
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     try {
       const res  = await fetch('/api/orders', {
         headers: { Authorization: `Bearer ${token}` },
@@ -53,7 +53,7 @@ export default function DashboardOrdersPage() {
 
   async function handleStatusChange(orderId, newStatus) {
     setUpdating(orderId)
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     try {
       const res  = await fetch(`/api/orders/${orderId}`, {
         method:  'PATCH',
@@ -157,7 +157,7 @@ export default function DashboardOrdersPage() {
                         <div key={item.id} className="flex items-center justify-between text-sm gap-2">
                           <span className="text-gray-700 truncate">
                             {item.productVariant?.product?.name ?? 'Product'}
-                            {item.productVariant?.flavor ? ` · ${item.productVariant.flavor}` : ''}
+                            {item.productVariant?.label ? ` · ${item.productVariant.label}` : ''}
                           </span>
                           <span className="shrink-0 text-gray-500 font-medium">
                             ×{item.quantity}

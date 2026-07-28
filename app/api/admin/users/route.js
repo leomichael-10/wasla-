@@ -25,7 +25,6 @@ export async function GET(request) {
         email:       true,
         role:        true,
         city:        true,
-        ageVerified: true,
         isBanned:    true,
         createdAt:   true,
         customerProfile: { select: { fullName: true } },

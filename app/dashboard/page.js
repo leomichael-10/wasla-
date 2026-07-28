@@ -100,7 +100,7 @@ export default function DashboardOverviewPage() {
   const [error,        setError]        = useState('')
 
   useEffect(() => {
-    const token   = localStorage.getItem('tobaki_token')
+    const token   = localStorage.getItem('wasla_token')
     const headers = { Authorization: `Bearer ${token}` }
 
     Promise.all([

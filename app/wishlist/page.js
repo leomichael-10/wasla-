@@ -13,7 +13,7 @@ export default function WishlistPage() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('tobaki_user')
+      const raw = localStorage.getItem('wasla_user')
       if (!raw) { router.replace('/login?redirect=/wishlist'); return }
       const u = JSON.parse(raw)
       if (u.role !== 'customer') { router.replace('/'); return }
@@ -22,7 +22,7 @@ export default function WishlistPage() {
       return
     }
 
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     fetch('/api/wishlist', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
@@ -34,7 +34,7 @@ export default function WishlistPage() {
   }, [router])
 
   async function handleRemove(productId) {
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     try {
       await fetch('/api/wishlist', {
         method:  'DELETE',

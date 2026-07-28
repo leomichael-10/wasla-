@@ -19,7 +19,7 @@ export default function ManageStockPage() {
   const [rows,     setRows]     = useState([]) // { variantId, quantity, movementType }
 
   useEffect(() => {
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     fetch(`/api/products/${id}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
@@ -47,7 +47,7 @@ export default function ManageStockPage() {
     setError('')
     setSuccess(false)
 
-    const token   = localStorage.getItem('tobaki_token')
+    const token   = localStorage.getItem('wasla_token')
     const payload = rows
       .filter(r => r.quantity !== '' && Number(r.quantity) >= 0)
       .map(r => ({ variantId: parseInt(r.variantId, 10), quantity: parseInt(r.quantity, 10), movementType: r.movementType }))
@@ -122,9 +122,7 @@ export default function ManageStockPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-[#f9f7ff]">
-                  <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Flavor</th>
-                  <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Nicotine</th>
-                  <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Puffs</th>
+                  <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Label</th>
                   <th className="text-center px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Current Stock</th>
                   <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Type</th>
                   <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Quantity</th>
@@ -136,10 +134,8 @@ export default function ManageStockPage() {
                   return (
                     <tr key={v.id} className={v.stockQty < 5 ? 'bg-red-50' : 'hover:bg-[#f9f7ff]'}>
                       <td className="px-5 py-3 font-semibold text-gray-900">
-                        {v.flavor ?? '—'}
+                        {v.label ?? '—'}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{v.nicotineLevel ?? '—'}</td>
-                      <td className="px-4 py-3 text-gray-600">{v.puffCount?.toLocaleString() ?? '—'}</td>
                       <td className="px-4 py-3 text-center">
                         <span className={`font-black text-sm tabular-nums ${v.stockQty < 5 ? 'text-red-600' : 'text-gray-900'}`}>
                           {v.stockQty}

@@ -64,7 +64,7 @@ export default function TrackingPixelPage() {
   const load = useCallback(async () => {
     if (!user) return
     setLoading(true)
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
     const h     = { Authorization: `Bearer ${token}` }
     try {
       const [pRes, sRes] = await Promise.all([

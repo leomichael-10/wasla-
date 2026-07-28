@@ -1,5 +1,5 @@
 {
-  "name": "tobaki",
+  "name": "wasla",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,9 +9,6 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "node scripts/seed.js"
-  },
-  "prisma": {
-    "seed": "node prisma/seed.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -37,7 +34,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "tailwindcss": "^4",
-    "typescript": "6.0.3",
-    "xlsx": "^0.18.5"
+    "typescript": "6.0.3"
   }
 }

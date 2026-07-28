@@ -25,13 +25,13 @@ export default function CartPage() {
   useEffect(() => {
     let uid = 'guest'
     try {
-      const raw = localStorage.getItem('tobaki_user')
+      const raw = localStorage.getItem('wasla_user')
       if (raw) {
         const u = JSON.parse(raw)
         setUser(u)
         uid = u?.id ?? 'guest'
         setUserId(uid)
-        const token = localStorage.getItem('tobaki_token')
+        const token = localStorage.getItem('wasla_token')
         if (u.role === 'customer' && token) {
           fetch('/api/profile', { headers: { Authorization: `Bearer ${token}` } })
             .then(r => r.json())
@@ -68,7 +68,7 @@ export default function CartPage() {
 
     setError('')
     setPlacing(true)
-    const token = localStorage.getItem('tobaki_token')
+    const token = localStorage.getItem('wasla_token')
 
     const grouped = {}
     for (const item of cartItems) {
@@ -98,14 +98,14 @@ export default function CartPage() {
         placedOrders.push(data.order)
       }
 
-      const token2 = localStorage.getItem('tobaki_token')
+      const token2 = localStorage.getItem('wasla_token')
       fetch('/api/profile', {
         method:  'PATCH',
         headers: { Authorization: `Bearer ${token2}`, 'Content-Type': 'application/json' },
         body:    JSON.stringify({ deliveryAddress: address.trim() }),
       }).catch(() => {})
 
-      localStorage.setItem('tobaki_last_orders', JSON.stringify(placedOrders))
+      localStorage.setItem('wasla_last_orders', JSON.stringify(placedOrders))
       clearCart(userId)
       router.push('/orders/confirmation')
     } catch (err) {
@@ -146,14 +146,8 @@ export default function CartPage() {
                         {item.brand ? ` · ${item.brand}` : ''}
                       </p>
                       <div className="flex flex-wrap gap-1.5 mt-1">
-                        {item.flavor && (
-                          <span className="text-[11px] bg-purple-50 text-purple-700 font-semibold px-2 py-0.5 rounded-full">{item.flavor}</span>
-                        )}
-                        {item.nicotineLevel && (
-                          <span className="text-[11px] bg-yellow-50 text-yellow-700 font-semibold px-2 py-0.5 rounded-full">{item.nicotineLevel} nic</span>
-                        )}
-                        {item.puffCount && (
-                          <span className="text-[11px] bg-purple-50 text-purple-700 font-semibold px-2 py-0.5 rounded-full">{item.puffCount.toLocaleString()} puffs</span>
+                        {item.label && (
+                          <span className="text-[11px] bg-purple-50 text-purple-700 font-semibold px-2 py-0.5 rounded-full">{item.label}</span>
                         )}
                       </div>
                       {item.sellerName && (

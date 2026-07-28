@@ -75,18 +75,18 @@ export async function GET(request) {
       .slice(0, 5)
       .map(([id, units]) => ({ id: Number(id), name: nameMap[id], units }))
 
-    // Top selling flavors
-    const flavorMap = {}
+    // Top selling variants (by label)
+    const labelMap = {}
     for (const o of deliveredOrders) {
       for (const item of o.items) {
-        const flavor = item.productVariant?.flavor || 'Unknown'
-        flavorMap[flavor] = (flavorMap[flavor] || 0) + item.quantity
+        const label = item.productVariant?.label || 'Unknown'
+        labelMap[label] = (labelMap[label] || 0) + item.quantity
       }
     }
-    const topFlavors = Object.entries(flavorMap)
+    const topVariants = Object.entries(labelMap)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
-      .map(([flavor, units]) => ({ flavor, units }))
+      .map(([label, units]) => ({ label, units }))
 
     return NextResponse.json({
       totalRevenue,
@@ -95,7 +95,7 @@ export async function GET(request) {
       todayRevenue,
       chartData,
       topProducts,
-      topFlavors,
+      topVariants,
       orders: JSON.parse(JSON.stringify(deliveredOrders)),
     })
   } catch (error) {

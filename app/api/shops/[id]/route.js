@@ -77,7 +77,7 @@ export async function GET(request, { params }) {
       variants: [{
         id:       rp.id,
         priceAed: rp.priceAed,
-        flavor:   null,
+        label:    null,
         inStock:  rp.stockQty > 0,
       }],
       _isRetailerProduct: true,

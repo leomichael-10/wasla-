@@ -19,15 +19,15 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata = {
-  title:       'Tobaki — UAE Vape Marketplace',
-  description: 'Shop disposables, devices, and e-liquids from verified sellers across Dubai, Abu Dhabi and the UAE.',
-  keywords:    'vape UAE, disposable vape Dubai, e-liquid Abu Dhabi, vape shop online UAE, buy vape UAE',
+  title:       'Wasla (وصلة) — Sudanese Products, Delivered in Cairo',
+  description: 'Shop Sudanese food, spices, coffee, and heritage goods from verified Sudanese shops across Cairo and Giza — منتجات سودانية توصلك.',
+  keywords:    'Sudanese products Cairo, Sudanese food Egypt, بن كسلا, كركديه, بهارات سودانية, shop Sudanese Cairo',
   openGraph: {
-    title:       'Tobaki — UAE Vape Marketplace',
-    description: 'Shop disposables, devices, and e-liquids from verified sellers across the UAE.',
+    title:       'Wasla (وصلة) — Sudanese Products, Delivered in Cairo',
+    description: 'Shop Sudanese food, spices, coffee, and heritage goods from verified Sudanese shops across Cairo and Giza.',
     type:        'website',
-    locale:      'en_AE',
-    siteName:    'Tobaki',
+    locale:      'ar_EG',
+    siteName:    'Wasla',
   },
   robots: {
     index:  true,
@@ -37,7 +37,7 @@ export const metadata = {
 
 export default async function RootLayout({ children }) {
   const cookieStore = await cookies()
-  const raw = cookieStore.get('tobaki_user_info')?.value
+  const raw = cookieStore.get('wasla_user_info')?.value
   let initialUser = null
   if (raw) {
     try { initialUser = JSON.parse(raw) } catch { /* ignore */ }
@@ -68,23 +68,19 @@ export default async function RootLayout({ children }) {
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-lg font-black text-purple-600">Tobaki</span>
+                <span className="text-lg font-black text-purple-600">Wasla</span>
                 <span className="text-gray-300">|</span>
-                <span className="text-xs text-gray-400">UAE Vape Marketplace</span>
+                <span className="text-xs text-gray-400">منتجات سودانية توصلك</span>
               </div>
               <nav className="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500">
                 <Link href="/products"          className="hover:text-purple-600 transition-colors">Products</Link>
-                <Link href="/age-verification"  className="hover:text-purple-600 transition-colors">Age Policy</Link>
                 <Link href="/terms"             className="hover:text-purple-600 transition-colors">Terms of Service</Link>
                 <Link href="/privacy"           className="hover:text-purple-600 transition-colors">Privacy Policy</Link>
               </nav>
               <p className="text-xs text-gray-400">
-                &copy; {new Date().getFullYear()} Tobaki. All rights reserved.
+                &copy; {new Date().getFullYear()} Wasla. All rights reserved.
               </p>
             </div>
-            <p className="text-center text-[11px] text-gray-400 mt-4">
-              For adults 21+ only. Vaping products contain nicotine which is an addictive substance.
-            </p>
           </div>
         </footer>
         </UserProvider>

@@ -69,7 +69,7 @@ export async function GET(request) {
       where: { id: auth.userId },
       select: {
         id: true, email: true, role: true, phone: true,
-        whatsapp: true, city: true, gender: true, ageVerified: true,
+        whatsapp: true, city: true, gender: true,
         customerProfile: {
           select: { fullName: true, deliveryAddress: true },
         },

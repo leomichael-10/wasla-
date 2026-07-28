@@ -4,23 +4,24 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 
-const UAE_CITIES = [
-  'Abu Dhabi', 'Ajman', 'Al Ain', 'Dubai',
-  'Fujairah', 'Ras Al Khaimah', 'Sharjah', 'Umm Al Quwain',
+const EGYPT_CITIES = [
+  'Cairo', 'Giza', '6th of October', 'Alexandria',
 ]
 
 const PAYMENT_METHODS = [
   {
     value:    'bank_transfer',
     label:    'Bank Transfer',
-    detail:   'Transfer AED 199 to: Tobaki FZE, IBAN: AE00 0000 0000 0000 0000 000',
+    detail:   'Transfer EGP 500 to: Wasla, IBAN: EG00 0000 0000 0000 0000 000',
   },
   {
     value:    'cash',
     label:    'Cash',
-    detail:   'Pay in person at our Dubai office.',
+    detail:   'Pay in person at our Cairo office.',
   },
 ]
+
+const SUBSCRIPTIONS_ENABLED = process.env.NEXT_PUBLIC_SUBSCRIPTIONS_ENABLED === 'true'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -33,7 +34,6 @@ export default function RegisterPage() {
     city:         '',
     businessName: '',
   })
-  const [ageConfirmed,   setAgeConfirmed]   = useState(false)
   const [step1Error,     setStep1Error]     = useState('')
   const [step1Loading,   setStep1Loading]   = useState(false)
 
@@ -54,12 +54,6 @@ export default function RegisterPage() {
   async function handleStep1(e) {
     e.preventDefault()
     setStep1Error('')
-
-    if (!ageConfirmed) {
-      setStep1Error('You must be 18 or older to use Tobaki.')
-      return
-    }
-
     setStep1Loading(true)
 
     const body = {
@@ -94,16 +88,15 @@ export default function RegisterPage() {
           router.push('/login')
           return
         }
-        localStorage.setItem('tobaki_token', loginData.token)
-        localStorage.setItem('tobaki_user',  JSON.stringify(loginData.user))
+        localStorage.setItem('wasla_token', loginData.token)
+        localStorage.setItem('wasla_user',  JSON.stringify(loginData.user))
 
-        fetch('/api/auth/verify-age', {
-          method:  'PATCH',
-          headers: { Authorization: `Bearer ${loginData.token}` },
-        }).catch(() => {})
-
-        setAuthToken(loginData.token)
-        setStep(2)
+        if (SUBSCRIPTIONS_ENABLED) {
+          setAuthToken(loginData.token)
+          setStep(2)
+        } else {
+          router.push('/dashboard')
+        }
       } else {
         router.push('/login')
       }
@@ -119,7 +112,7 @@ export default function RegisterPage() {
     setStep2Error('')
 
     if (!termsAccepted) {
-      setStep2Error('Please accept Tobaki terms and conditions.')
+      setStep2Error('Please accept Wasla terms and conditions.')
       return
     }
 
@@ -145,7 +138,7 @@ export default function RegisterPage() {
       <div className="min-h-screen bg-[#f9f7ff] flex flex-col">
         <div className="bg-purple-700 px-6 py-4">
           <Link href="/" className="text-white font-black text-xl tracking-tight">
-            toba<span className="text-amber-300">ki</span>
+            was<span className="text-amber-300">la</span>
           </Link>
         </div>
         <div className="flex-1 flex items-center justify-center px-4 py-12">
@@ -163,7 +156,7 @@ export default function RegisterPage() {
               href="/"
               className="inline-block mt-6 bg-purple-700 hover:bg-purple-800 active:scale-95 text-white font-black px-6 py-2.5 rounded-2xl text-sm transition-all duration-200"
             >
-              Back to Tobaki
+              Back to Wasla
             </Link>
           </div>
         </div>
@@ -176,7 +169,7 @@ export default function RegisterPage() {
 
       <div className="bg-purple-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
-          toba<span className="text-amber-300">ki</span>
+          was<span className="text-amber-300">la</span>
         </Link>
       </div>
 
@@ -187,7 +180,7 @@ export default function RegisterPage() {
             <>
               <div className="mb-8 text-center">
                 <h1 className="text-2xl font-black text-gray-900">Create an account</h1>
-                <p className="text-gray-500 text-sm mt-1">Join the UAE&apos;s #1 vape marketplace</p>
+                <p className="text-gray-500 text-sm mt-1">Join Wasla — Sudanese products, delivered in Cairo</p>
               </div>
 
               <form onSubmit={handleStep1} className="space-y-4">
@@ -241,7 +234,7 @@ export default function RegisterPage() {
                       Business name <span className="text-red-400">*</span>
                     </label>
                     <input id="businessName" type="text" required value={form.businessName} onChange={set('businessName')}
-                      placeholder="e.g. Dubai Vape Store"
+                      placeholder="e.g. Kassala Coffee House"
                       className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition" />
                   </div>
                 )}
@@ -251,7 +244,7 @@ export default function RegisterPage() {
                     Phone <span className="text-gray-400 font-normal">(optional)</span>
                   </label>
                   <input id="phone" type="tel" autoComplete="tel" value={form.phone} onChange={set('phone')}
-                    placeholder="+971 50 000 0000"
+                    placeholder="+20 10 0000 0000"
                     className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition" />
                 </div>
 
@@ -262,32 +255,16 @@ export default function RegisterPage() {
                   <select id="city" value={form.city} onChange={set('city')}
                     className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition bg-white">
                     <option value="">Select your city</option>
-                    {UAE_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    {EGYPT_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
 
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <div className="relative shrink-0 mt-0.5">
-                    <input type="checkbox" checked={ageConfirmed} onChange={e => setAgeConfirmed(e.target.checked)} className="sr-only" />
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${ageConfirmed ? 'bg-purple-700 border-purple-700' : 'border-gray-300 group-hover:border-purple-400'}`}>
-                      {ageConfirmed && (
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-white">
-                          <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                  <span className="text-sm text-gray-600 leading-snug select-none">
-                    I confirm that I am <span className="font-semibold">18 years of age or older</span>
-                  </span>
-                </label>
-
                 <button
                   type="submit"
-                  disabled={step1Loading || !ageConfirmed}
+                  disabled={step1Loading}
                   className="w-full bg-purple-700 hover:bg-purple-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200 mt-2"
                 >
-                  {step1Loading ? 'Creating account…' : (isSeller ? 'Continue to Subscription' : 'Create account')}
+                  {step1Loading ? 'Creating account…' : (isSeller && SUBSCRIPTIONS_ENABLED ? 'Continue to Subscription' : 'Create account')}
                 </button>
               </form>
 
@@ -325,8 +302,8 @@ export default function RegisterPage() {
           {step === 2 && (
             <>
               <div className="mb-6 text-center">
-                <h1 className="text-2xl font-black text-gray-900">Seller Subscription</h1>
-                <p className="text-gray-500 text-sm mt-1">Join UAE&apos;s First Vape Marketplace</p>
+                <h1 className="text-2xl font-black text-gray-900">Shop Subscription</h1>
+                <p className="text-gray-500 text-sm mt-1">Join Wasla's marketplace for Sudanese shops in Cairo</p>
               </div>
 
               <form onSubmit={handleStep2} className="space-y-5">
@@ -340,7 +317,7 @@ export default function RegisterPage() {
                 <div className="border-2 border-purple-600 rounded-2xl p-5 bg-purple-50">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <p className="text-3xl font-black text-gray-900">AED 199</p>
+                      <p className="text-3xl font-black text-gray-900">EGP 500</p>
                       <p className="text-sm text-gray-500 font-medium">per month</p>
                     </div>
                     <span className="bg-purple-700 text-white text-xs font-black px-3 py-1 rounded-full">STANDARD</span>
@@ -349,7 +326,7 @@ export default function RegisterPage() {
                     {[
                       'Unlimited product listings',
                       'Access to all platform features',
-                      'Featured on Tobaki marketplace',
+                      'Featured on Wasla marketplace',
                     ].map(feature => (
                       <li key={feature} className="flex items-center gap-2 text-sm text-gray-700">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-purple-700 shrink-0">
@@ -409,7 +386,7 @@ export default function RegisterPage() {
                     </div>
                   </div>
                   <span className="text-sm text-gray-600 leading-snug select-none">
-                    I agree to <span className="text-purple-600 font-semibold">Tobaki terms and conditions</span>
+                    I agree to <span className="text-purple-600 font-semibold">Wasla terms and conditions</span>
                   </span>
                 </label>
 

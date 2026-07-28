@@ -38,9 +38,9 @@ export default function AuthSync() {
 
       if (!customToken || !userData) return
 
-      localStorage.setItem('tobaki_token', customToken)
-      localStorage.setItem('tobaki_user',  JSON.stringify(userData))
-      document.cookie = `tobaki_user_info=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`
+      localStorage.setItem('wasla_token', customToken)
+      localStorage.setItem('wasla_user',  JSON.stringify(userData))
+      document.cookie = `wasla_user_info=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`
 
       login(userData)
       synced.current = true

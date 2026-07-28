@@ -2,29 +2,29 @@ import Link from 'next/link'
 
 // Short text labels rendered inside a colored circle as the category icon
 const ABBR = {
-  'Devices':                'DEV',
-  'Disposables':            'DIS',
-  'Juices & E-Liquids':     'JCE',
-  'Spareparts':             'SPA',
-  'Other Smoking Products': 'OTH',
+  'Coffee & Jabana':        'COF',
+  'Tea & Drinks':           'TEA',
+  'Spices & Seasonings':    'SPC',
+  'Heritage Clothing':      'CLO',
+  'Homeware & Handicrafts': 'HOM',
 }
 
 // Per-category gradient + border colour
 const GRADIENT = {
-  'Devices':                'from-purple-50 to-purple-100 border-purple-200 hover:border-purple-300',
-  'Disposables':            'from-purple-50   to-purple-100   border-purple-200   hover:border-purple-300',
-  'Juices & E-Liquids':     'from-blue-50   to-blue-100   border-blue-200   hover:border-blue-300',
-  'Spareparts':             'from-yellow-50 to-yellow-100 border-yellow-200 hover:border-yellow-300',
-  'Other Smoking Products': 'from-gray-50   to-gray-100   border-gray-200   hover:border-gray-300',
+  'Coffee & Jabana':        'from-purple-50 to-purple-100 border-purple-200 hover:border-purple-300',
+  'Tea & Drinks':           'from-blue-50   to-blue-100   border-blue-200   hover:border-blue-300',
+  'Spices & Seasonings':    'from-yellow-50 to-yellow-100 border-yellow-200 hover:border-yellow-300',
+  'Heritage Clothing':      'from-amber-50  to-amber-100  border-amber-200  hover:border-amber-300',
+  'Homeware & Handicrafts': 'from-gray-50   to-gray-100   border-gray-200   hover:border-gray-300',
 }
 
 // Badge colour for the abbreviation circle
 const BADGE = {
-  'Devices':                'bg-purple-200 text-purple-700',
-  'Disposables':            'bg-purple-200   text-purple-700',
-  'Juices & E-Liquids':     'bg-blue-200   text-blue-700',
-  'Spareparts':             'bg-yellow-200 text-yellow-700',
-  'Other Smoking Products': 'bg-gray-200   text-gray-600',
+  'Coffee & Jabana':        'bg-purple-200 text-purple-700',
+  'Tea & Drinks':           'bg-blue-200   text-blue-700',
+  'Spices & Seasonings':    'bg-yellow-200 text-yellow-700',
+  'Heritage Clothing':      'bg-amber-200  text-amber-700',
+  'Homeware & Handicrafts': 'bg-gray-200   text-gray-600',
 }
 
 export default function CategoryCard({ name, count }) {
