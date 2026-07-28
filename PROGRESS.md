@@ -39,3 +39,14 @@ Brand renamed Tobaki→Wasla, age-gate deleted, vape SKU tables/admin screen dro
 - Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅.
 
 ---
+
+## Phase 5 — Egypt Payments
+- Built `PaymentProvider` as a real interface first (`lib/payments/PaymentProvider.js`: `initiate()`/`verify()`), with three concrete implementations registered in `lib/payments/index.js`:
+  - **`cod.js`** — Cash on Delivery, the default, fully working end to end (this was already the only working path; now formalized behind the interface).
+  - **`manualTransfer.js`** — InstaPay/Vodafone Cash. `POST /api/orders` sets `paymentStatus: 'PAYMENT_PENDING'` for this method; the customer then uploads a receipt via the new `POST /api/orders/[id]/receipt` (Cloudinary, same pattern as product photos, restricted to the order's own customer), and an admin confirms or rejects it via the new `PATCH /api/admin/orders/[id]/payment`, which moves the order to `paid` or back to `unpaid`. Wired into the cart's payment-method radio and a receipt-upload widget on the order-confirmation page.
+  - **`paymob.js`** — genuinely stubbed, not faked: `isConfigured` checks for `PAYMOB_API_KEY`/`PAYMOB_INTEGRATION_ID`/`PAYMOB_IFRAME_ID` (added as blank placeholders to `.env.example`), and `initiate()`/`verify()` throw a clear `PROVIDER_NOT_CONFIGURED` error (surfaced as an HTTP 503) rather than silently no-op'ing. The real Paymob auth→order→payment-key→iframe-redirect flow is commented inline as the exact next steps once keys exist. **Hard-stop #2 applies here** — no Paymob credentials exist, and none were fabricated; the UI shows Paymob as "coming soon" and disabled.
+- Added `Order.receiptUrl` (additive column, migration `20260728185942_phase5_payments`, applied via ordinary `migrate dev` since it's a pure addition, not a rename/drop).
+- Every price already displays in EGP from Phase 2; did not build deeper currency-formatting infrastructure here (that's Phase 6's i18n territory).
+- Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅.
+
+---

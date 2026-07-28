@@ -4,7 +4,9 @@ import Link from 'next/link'
 import Navbar from '../../../components/Navbar'
 
 export default function OrderConfirmationPage() {
-  const [orders, setOrders] = useState([])
+  const [orders,     setOrders]     = useState([])
+  const [uploading,  setUploading]  = useState(null)
+  const [uploaded,   setUploaded]   = useState({})
 
   useEffect(() => {
     try {
@@ -12,6 +14,26 @@ export default function OrderConfirmationPage() {
       if (raw) setOrders(JSON.parse(raw))
     } catch { /* ignore */ }
   }, [])
+
+  async function handleReceiptUpload(orderId, file) {
+    if (!file) return
+    setUploading(orderId)
+    const token = localStorage.getItem('wasla_token')
+    try {
+      const fd = new FormData()
+      fd.append('receipt', file)
+      const res  = await fetch(`/api/orders/${orderId}/receipt`, {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body:    fd,
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setUploaded(prev => ({ ...prev, [orderId]: true }))
+    } catch { /* surfaced via disabled state only, keep this lightweight */ } finally {
+      setUploading(null)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#f9f7ff]">
@@ -52,10 +74,31 @@ export default function OrderConfirmationPage() {
                   ))}
                 </div>
                 <div className="px-5 py-3 bg-[#f9f7ff] border-t border-gray-100 grid grid-cols-3 text-xs text-gray-500 gap-2">
-                  <span>Payment: {order.paymentMethod ?? 'Cash'}</span>
-                  <span className="text-center text-green-600 font-semibold">Status: Pending</span>
-                  <span className="text-right">Delivery: 2–4 hrs</span>
+                  <span>Payment: {order.paymentMethod ?? 'cod'}</span>
+                  <span className="text-center text-green-600 font-semibold">Status: Placed</span>
+                  <span className="text-right">Delivery: {order.promisedEta ? new Date(order.promisedEta).toLocaleString('en-EG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : 'TBD'}</span>
                 </div>
+
+                {order.paymentMethod === 'manual_transfer' && (
+                  <div className="px-5 py-4 border-t border-gray-100">
+                    {uploaded[order.id] ? (
+                      <p className="text-xs text-green-600 font-semibold">Receipt uploaded — awaiting admin confirmation.</p>
+                    ) : (
+                      <>
+                        <p className="text-xs text-gray-500 mb-2">
+                          Send payment via InstaPay or Vodafone Cash, then upload your receipt to confirm this order.
+                        </p>
+                        <label className={`inline-block cursor-pointer bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold px-4 py-2 rounded-xl transition-colors ${uploading === order.id ? 'opacity-50 pointer-events-none' : ''}`}>
+                          {uploading === order.id ? 'Uploading…' : 'Upload Receipt'}
+                          <input
+                            type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+                            onChange={e => handleReceiptUpload(order.id, e.target.files?.[0])}
+                          />
+                        </label>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>

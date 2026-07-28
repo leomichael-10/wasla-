@@ -5,6 +5,7 @@ import { sendWhatsApp } from '../../../lib/whatsapp'
 import { sendEmail } from '../../../lib/email'
 import { orderConfirmation, newOrderAlert } from '../../../lib/emailTemplates'
 import { resolvePromise, resolveFee } from '../../../lib/delivery'
+import { getPaymentProvider } from '../../../lib/payments'
 
 const ORDER_INCLUDE = {
   items: {
@@ -169,6 +170,17 @@ export async function POST(request) {
       resolvedPromised = resolvePromise(coverage.cutoffTime, zone.etaMinutes).promisedEta
     }
 
+    const provider = getPaymentProvider(paymentMethod ?? 'cod')
+    let paymentInit
+    try {
+      paymentInit = await provider.initiate({ orderId: null, total })
+    } catch (err) {
+      if (err.code === 'PROVIDER_NOT_CONFIGURED') {
+        return NextResponse.json({ error: err.message }, { status: 503 })
+      }
+      throw err
+    }
+
     const order = await prisma.$transaction(async (tx) => {
       const created = await tx.order.create({
         data: {
@@ -183,8 +195,8 @@ export async function POST(request) {
           zoneId:         resolvedZoneId,
           deliveryFee:    resolvedFee,
           promisedEta:    resolvedPromised,
-          paymentMethod:  paymentMethod ?? null,
-          paymentStatus:  'unpaid',
+          paymentMethod:  provider.name,
+          paymentStatus:  paymentInit.paymentStatus,
           items: {
             create: items.map(item => ({
               productVariantId: item.productVariantId,

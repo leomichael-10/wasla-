@@ -17,6 +17,7 @@ export default function CartPage() {
   const [error,       setError]       = useState('')
   const [zone,        setZone]        = useState(null)
   const [quotes,      setQuotes]      = useState({})
+  const [paymentMethod, setPaymentMethod] = useState('cod')
 
   const reload = useCallback((uid) => {
     const sorted = [...getCart(uid ?? 'guest')].sort((a, b) => a.productName.localeCompare(b.productName))
@@ -118,7 +119,7 @@ export default function CartPage() {
           body:    JSON.stringify({
             sellerId,
             deliveryAddress: address.trim(),
-            paymentMethod:   'cash',
+            paymentMethod,
             zoneId:          zone.id,
             orderGroupId:    Object.keys(grouped).length > 1 ? orderGroupId : null,
             deliveryFee:     quote?.fee ?? 0,
@@ -295,12 +296,24 @@ export default function CartPage() {
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">Payment Method</label>
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="radio" checked readOnly className="accent-purple-600" />
+                          <input
+                            type="radio" checked={paymentMethod === 'cod'}
+                            onChange={() => setPaymentMethod('cod')}
+                            className="accent-purple-600"
+                          />
                           <span className="text-sm text-gray-700">Cash on Delivery</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio" checked={paymentMethod === 'manual_transfer'}
+                            onChange={() => setPaymentMethod('manual_transfer')}
+                            className="accent-purple-600"
+                          />
+                          <span className="text-sm text-gray-700">InstaPay / Vodafone Cash (upload receipt)</span>
                         </label>
                         <label className="flex items-center gap-2 opacity-40 cursor-not-allowed">
                           <input type="radio" disabled className="accent-purple-600" />
-                          <span className="text-sm text-gray-500">Card (coming soon)</span>
+                          <span className="text-sm text-gray-500">Card / Wallet via Paymob (coming soon)</span>
                         </label>
                       </div>
                     </div>

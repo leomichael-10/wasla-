@@ -225,6 +225,7 @@ model Order {
   deliveryNotes   String?
   paymentMethod   String?
   paymentStatus   String        @default("unpaid")
+  receiptUrl      String?
   createdAt       DateTime      @default(now())
   customer        User          @relation(fields: [customerId], references: [id])
   seller          SellerProfile @relation(fields: [sellerId], references: [id])
