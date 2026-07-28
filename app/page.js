@@ -53,7 +53,7 @@ async function getFeaturedProducts() {
       take:    8,
       include: {
         variants: {
-          select: { id: true, label: true, priceAed: true, stockQty: true },
+          select: { id: true, label: true, price: true, stockQty: true },
           orderBy: { label: 'asc' },
         },
         seller:   { select: { id: true, businessName: true, city: true } },

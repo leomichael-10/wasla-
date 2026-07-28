@@ -38,7 +38,7 @@ export default function OrderConfirmationPage() {
               <div key={idx} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
                   <span className="font-black text-gray-900">Order #{order.id}</span>
-                  <span className="font-black text-gray-900 tabular-nums">AED {Number(order.totalAed).toFixed(2)}</span>
+                  <span className="font-black text-gray-900 tabular-nums">EGP {Number(order.total).toFixed(2)}</span>
                 </div>
                 <div className="px-5 py-4 space-y-2">
                   {order.items?.map((item, i) => (

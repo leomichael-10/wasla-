@@ -76,7 +76,7 @@ export async function GET(request, { params }) {
       seller:      { id: seller.id, businessName: seller.businessName, city: seller.city },
       variants: [{
         id:       rp.id,
-        priceAed: rp.priceAed,
+        price: rp.price,
         label:    null,
         inStock:  rp.stockQty > 0,
       }],

@@ -458,7 +458,7 @@ export default function AdminPage() {
                     { label: 'Total Sellers',  value: stats.totals.sellers,                     color: 'text-purple-700' },
                     { label: 'Total Products', value: stats.totals.products,                    color: 'text-blue-700' },
                     { label: 'Total Orders',   value: stats.totals.orders,                      color: 'text-yellow-700' },
-                    { label: 'Revenue',        value: `AED ${stats.totals.revenue.toFixed(0)}`, color: 'text-green-700' },
+                    { label: 'Revenue',        value: `EGP ${stats.totals.revenue.toFixed(0)}`, color: 'text-green-700' },
                   ].map(s => (
                     <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{s.label}</p>
@@ -494,7 +494,7 @@ export default function AdminPage() {
                             <span className="font-semibold text-gray-900">{seller.businessName}</span>
                             {seller.city && <span className="text-gray-400 text-xs">{seller.city}</span>}
                           </div>
-                          <span className="font-black text-gray-900 tabular-nums">AED {seller.revenueAed.toFixed(0)}</span>
+                          <span className="font-black text-gray-900 tabular-nums">EGP {seller.revenueAed.toFixed(0)}</span>
                         </div>
                       ))}
                     </div>
@@ -544,7 +544,7 @@ export default function AdminPage() {
                             <td className="px-5 py-4 font-semibold text-gray-900">{sub.seller?.businessName ?? '—'}</td>
                             <td className="px-4 py-4 text-gray-600">{sub.seller?.user?.email ?? '—'}</td>
                             <td className="px-4 py-4 text-gray-600">{sub.seller?.city ?? '—'}</td>
-                            <td className="px-4 py-4 text-right font-semibold tabular-nums">AED {Number(sub.priceAed).toFixed(0)}</td>
+                            <td className="px-4 py-4 text-right font-semibold tabular-nums">EGP {Number(sub.price).toFixed(0)}</td>
                             <td className="px-4 py-4 text-gray-600 capitalize">{sub.paymentMethod?.replace('_', ' ') ?? '—'}</td>
                             <td className="px-4 py-4 text-center">
                               <span className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize ${SUB_STATUS[sub.status] ?? 'bg-gray-100 text-gray-600'}`}>
@@ -599,7 +599,7 @@ export default function AdminPage() {
                           <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Business</th>
                           <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Email</th>
                           <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">City</th>
-                          <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Amount AED</th>
+                          <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Amount EGP</th>
                           <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Payment</th>
                           <th className="text-center px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Status</th>
                           <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Date</th>
@@ -611,7 +611,7 @@ export default function AdminPage() {
                             <td className="px-5 py-4 font-semibold text-gray-900">{sub.seller?.businessName ?? '—'}</td>
                             <td className="px-4 py-4 text-gray-600">{sub.seller?.user?.email ?? '—'}</td>
                             <td className="px-4 py-4 text-gray-600">{sub.seller?.city ?? '—'}</td>
-                            <td className="px-4 py-4 text-right font-semibold tabular-nums">{Number(sub.priceAed).toFixed(0)}</td>
+                            <td className="px-4 py-4 text-right font-semibold tabular-nums">{Number(sub.price).toFixed(0)}</td>
                             <td className="px-4 py-4 text-gray-600 capitalize">{sub.paymentMethod?.replace('_', ' ') ?? '—'}</td>
                             <td className="px-4 py-4 text-center">
                               <span className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize ${SUB_STATUS[sub.status] ?? 'bg-gray-100 text-gray-600'}`}>
@@ -929,7 +929,7 @@ export default function AdminPage() {
                             <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Brand</th>
                             <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Category</th>
                             <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Seller</th>
-                            <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Price AED</th>
+                            <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Price EGP</th>
                             <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Listed</th>
                             <th className="text-center px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Status</th>
                             <th className="px-4 py-3.5" />
@@ -937,7 +937,7 @@ export default function AdminPage() {
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                           {filteredProducts.map(p => {
-                            const prices = p.variants?.map(v => Number(v.priceAed)) ?? []
+                            const prices = p.variants?.map(v => Number(v.price)) ?? []
                             const minP   = prices.length ? Math.min(...prices) : null
                             const maxP   = prices.length ? Math.max(...prices) : null
                             const priceStr = minP === null ? '—'
@@ -1189,8 +1189,8 @@ export default function AdminPage() {
               <>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                   {[
-                    { label: 'Total Commission',      value: `AED ${Number(commission.totalCommission ?? 0).toFixed(2)}`,  color: 'text-purple-700' },
-                    { label: 'This Month',            value: `AED ${Number(commission.monthCommission ?? 0).toFixed(2)}`,  color: 'text-blue-700' },
+                    { label: 'Total Commission',      value: `EGP ${Number(commission.totalCommission ?? 0).toFixed(2)}`,  color: 'text-purple-700' },
+                    { label: 'This Month',            value: `EGP ${Number(commission.monthCommission ?? 0).toFixed(2)}`,  color: 'text-blue-700' },
                     { label: 'Commission Rate',       value: '10%',                                                        color: 'text-gray-900' },
                   ].map(s => (
                     <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -1224,10 +1224,10 @@ export default function AdminPage() {
                                 <td className="px-4 py-3.5 font-semibold text-gray-900">{row.businessName}</td>
                                 <td className="px-4 py-3.5 text-gray-600">{row.city ?? '—'}</td>
                                 <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-gray-700">
-                                  AED {Number(row.totalRevenue).toFixed(2)}
+                                  EGP {Number(row.totalRevenue).toFixed(2)}
                                 </td>
                                 <td className="px-4 py-3.5 text-right font-black tabular-nums text-purple-700">
-                                  AED {Number(row.totalCommission).toFixed(2)}
+                                  EGP {Number(row.totalCommission).toFixed(2)}
                                 </td>
                                 <td className="px-4 py-3.5 text-center text-gray-600">{row.orderCount}</td>
                               </tr>
@@ -1349,7 +1349,7 @@ export default function AdminPage() {
                           <td className="px-4 py-3.5 text-gray-600">{p.category?.name ?? '—'}</td>
                           <td className="px-4 py-3.5 text-gray-600">{p.brand ?? '—'}</td>
                           <td className="px-4 py-3.5 text-right tabular-nums text-gray-600">
-                            {p.priceMin != null ? `AED ${Number(p.priceMin).toFixed(0)}` : '—'}
+                            {p.priceMin != null ? `EGP ${Number(p.priceMin).toFixed(0)}` : '—'}
                             {p.priceMax != null && Number(p.priceMax) !== Number(p.priceMin) ? `–${Number(p.priceMax).toFixed(0)}` : ''}
                           </td>
                           <td className="px-4 py-3.5 text-center">
@@ -1408,7 +1408,7 @@ export default function AdminPage() {
                         <tr className="border-b border-gray-100 bg-[#f9f7ff]">
                           <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
                           <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Retailer</th>
-                          <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Price AED</th>
+                          <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Price EGP</th>
                           <th className="text-center px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Stock</th>
                           <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Admin Note</th>
                           <th className="px-4 py-3.5" />
@@ -1419,7 +1419,7 @@ export default function AdminPage() {
                           <tr key={item.id} className="hover:bg-[#f9f7ff] transition-colors">
                             <td className="px-5 py-3.5 font-semibold text-gray-900">{item.masterProduct?.name ?? '—'}</td>
                             <td className="px-4 py-3.5 text-gray-600">{item.retailer?.businessName ?? '—'} {item.retailer?.city ? `· ${item.retailer.city}` : ''}</td>
-                            <td className="px-4 py-3.5 text-right tabular-nums font-semibold">{Number(item.priceAed).toFixed(0)}</td>
+                            <td className="px-4 py-3.5 text-right tabular-nums font-semibold">{Number(item.price).toFixed(0)}</td>
                             <td className="px-4 py-3.5 text-center text-gray-600">{item.stockQty}</td>
                             <td className="px-4 py-3.5">
                               <input

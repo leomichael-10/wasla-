@@ -44,7 +44,7 @@ export async function GET(request) {
       seller:      rp.retailer,
       variants: [{
         id:       rp.id,
-        priceAed: rp.priceAed,
+        price: rp.price,
         label:    null,
         inStock:  rp.stockQty > 0,
       }],
@@ -53,8 +53,8 @@ export async function GET(request) {
 
     if (sort === 'az') products.sort((a, b) => a.name.localeCompare(b.name))
     else if (sort === 'za') products.sort((a, b) => b.name.localeCompare(a.name))
-    else if (sort === 'price_asc') products.sort((a, b) => Number(a.variants[0].priceAed) - Number(b.variants[0].priceAed))
-    else if (sort === 'price_desc') products.sort((a, b) => Number(b.variants[0].priceAed) - Number(a.variants[0].priceAed))
+    else if (sort === 'price_asc') products.sort((a, b) => Number(a.variants[0].price) - Number(b.variants[0].price))
+    else if (sort === 'price_desc') products.sort((a, b) => Number(b.variants[0].price) - Number(a.variants[0].price))
 
     return NextResponse.json({ products: JSON.parse(JSON.stringify(products)) })
   } catch (error) {

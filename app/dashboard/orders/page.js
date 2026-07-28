@@ -136,7 +136,7 @@ export default function DashboardOrdersPage() {
                   </div>
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <span className="font-black text-gray-900 text-base tabular-nums">
-                      AED {Number(order.totalAed).toFixed(2)}
+                      EGP {Number(order.total).toFixed(2)}
                     </span>
                     <span>
                       {new Date(order.createdAt).toLocaleDateString('en-AE', {

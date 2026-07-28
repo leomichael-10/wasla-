@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 
 const EMPTY_VARIANT = {
-  label: '', priceAed: '', stockQty: '', skuCode: '',
+  label: '', price: '', stockQty: '', skuCode: '',
 }
 
 function VariantRow({ index, variant, onChange, onRemove, canRemove }) {
@@ -25,8 +25,8 @@ function VariantRow({ index, variant, onChange, onRemove, canRemove }) {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         <div><label className={labelCls}>Label</label>
           <input type="text" value={variant.label} onChange={field('label')} placeholder="500g" className={inputCls} /></div>
-        <div><label className={labelCls}>Price AED <span className="text-red-400 normal-case font-bold">*</span></label>
-          <input type="number" value={variant.priceAed} onChange={field('priceAed')} placeholder="25" min={0} step="0.01" required className={inputCls} /></div>
+        <div><label className={labelCls}>Price EGP <span className="text-red-400 normal-case font-bold">*</span></label>
+          <input type="number" value={variant.price} onChange={field('price')} placeholder="25" min={0} step="0.01" required className={inputCls} /></div>
         <div><label className={labelCls}>Stock Qty</label>
           <input type="number" value={variant.stockQty} onChange={field('stockQty')} placeholder="50" min={0} className={inputCls} /></div>
         <div className="col-span-2 sm:col-span-1"><label className={labelCls}>SKU Code</label>
@@ -182,7 +182,7 @@ export default function AddProductPage() {
     if (!name.trim()) errs.name       = 'Product name is required.'
     if (!categoryId)  errs.categoryId = 'Please select a category.'
     variants.forEach((v, i) => {
-      if (!v.priceAed || Number(v.priceAed) <= 0)
+      if (!v.price || Number(v.price) <= 0)
         errs[`variant_${i}_price`] = `Variant ${i + 1}: price is required.`
     })
     setFieldErrors(errs)
@@ -204,7 +204,7 @@ export default function AddProductPage() {
       images,
       variants: variants.map(v => ({
         label:         v.label.trim()         || undefined,
-        priceAed:      parseFloat(v.priceAed),
+        price:      parseFloat(v.price),
         stockQty:      v.stockQty             ? parseInt(v.stockQty, 10)   : 0,
         skuCode:       v.skuCode.trim()       || undefined,
       })),

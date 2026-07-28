@@ -28,10 +28,10 @@ function SkeletonCard() {
 }
 
 function BrowseProductCard({ product }) {
-  const prices    = product.variants.map(v => Number(v.priceAed))
+  const prices    = product.variants.map(v => Number(v.price))
   const minPrice  = Math.min(...prices)
   const maxPrice  = Math.max(...prices)
-  const priceLabel = minPrice === maxPrice ? `AED ${minPrice.toFixed(0)}` : `AED ${minPrice.toFixed(0)}–${maxPrice.toFixed(0)}`
+  const priceLabel = minPrice === maxPrice ? `EGP ${minPrice.toFixed(0)}` : `EGP ${minPrice.toFixed(0)}–${maxPrice.toFixed(0)}`
   const labels     = product.variants.map(v => v.label).filter(Boolean)
 
   return (

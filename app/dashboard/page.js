@@ -120,7 +120,7 @@ export default function DashboardOverviewPage() {
   const pendingCount = orders.filter(o => o.status === 'pending').length
   const revenue = orders
     .filter(o => o.status === 'delivered')
-    .reduce((sum, o) => sum + Number(o.totalAed), 0)
+    .reduce((sum, o) => sum + Number(o.total), 0)
 
   const lowStockCount = products.reduce((count, p) =>
     count + (p.variants ?? []).filter(v => v.stockQty < 5).length, 0
@@ -186,7 +186,7 @@ export default function DashboardOverviewPage() {
           return (
             <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-5 py-4">
               <p className="text-sm font-semibold text-yellow-800">
-                Your subscription payment of AED 199 is being verified. Account will be activated within 24 hours.
+                Your subscription payment of EGP 199 is being verified. Account will be activated within 24 hours.
               </p>
             </div>
           )
@@ -221,7 +221,7 @@ export default function DashboardOverviewPage() {
         <StatCard label="Products"     value={products.length}             icon={IconBox}      bg="bg-purple-50"   />
         <StatCard label="Total Orders" value={orders.length}               icon={IconClipboard} bg="bg-blue-50"   />
         <StatCard label="Pending"      value={pendingCount}                icon={IconClock}    bg="bg-yellow-50" />
-        <StatCard label="Revenue"      value={`AED ${revenue.toFixed(0)}`} icon={IconBanknote} bg="bg-green-50"  />
+        <StatCard label="Revenue"      value={`EGP ${revenue.toFixed(0)}`} icon={IconBanknote} bg="bg-green-50"  />
       </div>
 
       {/* Quick action cards */}
@@ -272,7 +272,7 @@ export default function DashboardOverviewPage() {
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="text-sm font-black text-gray-900 tabular-nums">
-                    AED {Number(order.totalAed).toFixed(0)}
+                    EGP {Number(order.total).toFixed(0)}
                   </span>
                   <StatusBadge status={order.status} />
                 </div>

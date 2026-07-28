@@ -113,7 +113,7 @@ export default function DashboardProductsPage() {
                     </div>
                   </td>
                   <td className="px-4 py-4 text-gray-600">{item.masterProduct?.category?.name ?? '—'}</td>
-                  <td className="px-4 py-4 text-right font-semibold tabular-nums">AED {Number(item.priceAed).toFixed(0)}</td>
+                  <td className="px-4 py-4 text-right font-semibold tabular-nums">EGP {Number(item.price).toFixed(0)}</td>
                   <td className="px-4 py-4 text-center text-gray-600">{item.stockQty}</td>
                   <td className="px-4 py-4 text-center">
                     <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${STATUS_BADGE[item.status] ?? 'bg-gray-100 text-gray-600'}`}>

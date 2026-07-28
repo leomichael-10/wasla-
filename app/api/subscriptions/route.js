@@ -34,7 +34,7 @@ export async function GET(request) {
 }
 
 // POST /api/subscriptions
-// Seller: create a new subscription (always AED 199)
+// Seller: create a new subscription (always EGP 199)
 export async function POST(request) {
   const auth = getUser(request)
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -68,7 +68,7 @@ export async function POST(request) {
     const subscription = await prisma.subscription.create({
       data: {
         sellerId:      sellerProfile.id,
-        priceAed:      199,
+        price:      199,
         status:        'pending',
         paymentMethod,
         paymentStatus: 'unpaid',

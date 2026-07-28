@@ -136,12 +136,12 @@ export async function POST(request) {
       }
     }
 
-    const totalAed      = items.reduce((sum, item) => {
-      return sum + Number(variantMap[item.productVariantId].priceAed) * item.quantity
+    const total      = items.reduce((sum, item) => {
+      return sum + Number(variantMap[item.productVariantId].price) * item.quantity
     }, 0)
 
     const commissionRate = 0.10
-    const commissionAed  = parseFloat((totalAed * commissionRate).toFixed(2))
+    const commission  = parseFloat((total * commissionRate).toFixed(2))
 
     const order = await prisma.$transaction(async (tx) => {
       const created = await tx.order.create({
@@ -149,8 +149,8 @@ export async function POST(request) {
           customerId:     auth.userId,
           sellerId,
           status:         'pending',
-          totalAed,
-          commissionAed,
+          total,
+          commission,
           commissionRate,
           deliveryAddress,
           paymentMethod:  paymentMethod ?? null,
@@ -159,7 +159,7 @@ export async function POST(request) {
             create: items.map(item => ({
               productVariantId: item.productVariantId,
               quantity:         item.quantity,
-              priceAtPurchase:  variantMap[item.productVariantId].priceAed,
+              priceAtPurchase:  variantMap[item.productVariantId].price,
             })),
           },
         },
@@ -213,7 +213,7 @@ export async function POST(request) {
     if (sellerWa) {
       sendWhatsApp(
         sellerWa,
-        `New order on Wasla! Order #${order.id} — ${order.items.length} item${order.items.length !== 1 ? 's' : ''} — AED ${totalAed.toFixed(2)}. Login to your dashboard to accept.`
+        `New order on Wasla! Order #${order.id} — ${order.items.length} item${order.items.length !== 1 ? 's' : ''} — EGP ${total.toFixed(2)}. Login to your dashboard to accept.`
       )
     }
 

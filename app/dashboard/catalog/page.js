@@ -49,7 +49,7 @@ export default function CatalogPage() {
       const res  = await fetch('/api/seller/retailer-products', {
         method:  'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ masterProductId, priceAed: f.price, stockQty: f.stock || 0 }),
+        body:    JSON.stringify({ masterProductId, price: f.price, stockQty: f.stock || 0 }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -144,7 +144,7 @@ export default function CatalogPage() {
                   <p className="text-xs text-purple-600 font-semibold mb-1">{p.category?.name}</p>
                   {(p.priceMin != null || p.priceMax != null) && (
                     <p className="text-xs text-gray-400 mb-2">
-                      Suggested: AED {p.priceMin != null ? Number(p.priceMin).toFixed(0) : '?'}
+                      Suggested: EGP {p.priceMin != null ? Number(p.priceMin).toFixed(0) : '?'}
                       {p.priceMax != null && p.priceMax !== p.priceMin ? `–${Number(p.priceMax).toFixed(0)}` : ''}
                     </p>
                   )}
@@ -158,7 +158,7 @@ export default function CatalogPage() {
                       <div className="space-y-2">
                         <input
                           type="number"
-                          placeholder="Your price (AED)"
+                          placeholder="Your price (EGP)"
                           value={f.price ?? ''}
                           onChange={e => setForm(prev => ({ ...prev, [p.id]: { ...prev[p.id], price: e.target.value } }))}
                           className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"

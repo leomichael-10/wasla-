@@ -26,7 +26,7 @@ function RevenueBar({ data }) {
           {/* Tooltip on hover */}
           {d.revenue > 0 && (
             <div className="absolute bottom-full mb-1 hidden group-hover:block bg-gray-900 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap pointer-events-none z-10">
-              {d.date}: AED {d.revenue.toFixed(0)}
+              {d.date}: EGP {d.revenue.toFixed(0)}
             </div>
           )}
         </div>
@@ -65,7 +65,7 @@ export default function EarningsPage() {
     </div>
   )
 
-  const fmt = n => `AED ${Number(n).toFixed(2)}`
+  const fmt = n => `EGP ${Number(n).toFixed(2)}`
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -154,7 +154,7 @@ export default function EarningsPage() {
                     <td className="px-4 py-3 font-semibold text-gray-900">#{o.id}</td>
                     <td className="px-4 py-3 text-center text-gray-600">{o.items?.length ?? 0}</td>
                     <td className="px-5 py-3 text-right font-black text-gray-900 tabular-nums">
-                      AED {Number(o.totalAed).toFixed(2)}
+                      EGP {Number(o.total).toFixed(2)}
                     </td>
                   </tr>
                 ))}

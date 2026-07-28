@@ -25,6 +25,7 @@ model User {
   orders          Order[]
   reviews         Review[]
   wishlist        Wishlist[]
+  addresses       Address[]
 }
 
 model CustomerProfile {
@@ -37,8 +38,8 @@ model CustomerProfile {
 }
 
 model SellerProfile {
-  id                   Int               @id @default(autoincrement())
-  userId               Int               @unique
+  id                   Int                @id @default(autoincrement())
+  userId               Int                @unique
   businessName         String
   tradeLicense         String?
   city                 String?
@@ -47,14 +48,14 @@ model SellerProfile {
   longitude            Decimal?
   workingDays          String?
   workingHours         String?
-  deliveryAvailable    Boolean           @default(false)
-  warrantyAvailable    Boolean           @default(false)
+  deliveryAvailable    Boolean            @default(false)
+  warrantyAvailable    Boolean            @default(false)
   warrantyDuration     String?
-  maintenanceAvailable Boolean           @default(false)
-  approvedByAdmin      Boolean           @default(false)
-  subscriptionStatus   String            @default("PENDING")
-  createdAt            DateTime          @default(now())
-  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  maintenanceAvailable Boolean            @default(false)
+  approvedByAdmin      Boolean            @default(false)
+  subscriptionStatus   String             @default("PENDING")
+  createdAt            DateTime           @default(now())
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   products             Product[]
   orders               Order[]
   reviews              Review[]
@@ -64,12 +65,13 @@ model SellerProfile {
   trackingPixel        TrackingPixel?
   retailerProducts     RetailerProduct[]
   productRequests      ProductRequest[]
+  zoneCoverage         ShopZoneCoverage[]
 }
 
 model Subscription {
   id            Int           @id @default(autoincrement())
   sellerId      Int
-  priceAed      Decimal       @default(199)
+  price         Decimal       @default(199)
   status        String        @default("pending")
   paymentMethod String?
   paymentStatus String        @default("unpaid")
@@ -96,30 +98,53 @@ model SubCategory {
   products   Product[]
 }
 
+enum UnitType {
+  PIECE
+  GRAM
+  KILOGRAM
+  LITER
+  MILLILITER
+  BUNDLE
+}
+
+enum StorageType {
+  AMBIENT
+  CHILLED
+  FROZEN
+}
+
 model Product {
-  id            Int              @id @default(autoincrement())
-  sellerId      Int
-  categoryId    Int
-  subCategoryId Int?
-  brand         String?
-  name          String
-  description   String?
-  images        String[]         @default([])
-  isActive      Boolean          @default(true)
-  createdAt     DateTime         @default(now())
-  seller        SellerProfile    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  category      Category         @relation(fields: [categoryId], references: [id])
-  subCategory   SubCategory?     @relation(fields: [subCategoryId], references: [id])
-  variants      ProductVariant[]
-  reviews       Review[]
-  wishlists     Wishlist[]
+  id             Int              @id @default(autoincrement())
+  sellerId       Int
+  categoryId     Int
+  subCategoryId  Int?
+  brand          String?
+  name           String
+  description    String?
+  images         String[]         @default([])
+  isActive       Boolean          @default(true)
+  unitType       UnitType?
+  netWeight      Int?
+  sellByWeight   Boolean          @default(false)
+  originRegion   String?
+  isPerishable   Boolean          @default(false)
+  shelfLifeDays  Int?
+  storage        StorageType?
+  isHeritageGood Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  seller         SellerProfile    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  category       Category         @relation(fields: [categoryId], references: [id])
+  subCategory    SubCategory?     @relation(fields: [subCategoryId], references: [id])
+  variants       ProductVariant[]
+  reviews        Review[]
+  wishlists      Wishlist[]
 }
 
 model ProductVariant {
   id             Int             @id @default(autoincrement())
   productId      Int
   label          String?
-  priceAed       Decimal
+  price          Decimal
   stockQty       Int             @default(0)
   skuCode        String?         @unique
   image          String?
@@ -129,20 +154,82 @@ model ProductVariant {
   stockMovements StockMovement[]
 }
 
+model Address {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  governorate String
+  district    String?
+  street      String?
+  building    String?
+  floor       String?
+  apartment   String?
+  landmark    String?
+  phone       String?
+  latitude    Decimal?
+  longitude   Decimal?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders      Order[]
+}
+
+model DeliveryZone {
+  id           Int                @id @default(autoincrement())
+  nameEn       String
+  nameAr       String
+  districts    String[]           @default([])
+  baseFee      Decimal            @default(0)
+  etaMinutes   Int                @default(60)
+  isActive     Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+  shopCoverage ShopZoneCoverage[]
+  orders       Order[]
+}
+
+model ShopZoneCoverage {
+  id            Int           @id @default(autoincrement())
+  sellerId      Int
+  zoneId        Int
+  feeOverride   Decimal?
+  minOrderValue Decimal       @default(0)
+  cutoffTime    String?
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  seller        SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  zone          DeliveryZone  @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@unique([sellerId, zoneId])
+}
+
+model DeliveryWaitlist {
+  id        Int      @id @default(autoincrement())
+  district  String
+  phone     String?
+  createdAt DateTime @default(now())
+}
+
 model Order {
   id              Int           @id @default(autoincrement())
   customerId      Int
   sellerId        Int
-  status          String        @default("pending")
-  totalAed        Decimal
-  commissionAed   Decimal       @default(0)
+  status          String        @default("PLACED")
+  orderGroupId    String?
+  total           Decimal
+  currency        String        @default("EGP")
+  commission      Decimal       @default(0)
   commissionRate  Decimal       @default(0.10)
   deliveryAddress String
+  addressId       Int?
+  zoneId          Int?
+  deliveryFee     Decimal       @default(0)
+  promisedEta     DateTime?
+  deliveryNotes   String?
   paymentMethod   String?
   paymentStatus   String        @default("unpaid")
   createdAt       DateTime      @default(now())
   customer        User          @relation(fields: [customerId], references: [id])
   seller          SellerProfile @relation(fields: [sellerId], references: [id])
+  address         Address?      @relation(fields: [addressId], references: [id])
+  zone            DeliveryZone? @relation(fields: [zoneId], references: [id])
   items           OrderItem[]
 }
 
@@ -185,7 +272,7 @@ model AdCampaign {
   sellerId   Int
   type       String
   targetCity String?
-  budgetAed  Decimal?
+  budget     Decimal?
   startDate  DateTime
   endDate    DateTime
   status     String        @default("active")
@@ -248,7 +335,7 @@ model RetailerProduct {
   id              Int           @id @default(autoincrement())
   retailerId      Int
   masterProductId Int
-  priceAed        Decimal
+  price           Decimal
   stockQty        Int           @default(0)
   status          String        @default("PENDING")
   adminNote       String?

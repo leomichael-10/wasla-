@@ -43,7 +43,7 @@ export async function PATCH(request, { params }) {
         if (v.id) {
           const vData = {}
           if (v.label         !== undefined) vData.label         = v.label || null
-          if (v.priceAed      !== undefined) vData.priceAed      = parseFloat(v.priceAed)
+          if (v.price      !== undefined) vData.price      = parseFloat(v.price)
           if (v.stockQty      !== undefined) vData.stockQty      = parseInt(v.stockQty, 10) || 0
           if (v.image         !== undefined) vData.image         = v.image || null
           if (v.isActive === false)          vData.stockQty      = 0
@@ -57,7 +57,7 @@ export async function PATCH(request, { params }) {
               data: {
                 productId:     id,
                 label:         v.label         || null,
-                priceAed:      parseFloat(v.priceAed),
+                price:      parseFloat(v.price),
                 stockQty:      parseInt(v.stockQty, 10) || 0,
                 skuCode:       v.skuCode       || null,
                 image:         v.image         || null,
@@ -142,7 +142,7 @@ export async function GET(request, { params }) {
           select: {
             id:            true,
             label:         true,
-            priceAed:      true,
+            price:      true,
             stockQty:      true,
             skuCode:       true,
             image:         true,

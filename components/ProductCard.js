@@ -24,12 +24,12 @@ export default function ProductCard({ product }) {
   const [isCustomer,  setIsCustomer]  = useState(false)
   const [userId,      setUserId]      = useState('guest')
 
-  const prices     = product.variants.map(v => Number(v.priceAed))
+  const prices     = product.variants.map(v => Number(v.price))
   const minPrice   = Math.min(...prices)
   const maxPrice   = Math.max(...prices)
   const priceLabel = minPrice === maxPrice
-    ? `AED ${minPrice.toFixed(0)}`
-    : `AED ${minPrice.toFixed(0)}–${maxPrice.toFixed(0)}`
+    ? `EGP ${minPrice.toFixed(0)}`
+    : `EGP ${minPrice.toFixed(0)}–${maxPrice.toFixed(0)}`
 
   const variantLabels  = product.variants.map(v => v.label).filter(Boolean)
   const inStockVariant = product.variants.find(v => v.inStock ?? v.stockQty > 0) ?? null
@@ -71,7 +71,7 @@ export default function ProductCard({ product }) {
       productName:      product.name,
       brand:            product.brand ?? '',
       label:            inStockVariant.label ?? '',
-      priceAed:         Number(inStockVariant.priceAed),
+      price:         Number(inStockVariant.price),
       quantity:         1,
       sellerId:         product.seller?.id ?? 0,
       sellerName:       product.seller?.businessName ?? '',

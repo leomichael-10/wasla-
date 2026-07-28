@@ -22,7 +22,7 @@ export async function GET(request) {
       prisma.product.count({ where: { isActive: true } }),
       prisma.order.count(),
       prisma.order.aggregate({
-        _sum: { totalAed: true },
+        _sum: { total: true },
         where: { status: 'delivered' },
       }),
       prisma.orderItem.groupBy({
@@ -32,7 +32,7 @@ export async function GET(request) {
       }),
     ])
 
-    const totalRevenue = Number(revenueAgg._sum.totalAed ?? 0)
+    const totalRevenue = Number(revenueAgg._sum.total ?? 0)
 
     // Map variant → product units sold
     const variantIds = orderItemsByVariant.map(r => r.productVariantId)
@@ -71,9 +71,9 @@ export async function GET(request) {
     // Top sellers by revenue
     const revenueBySellerRaw = await prisma.order.groupBy({
       by:      ['sellerId'],
-      _sum:    { totalAed: true },
+      _sum:    { total: true },
       where:   { status: 'delivered' },
-      orderBy: { _sum: { totalAed: 'desc' } },
+      orderBy: { _sum: { total: 'desc' } },
       take:    5,
     })
 
@@ -90,7 +90,7 @@ export async function GET(request) {
       sellerId:     r.sellerId,
       businessName: sellerMap[r.sellerId]?.businessName ?? 'Unknown',
       city:         sellerMap[r.sellerId]?.city ?? null,
-      revenueAed:   Number(r._sum.totalAed ?? 0),
+      revenueAed:   Number(r._sum.total ?? 0),
     }))
 
     return NextResponse.json({

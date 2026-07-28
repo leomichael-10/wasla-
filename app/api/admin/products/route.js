@@ -30,7 +30,7 @@ export async function GET(request) {
       include: {
         category: { select: { name: true } },
         seller:   { select: { id: true, businessName: true } },
-        variants: { select: { priceAed: true, image: true }, orderBy: { priceAed: 'asc' } },
+        variants: { select: { price: true, image: true }, orderBy: { price: 'asc' } },
         _count:   { select: { variants: true } },
       },
     })

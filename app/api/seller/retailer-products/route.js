@@ -32,9 +32,9 @@ export async function POST(request) {
   if (!seller.approvedByAdmin)
     return NextResponse.json({ error: 'Your account is pending admin approval' }, { status: 403 })
 
-  const { masterProductId, priceAed, stockQty } = await request.json()
-  if (!masterProductId || priceAed == null)
-    return NextResponse.json({ error: 'masterProductId and priceAed are required' }, { status: 400 })
+  const { masterProductId, price, stockQty } = await request.json()
+  if (!masterProductId || price == null)
+    return NextResponse.json({ error: 'masterProductId and price are required' }, { status: 400 })
 
   const master = await prisma.masterProduct.findFirst({
     where: { id: parseInt(masterProductId, 10), isActive: true },
@@ -46,7 +46,7 @@ export async function POST(request) {
       data: {
         retailerId:      seller.id,
         masterProductId: master.id,
-        priceAed:        parseFloat(priceAed),
+        price:        parseFloat(price),
         stockQty:        parseInt(stockQty, 10) || 0,
         status:          'PENDING',
       },

@@ -33,16 +33,16 @@ export async function GET(request) {
       orderBy: { createdAt: 'desc' },
     })
 
-    const totalRevenue  = deliveredOrders.reduce((s, o) => s + Number(o.totalAed), 0)
+    const totalRevenue  = deliveredOrders.reduce((s, o) => s + Number(o.total), 0)
     const monthRevenue  = deliveredOrders
       .filter(o => new Date(o.createdAt) >= monthStart)
-      .reduce((s, o) => s + Number(o.totalAed), 0)
+      .reduce((s, o) => s + Number(o.total), 0)
     const weekRevenue   = deliveredOrders
       .filter(o => new Date(o.createdAt) >= weekStart)
-      .reduce((s, o) => s + Number(o.totalAed), 0)
+      .reduce((s, o) => s + Number(o.total), 0)
     const todayRevenue  = deliveredOrders
       .filter(o => new Date(o.createdAt) >= todayStart)
-      .reduce((s, o) => s + Number(o.totalAed), 0)
+      .reduce((s, o) => s + Number(o.total), 0)
 
     // Group revenue by date for chart (last 30 days)
     const chartData = []
@@ -55,7 +55,7 @@ export async function GET(request) {
           const oc = new Date(o.createdAt)
           return oc >= d && oc < dNext
         })
-        .reduce((s, o) => s + Number(o.totalAed), 0)
+        .reduce((s, o) => s + Number(o.total), 0)
       chartData.push({ date: label, revenue: rev })
     }
 

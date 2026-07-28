@@ -49,7 +49,7 @@ export default function CartPage() {
     return () => window.removeEventListener('cartUpdated', onCartUpdated)
   }, [reload])
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.priceAed * item.quantity, 0)
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const total    = subtotal + (cartItems.length > 0 ? DELIVERY_FEE : 0)
 
   async function handleCheckout() {
@@ -157,9 +157,9 @@ export default function CartPage() {
 
                     <div className="shrink-0 text-right">
                       <p className="font-black text-gray-900 text-sm tabular-nums">
-                        AED {(item.priceAed * item.quantity).toFixed(2)}
+                        EGP {(item.price * item.quantity).toFixed(2)}
                       </p>
-                      <p className="text-xs text-gray-400 mt-0.5">AED {item.priceAed.toFixed(2)} each</p>
+                      <p className="text-xs text-gray-400 mt-0.5">EGP {item.price.toFixed(2)} each</p>
                       <button
                         onClick={() => removeFromCart(item.productVariantId, userId)}
                         className="mt-2 text-xs text-red-400 hover:text-red-600 font-semibold transition-colors"
@@ -199,15 +199,15 @@ export default function CartPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
-                    <span className="font-semibold tabular-nums">AED {subtotal.toFixed(2)}</span>
+                    <span className="font-semibold tabular-nums">EGP {subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Delivery</span>
-                    <span className="font-semibold tabular-nums">AED {DELIVERY_FEE.toFixed(2)}</span>
+                    <span className="font-semibold tabular-nums">EGP {DELIVERY_FEE.toFixed(2)}</span>
                   </div>
                   <div className="border-t border-purple-50 pt-2 flex justify-between font-black text-gray-900 text-base">
                     <span>Total</span>
-                    <span className="tabular-nums">AED {total.toFixed(2)}</span>
+                    <span className="tabular-nums">EGP {total.toFixed(2)}</span>
                   </div>
                 </div>
 

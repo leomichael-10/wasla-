@@ -185,7 +185,7 @@ async function seedProducts(sellerUser) {
         variants: {
           create: product.variants.map(v => ({
             label:         v.label,
-            priceAed:      v.priceAed,
+            price:      v.price,
             stockQty:      v.stockQty,
             skuCode:       v.skuCode,
           })),
@@ -270,7 +270,7 @@ async function seedProductsSeller2(sellerUser) {
         variants: {
           create: product.variants.map(v => ({
             label:     v.label,
-            priceAed:  v.priceAed,
+            price:  v.price,
             stockQty:  v.stockQty,
             skuCode:   v.skuCode,
           })),

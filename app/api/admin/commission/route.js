@@ -19,10 +19,10 @@ export async function GET(request) {
       },
     })
 
-    const totalCommission = allOrders.reduce((s, o) => s + Number(o.commissionAed), 0)
+    const totalCommission = allOrders.reduce((s, o) => s + Number(o.commission), 0)
     const monthCommission = allOrders
       .filter(o => new Date(o.createdAt) >= monthStart)
-      .reduce((s, o) => s + Number(o.commissionAed), 0)
+      .reduce((s, o) => s + Number(o.commission), 0)
 
     // Group by seller
     const sellerMap = {}
@@ -38,8 +38,8 @@ export async function GET(request) {
         }
       }
       sellerMap[sid].totalOrders++
-      sellerMap[sid].totalRevenue    += Number(o.totalAed)
-      sellerMap[sid].totalCommission += Number(o.commissionAed)
+      sellerMap[sid].totalRevenue    += Number(o.total)
+      sellerMap[sid].totalCommission += Number(o.commission)
     }
 
     const bySeller = Object.values(sellerMap).sort((a, b) => b.totalCommission - a.totalCommission)
@@ -55,7 +55,7 @@ export async function GET(request) {
           const oc = new Date(o.createdAt)
           return oc >= mStart && oc < mEnd
         })
-        .reduce((s, o) => s + Number(o.commissionAed), 0)
+        .reduce((s, o) => s + Number(o.commission), 0)
       byMonth.push({ month: label, commission: rev })
     }
 

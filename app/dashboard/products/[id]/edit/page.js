@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 
-const EMPTY_VARIANT = { label: '', priceAed: '', stockQty: '', skuCode: '' }
+const EMPTY_VARIANT = { label: '', price: '', stockQty: '', skuCode: '' }
 
 function VariantRow({ index, variant, onChange, onRemove, canRemove, isNew }) {
   const inputCls = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition'
@@ -26,8 +26,8 @@ function VariantRow({ index, variant, onChange, onRemove, canRemove, isNew }) {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         <div><label className={labelCls}>Label</label>
           <input type="text" value={variant.label} onChange={field('label')} placeholder="500g" className={inputCls} /></div>
-        <div><label className={labelCls}>Price AED *</label>
-          <input type="number" value={variant.priceAed} onChange={field('priceAed')} placeholder="25" min={0} step="0.01" className={inputCls} /></div>
+        <div><label className={labelCls}>Price EGP *</label>
+          <input type="number" value={variant.price} onChange={field('price')} placeholder="25" min={0} step="0.01" className={inputCls} /></div>
         <div><label className={labelCls}>Stock Qty</label>
           <input type="number" value={variant.stockQty} onChange={field('stockQty')} placeholder="50" min={0} className={inputCls} /></div>
         {!isNew && (
@@ -138,7 +138,7 @@ export default function EditProductPage() {
       setVariants(p.variants.map(v => ({
         id:            v.id,
         label:         v.label         ?? '',
-        priceAed:      String(Number(v.priceAed)),
+        price:      String(Number(v.price)),
         stockQty:      String(v.stockQty),
         skuCode:       v.skuCode       ?? '',
         isActive:      true,
@@ -176,13 +176,13 @@ export default function EditProductPage() {
         ...variants.map(v => ({
           id:            v.id,
           label:         v.label         || null,
-          priceAed:      parseFloat(v.priceAed),
+          price:      parseFloat(v.price),
           stockQty:      parseInt(v.stockQty, 10) || 0,
           isActive:      v.isActive,
         })),
-        ...newVariants.filter(v => v.priceAed).map(v => ({
+        ...newVariants.filter(v => v.price).map(v => ({
           label:         v.label         || null,
-          priceAed:      parseFloat(v.priceAed),
+          price:      parseFloat(v.price),
           stockQty:      parseInt(v.stockQty, 10) || 0,
         })),
       ],

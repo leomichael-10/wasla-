@@ -113,7 +113,7 @@ export default function ProductDetailPage() {
       productName:      product.name,
       brand:            product.brand ?? '',
       label:            selectedVariant.label ?? '',
-      priceAed:         Number(selectedVariant.priceAed),
+      price:         Number(selectedVariant.price),
       quantity:         1,
       sellerId:         product.seller?.id ?? 0,
       sellerName:       product.seller?.businessName ?? '',
@@ -288,7 +288,7 @@ export default function ProductDetailPage() {
             {/* Price + cart */}
             <div className="flex items-center gap-3 mt-1">
               <span className="text-3xl font-black text-gray-900 tabular-nums">
-                {selectedVariant ? `AED ${Number(selectedVariant.priceAed)}` : '—'}
+                {selectedVariant ? `EGP ${Number(selectedVariant.price)}` : '—'}
               </span>
               <button onClick={handleAddToCart} disabled={!selectedVariant || outOfStock}
                 className={`flex-1 py-3.5 rounded-full font-black text-sm transition-all duration-200

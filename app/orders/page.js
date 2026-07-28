@@ -41,7 +41,7 @@ export default function OrdersPage() {
         productName:      v.product?.name ?? 'Product',
         brand:            v.product?.brand ?? '',
         label:            v.label         ?? '',
-        priceAed:         Number(item.priceAtPurchase),
+        price:         Number(item.priceAtPurchase),
         quantity:         item.quantity,
         sellerId:         order.sellerId ?? 0,
         sellerName:       order.seller?.businessName ?? '',
@@ -139,7 +139,7 @@ export default function OrdersPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="font-black text-gray-900 tabular-nums">AED {Number(order.totalAed).toFixed(2)}</span>
+                    <span className="font-black text-gray-900 tabular-nums">EGP {Number(order.total).toFixed(2)}</span>
                     <span className="text-gray-400">
                       {new Date(order.createdAt).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
