@@ -4,8 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 import { getCart, removeFromCart, updateQuantity, clearCart } from '../../lib/cart'
-
-const DELIVERY_FEE = 10
+import { getZoneCookie } from '../../lib/zone'
 
 export default function CartPage() {
   const router = useRouter()
@@ -16,6 +15,8 @@ export default function CartPage() {
   const [address,     setAddress]     = useState('')
   const [placing,     setPlacing]     = useState(false)
   const [error,       setError]       = useState('')
+  const [zone,        setZone]        = useState(null)
+  const [quotes,      setQuotes]      = useState({})
 
   const reload = useCallback((uid) => {
     const sorted = [...getCart(uid ?? 'guest')].sort((a, b) => a.productName.localeCompare(b.productName))
@@ -49,8 +50,28 @@ export default function CartPage() {
     return () => window.removeEventListener('cartUpdated', onCartUpdated)
   }, [reload])
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const total    = subtotal + (cartItems.length > 0 ? DELIVERY_FEE : 0)
+  useEffect(() => {
+    setZone(getZoneCookie())
+  }, [])
+
+  const sellerIds = [...new Set(cartItems.map(i => i.sellerId).filter(Boolean))]
+
+  useEffect(() => {
+    if (!zone || sellerIds.length === 0) { setQuotes({}); return }
+    fetch(`/api/delivery/quote?zoneId=${zone.id}&sellerIds=${sellerIds.join(',')}`)
+      .then(r => r.json())
+      .then(data => {
+        const map = Object.fromEntries((data.quotes ?? []).map(q => [q.sellerId, q]))
+        setQuotes(map)
+      })
+      .catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zone, JSON.stringify(sellerIds)])
+
+  const subtotal    = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const deliveryFee = sellerIds.reduce((sum, id) => sum + (quotes[id]?.covered ? quotes[id].fee : 0), 0)
+  const total       = subtotal + deliveryFee
+  const anyUncovered = zone ? sellerIds.some(id => quotes[id] && !quotes[id].covered) : false
 
   async function handleCheckout() {
     if (!user) {
@@ -65,6 +86,14 @@ export default function CartPage() {
       setError('Your cart is empty.')
       return
     }
+    if (!zone) {
+      setError('Please select your delivery area first.')
+      return
+    }
+    if (anyUncovered) {
+      setError('One or more shops in your cart don\'t deliver to your area yet. Remove those items to continue.')
+      return
+    }
 
     setError('')
     setPlacing(true)
@@ -77,16 +106,22 @@ export default function CartPage() {
       grouped[key].push(item)
     }
 
+    const orderGroupId = crypto.randomUUID()
     const placedOrders = []
     try {
       for (const [sellerIdStr, items] of Object.entries(grouped)) {
+        const sellerId = parseInt(sellerIdStr, 10)
+        const quote    = quotes[sellerId]
         const res  = await fetch('/api/orders', {
           method:  'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body:    JSON.stringify({
-            sellerId:        parseInt(sellerIdStr, 10),
+            sellerId,
             deliveryAddress: address.trim(),
             paymentMethod:   'cash',
+            zoneId:          zone.id,
+            orderGroupId:    Object.keys(grouped).length > 1 ? orderGroupId : null,
+            deliveryFee:     quote?.fee ?? 0,
             items:           items.map(i => ({
               productVariantId: i.productVariantId,
               quantity:         i.quantity,
@@ -196,6 +231,36 @@ export default function CartPage() {
               <div className="bg-white rounded-3xl border border-purple-50 shadow-sm p-5 space-y-4">
                 <h2 className="font-black text-gray-900">Order Summary</h2>
 
+                {!zone && (
+                  <p className="text-xs bg-amber-50 text-amber-700 font-semibold rounded-xl px-3 py-2">
+                    Select your delivery area to see fees and ETA.
+                  </p>
+                )}
+
+                {zone && sellerIds.length > 0 && (
+                  <div className="space-y-1.5">
+                    {sellerIds.map(id => {
+                      const q     = quotes[id]
+                      const items = cartItems.filter(i => i.sellerId === id)
+                      const name  = items[0]?.sellerName || 'Shop'
+                      if (!q) return null
+                      return (
+                        <div key={id} className="text-xs bg-[#f9f7ff] rounded-xl px-3 py-2">
+                          <p className="font-bold text-gray-800">{name}</p>
+                          {q.covered ? (
+                            <p className="text-gray-500 mt-0.5">
+                              Delivery EGP {q.fee.toFixed(2)} · {q.sameDay ? 'Same-day' : 'Next-day'}
+                              {q.minOrderValue > 0 && ` · Min order EGP ${q.minOrderValue.toFixed(0)}`}
+                            </p>
+                          ) : (
+                            <p className="text-red-500 font-semibold mt-0.5">لا يوصل لمنطقتك — doesn't deliver to your area</p>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
@@ -203,7 +268,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Delivery</span>
-                    <span className="font-semibold tabular-nums">EGP {DELIVERY_FEE.toFixed(2)}</span>
+                    <span className="font-semibold tabular-nums">EGP {deliveryFee.toFixed(2)}</span>
                   </div>
                   <div className="border-t border-purple-50 pt-2 flex justify-between font-black text-gray-900 text-base">
                     <span>Total</span>

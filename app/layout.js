@@ -6,6 +6,7 @@ import { UserProvider } from '../lib/UserContext'
 import SessionProviderWrapper from '../components/SessionProviderWrapper'
 import AuthSync from '../components/AuthSync'
 import GlobalTracker from '../components/GlobalTracker'
+import ZoneGate from '../components/ZoneGate'
 import './globals.css'
 
 const geistSans = Geist({
@@ -50,6 +51,7 @@ export default async function RootLayout({ children }) {
         <UserProvider initialUser={initialUser}>
         <AuthSync />
         <GlobalTracker />
+        <ZoneGate />
         <Toaster
           position="top-right"
           toastOptions={{

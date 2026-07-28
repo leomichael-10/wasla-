@@ -72,7 +72,7 @@ export async function POST(request) {
       where: {
         customerId: auth.userId,
         sellerId,
-        status: 'delivered',
+        status: 'DELIVERED',
         items: {
           some: {
             productVariant: { productId },

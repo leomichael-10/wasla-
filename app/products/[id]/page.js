@@ -95,7 +95,7 @@ export default function ProductDetailPage() {
     fetch('/api/orders', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
-        const delivered    = (data.orders ?? []).filter(o => o.status === 'delivered')
+        const delivered    = (data.orders ?? []).filter(o => o.status === 'DELIVERED')
         const hasPurchased = delivered.some(o =>
           o.items?.some(item => item.productVariant?.product?.id === product.id)
         )

@@ -12,6 +12,7 @@ const PUBLIC_PREFIXES = [
   '/api/auth/',
   '/api/track/pixel/',
   '/api/track/global',
+  '/api/waitlist',
 ]
 
 // Route prefixes where GET requests are public (token optional, verified if present)
@@ -20,6 +21,8 @@ const OPTIONAL_AUTH_PREFIXES = [
   '/api/reviews',
   '/api/shops',
   '/api/categories',
+  '/api/zones',
+  '/api/delivery',
 ]
 
 // Routes restricted by role

@@ -2,26 +2,28 @@
 import { useState, useEffect, useCallback } from 'react'
 
 const STATUS_STYLES = {
-  pending:   'bg-yellow-100 text-yellow-700',
-  accepted:  'bg-blue-100   text-blue-700',
-  preparing: 'bg-orange-100 text-orange-700',
-  delivered: 'bg-green-100  text-green-700',
-  cancelled: 'bg-red-100    text-red-700',
+  PLACED:           'bg-yellow-100 text-yellow-700',
+  SHOP_CONFIRMED:   'bg-blue-100   text-blue-700',
+  PREPARING:        'bg-orange-100 text-orange-700',
+  OUT_FOR_DELIVERY: 'bg-indigo-100 text-indigo-700',
+  DELIVERED:        'bg-green-100  text-green-700',
+  CANCELLED:        'bg-red-100    text-red-700',
 }
 
 // Which statuses can a seller transition an order to from the current status
 const NEXT_STATUS = {
-  pending:   ['accepted', 'cancelled'],
-  accepted:  ['preparing', 'cancelled'],
-  preparing: ['delivered', 'cancelled'],
-  delivered: [],
-  cancelled: [],
+  PLACED:           ['SHOP_CONFIRMED', 'CANCELLED'],
+  SHOP_CONFIRMED:   ['PREPARING', 'CANCELLED'],
+  PREPARING:        ['OUT_FOR_DELIVERY', 'CANCELLED'],
+  OUT_FOR_DELIVERY: ['DELIVERED', 'CANCELLED'],
+  DELIVERED:        [],
+  CANCELLED:        [],
 }
 
 function StatusBadge({ status }) {
   return (
-    <span className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize ${STATUS_STYLES[status] ?? 'bg-gray-100 text-gray-600'}`}>
-      {status}
+    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${STATUS_STYLES[status] ?? 'bg-gray-100 text-gray-600'}`}>
+      {status?.replaceAll('_', ' ')}
     </span>
   )
 }
@@ -75,9 +77,9 @@ export default function DashboardOrdersPage() {
 
   const counts = {
     total:    orders.length,
-    pending:  orders.filter(o => o.status === 'pending').length,
-    active:   orders.filter(o => ['accepted', 'preparing'].includes(o.status)).length,
-    done:     orders.filter(o => ['delivered', 'cancelled'].includes(o.status)).length,
+    pending:  orders.filter(o => o.status === 'PLACED').length,
+    active:   orders.filter(o => ['SHOP_CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY'].includes(o.status)).length,
+    done:     orders.filter(o => ['DELIVERED', 'CANCELLED'].includes(o.status)).length,
   }
 
   return (
@@ -193,12 +195,12 @@ export default function DashboardOrdersPage() {
                         onClick={() => handleStatusChange(order.id, next)}
                         disabled={isUpdating}
                         className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                          next === 'cancelled'
+                          next === 'CANCELLED'
                             ? 'border-red-200 text-red-600 hover:bg-red-50'
                             : 'border-purple-300 text-purple-700 hover:bg-purple-50'
                         }`}
                       >
-                        {isUpdating ? '…' : `→ ${next}`}
+                        {isUpdating ? '…' : `→ ${next.replaceAll('_', ' ')}`}
                       </button>
                     ))}
                   </div>
@@ -208,7 +210,7 @@ export default function DashboardOrdersPage() {
                 {nextOptions.length === 0 && (
                   <div className="px-5 py-3 bg-[#f9f7ff] border-t border-gray-100">
                     <span className="text-xs text-gray-400 font-medium">
-                      {order.status === 'delivered' ? 'Order completed' : 'Order cancelled'}
+                      {order.status === 'DELIVERED' ? 'Order completed' : 'Order cancelled'}
                     </span>
                   </div>
                 )}

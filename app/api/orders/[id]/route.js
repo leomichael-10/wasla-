@@ -7,14 +7,15 @@ import { orderAccepted, orderDelivered } from '../../../../lib/emailTemplates'
 
 // Valid status transitions a seller may make
 const VALID_TRANSITIONS = {
-  pending:   ['accepted', 'cancelled'],
-  accepted:  ['preparing', 'cancelled'],
-  preparing: ['delivered', 'cancelled'],
+  PLACED:           ['SHOP_CONFIRMED', 'CANCELLED'],
+  SHOP_CONFIRMED:   ['PREPARING', 'CANCELLED'],
+  PREPARING:        ['OUT_FOR_DELIVERY', 'CANCELLED'],
+  OUT_FOR_DELIVERY: ['DELIVERED', 'CANCELLED'],
 }
 
 // PATCH /api/orders/:id
 // Seller only. Advances the order through its status lifecycle.
-// Body: { status: 'accepted' | 'preparing' | 'delivered' | 'cancelled' }
+// Body: { status: 'SHOP_CONFIRMED' | 'PREPARING' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED' }
 export async function PATCH(request, { params }) {
   const auth = getUser(request)
   if (!auth) {
@@ -92,7 +93,7 @@ export async function PATCH(request, { params }) {
       ? `whatsapp:${order.customer.whatsapp}`
       : null
 
-    if (newStatus === 'accepted') {
+    if (newStatus === 'SHOP_CONFIRMED') {
       if (customerEmail) {
         sendEmail(
           customerEmail,
@@ -103,12 +104,12 @@ export async function PATCH(request, { params }) {
       if (customerWa) {
         sendWhatsApp(
           customerWa,
-          `Your Wasla order #${orderId} has been accepted and is being prepared. Estimated delivery: 2-4 hours.`
+          `Your Wasla order #${orderId} has been accepted and is being prepared.`
         )
       }
     }
 
-    if (newStatus === 'delivered') {
+    if (newStatus === 'DELIVERED') {
       if (customerEmail) {
         sendEmail(
           customerEmail,

@@ -4,6 +4,7 @@ import { getUser } from '../../../lib/auth'
 import { sendWhatsApp } from '../../../lib/whatsapp'
 import { sendEmail } from '../../../lib/email'
 import { orderConfirmation, newOrderAlert } from '../../../lib/emailTemplates'
+import { resolvePromise, resolveFee } from '../../../lib/delivery'
 
 const ORDER_INCLUDE = {
   items: {
@@ -75,7 +76,7 @@ export async function POST(request) {
 
   try {
     const body = await request.json()
-    const { sellerId, deliveryAddress, paymentMethod, items } = body
+    const { sellerId, deliveryAddress, paymentMethod, items, zoneId, orderGroupId } = body
 
     if (!sellerId || !deliveryAddress || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -143,16 +144,45 @@ export async function POST(request) {
     const commissionRate = 0.10
     const commission  = parseFloat((total * commissionRate).toFixed(2))
 
+    // Zone/delivery is optional (older clients or admin-created orders may omit it),
+    // but if a zoneId is supplied we validate coverage and recompute the fee
+    // server-side rather than trusting whatever the client sent.
+    let resolvedZoneId    = null
+    let resolvedFee       = 0
+    let resolvedPromised  = null
+    if (zoneId) {
+      const zone = await prisma.deliveryZone.findUnique({ where: { id: zoneId } })
+      const coverage = zone
+        ? await prisma.shopZoneCoverage.findUnique({ where: { sellerId_zoneId: { sellerId, zoneId } } })
+        : null
+      if (!zone || !coverage || !coverage.isActive) {
+        return NextResponse.json({ error: 'This shop does not deliver to your selected area' }, { status: 400 })
+      }
+      if (total < Number(coverage.minOrderValue)) {
+        return NextResponse.json(
+          { error: `Minimum order for this shop is EGP ${Number(coverage.minOrderValue).toFixed(0)}` },
+          { status: 400 }
+        )
+      }
+      resolvedZoneId   = zoneId
+      resolvedFee      = resolveFee(zone, coverage)
+      resolvedPromised = resolvePromise(coverage.cutoffTime, zone.etaMinutes).promisedEta
+    }
+
     const order = await prisma.$transaction(async (tx) => {
       const created = await tx.order.create({
         data: {
           customerId:     auth.userId,
           sellerId,
-          status:         'pending',
+          status:         'PLACED',
+          orderGroupId:   orderGroupId ?? null,
           total,
           commission,
           commissionRate,
           deliveryAddress,
+          zoneId:         resolvedZoneId,
+          deliveryFee:    resolvedFee,
+          promisedEta:    resolvedPromised,
           paymentMethod:  paymentMethod ?? null,
           paymentStatus:  'unpaid',
           items: {

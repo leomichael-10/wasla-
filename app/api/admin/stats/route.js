@@ -23,7 +23,7 @@ export async function GET(request) {
       prisma.order.count(),
       prisma.order.aggregate({
         _sum: { total: true },
-        where: { status: 'delivered' },
+        where: { status: 'DELIVERED' },
       }),
       prisma.orderItem.groupBy({
         by:      ['productVariantId'],
@@ -72,7 +72,7 @@ export async function GET(request) {
     const revenueBySellerRaw = await prisma.order.groupBy({
       by:      ['sellerId'],
       _sum:    { total: true },
-      where:   { status: 'delivered' },
+      where:   { status: 'DELIVERED' },
       orderBy: { _sum: { total: 'desc' } },
       take:    5,
     })

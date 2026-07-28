@@ -27,3 +27,15 @@ Brand renamed Tobaki→Wasla, age-gate deleted, vape SKU tables/admin screen dro
 - Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (seeding is data-only, no schema change).
 
 ---
+
+## Phase 4 — Same-Day Cairo Delivery
+- Seeded the 8 launch zones from the brief (Faisal, Haram, Ard El Lewa, 6th of October/Hosary, Nasr City, Ain Shams, Maadi, Hadayek El Maadi) with AR/EN names, base fee, and ETA minutes, plus `ShopZoneCoverage` rows wiring each of the 3 demo shops to 3 zones each (with one fee override and one min-order example) so the feature has real data to render against.
+- **Zone gate**: `components/ZoneGate.js`, a client component mounted globally in `app/layout.js`. On first visit (no `wasla_zone` cookie) it shows a full-screen picker fetched from `/api/zones`; selecting a zone sets a 90-day cookie via `lib/zone.js`. Includes a waitlist form (`POST /api/waitlist` → `DeliveryWaitlist`) for out-of-zone visitors, both wired and public in `middleware.js`.
+- **Delivery quote**: `GET /api/delivery/quote?zoneId=&sellerIds=` resolves per-shop fee (override or zone base), same-day/next-day ETA (via `lib/delivery.js`'s cutoff-time logic), and min-order-value, shared between the client-facing quote endpoint and server-side order validation so the fee/ETA logic isn't duplicated or spoofable.
+- **Cart**: now reads the zone cookie, fetches a quote per shop present in the cart, shows a per-shop delivery-fee/ETA/min-order breakdown (or "لا يوصل لمنطقتك" if a shop doesn't cover the zone), blocks checkout until a zone is picked or an uncovered shop is removed, and — when a checkout spans more than one shop — generates a shared `orderGroupId` (`crypto.randomUUID()`) passed to each per-shop order.
+- **Order creation** (`POST /api/orders`) now accepts `zoneId`/`orderGroupId`, re-validates shop coverage and minimum order value server-side (never trusts the client-supplied fee), and persists `deliveryFee`/`promisedEta`/`zoneId`/`orderGroupId` on the order.
+- **Order status flow**: renamed the whole lifecycle from lowercase ad hoc strings (`pending/accepted/preparing/delivered/cancelled`) to the brief's `PLACED → SHOP_CONFIRMED → PREPARING → OUT_FOR_DELIVERY → DELIVERED | CANCELLED`, updating every consumer (dashboard orders/queue, customer order history, admin stats/commission aggregates, product review-eligibility check). `Subscription.status` and other unrelated `status` fields were deliberately left alone — only `Order.status` values changed.
+- **Stub / not done**: product listing pages (`/browse`, `/products`, `/shops/[id]`) do **not yet** greyed-out/hide products from shops outside the selected zone — the `/api/delivery/quote` endpoint exists and could annotate listings, but wiring it into every listing page's query + UI treatment was deferred to keep Phase 4 landing; the cart-level gate (blocking checkout) is the enforced boundary today. Flagging this explicitly rather than silently shipping it half-done.
+- Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅.
+
+---

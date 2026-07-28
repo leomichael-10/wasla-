@@ -13,7 +13,7 @@ export async function GET(request) {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
 
     const allOrders = await prisma.order.findMany({
-      where: { status: 'delivered' },
+      where: { status: 'DELIVERED' },
       include: {
         seller: { select: { id: true, businessName: true } },
       },

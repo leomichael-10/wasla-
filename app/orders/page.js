@@ -6,11 +6,12 @@ import Navbar from '../../components/Navbar'
 import { addToCart } from '../../lib/cart'
 
 const STATUS_STYLES = {
-  pending:   'bg-yellow-100 text-yellow-700',
-  accepted:  'bg-blue-100   text-blue-700',
-  preparing: 'bg-orange-100 text-orange-700',
-  delivered: 'bg-green-100  text-green-700',
-  cancelled: 'bg-red-100    text-red-700',
+  PLACED:           'bg-yellow-100 text-yellow-700',
+  SHOP_CONFIRMED:   'bg-blue-100   text-blue-700',
+  PREPARING:        'bg-orange-100 text-orange-700',
+  OUT_FOR_DELIVERY: 'bg-indigo-100 text-indigo-700',
+  DELIVERED:        'bg-green-100  text-green-700',
+  CANCELLED:        'bg-red-100    text-red-700',
 }
 
 export default function OrdersPage() {
@@ -134,8 +135,8 @@ export default function OrdersPage() {
                 <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-3">
                     <span className="font-black text-gray-900">Order #{order.id}</span>
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize ${STATUS_STYLES[order.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {order.status}
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${STATUS_STYLES[order.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                      {order.status?.replaceAll('_', ' ')}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
@@ -168,7 +169,7 @@ export default function OrdersPage() {
                 {/* Footer */}
                 <div className="px-5 py-3 bg-[#f9f7ff] border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 gap-2 flex-wrap">
                   <span className="capitalize">Payment: {order.paymentMethod ?? 'cash'}</span>
-                  {order.status === 'delivered' && (
+                  {order.status === 'DELIVERED' && (
                     <button
                       onClick={() => handleReorder(order)}
                       className="text-xs font-bold text-purple-700 hover:text-purple-800 transition-colors"

@@ -21,7 +21,7 @@ export async function GET(request, { params }) {
           },
         },
         orders: {
-          where:  { status: 'delivered' },
+          where:  { status: 'DELIVERED' },
           select: { id: true },
         },
       },

@@ -178,6 +178,33 @@ const PRODUCTS = [
     variants: [ { label: 'Standard', price: 260, stockQty: 14, skuCode: 'DEMO-BIRISH-STD' } ] },
 ]
 
+// ─── Launch delivery zones (Phase 4) ─────────────────────────────────────────
+// Highest Sudanese-density areas first, per the brief.
+
+const ZONES = [
+  { nameEn: 'Faisal',            nameAr: 'فيصل',           districts: ['Faisal'],            baseFee: 25, etaMinutes: 90 },
+  { nameEn: 'Haram',              nameAr: 'الهرم',          districts: ['Haram'],              baseFee: 25, etaMinutes: 90 },
+  { nameEn: 'Ard El Lewa',        nameAr: 'أرض اللواء',      districts: ['Ard El Lewa'],        baseFee: 20, etaMinutes: 75 },
+  { nameEn: '6th of October (Hosary)', nameAr: 'السادس من أكتوبر (الحصري)', districts: ['Hosary'], baseFee: 35, etaMinutes: 120 },
+  { nameEn: 'Nasr City',           nameAr: 'مدينة نصر',       districts: ['Nasr City'],          baseFee: 25, etaMinutes: 90 },
+  { nameEn: 'Ain Shams',           nameAr: 'عين شمس',         districts: ['Ain Shams'],          baseFee: 30, etaMinutes: 100 },
+  { nameEn: 'Maadi',               nameAr: 'المعادي',         districts: ['Maadi'],              baseFee: 30, etaMinutes: 100 },
+  { nameEn: 'Hadayek El Maadi',    nameAr: 'حدائق المعادي',    districts: ['Hadayek El Maadi'],   baseFee: 30, etaMinutes: 100 },
+]
+
+// Which demo shops cover which zones (by zone nameEn), with optional overrides.
+const ZONE_COVERAGE = [
+  { shop: 0, zone: 'Faisal',        cutoffTime: '18:00' },
+  { shop: 0, zone: 'Ard El Lewa',   cutoffTime: '18:00' },
+  { shop: 0, zone: 'Haram',         cutoffTime: '18:00' },
+  { shop: 1, zone: 'Ard El Lewa',   cutoffTime: '17:00', minOrderValue: 100 },
+  { shop: 1, zone: 'Haram',         cutoffTime: '17:00', minOrderValue: 100 },
+  { shop: 1, zone: 'Faisal',        cutoffTime: '17:00', minOrderValue: 100 },
+  { shop: 2, zone: 'Nasr City',     cutoffTime: '19:00' },
+  { shop: 2, zone: 'Ain Shams',     cutoffTime: '19:00' },
+  { shop: 2, zone: 'Maadi',         cutoffTime: '19:00', feeOverride: 40 },
+]
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function skip(msg) { console.log(`  [SKIP]  ${msg}`) }
@@ -308,6 +335,54 @@ async function seedProducts(sellerProfiles, categoryMap) {
   }
 }
 
+async function seedZones() {
+  console.log('\n[Delivery Zones]')
+  const zoneMap = {}
+
+  for (const z of ZONES) {
+    let zone = await prisma.deliveryZone.findFirst({ where: { nameEn: z.nameEn } })
+    if (!zone) {
+      zone = await prisma.deliveryZone.create({
+        data: { nameEn: z.nameEn, nameAr: z.nameAr, districts: z.districts, baseFee: z.baseFee, etaMinutes: z.etaMinutes },
+      })
+      ok(`Created zone: ${z.nameEn}`)
+    } else {
+      skip(`Zone already exists: ${z.nameEn}`)
+    }
+    zoneMap[z.nameEn] = zone.id
+  }
+  return zoneMap
+}
+
+async function seedZoneCoverage(sellerProfiles, zoneMap) {
+  console.log('\n[Shop Zone Coverage]')
+
+  for (const c of ZONE_COVERAGE) {
+    const sellerProfile = sellerProfiles[c.shop]
+    const zoneId         = zoneMap[c.zone]
+    if (!sellerProfile || !zoneId) {
+      console.error(`  ERROR: missing shop or zone for coverage entry (shop ${c.shop}, zone ${c.zone}) — skipping.`)
+      continue
+    }
+
+    const existing = await prisma.shopZoneCoverage.findUnique({
+      where: { sellerId_zoneId: { sellerId: sellerProfile.id, zoneId } },
+    })
+    if (existing) { skip(`Coverage already exists: shop ${sellerProfile.businessName} × ${c.zone}`); continue }
+
+    await prisma.shopZoneCoverage.create({
+      data: {
+        sellerId:      sellerProfile.id,
+        zoneId,
+        cutoffTime:    c.cutoffTime ?? null,
+        minOrderValue: c.minOrderValue ?? 0,
+        feeOverride:   c.feeOverride ?? null,
+      },
+    })
+    ok(`Coverage: ${sellerProfile.businessName} → ${c.zone}`)
+  }
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -317,6 +392,8 @@ async function main() {
   await seedAdmin()
   const sellerProfiles = await seedShops()
   await seedProducts(sellerProfiles, categoryMap)
+  const zoneMap        = await seedZones()
+  await seedZoneCoverage(sellerProfiles, zoneMap)
 
   console.log('\nDone.\n')
 }
