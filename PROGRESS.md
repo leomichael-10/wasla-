@@ -83,3 +83,11 @@ Brand renamed Tobaki→Wasla, age-gate deleted, vape SKU tables/admin screen dro
 ---
 
 **End of Phase 2–8 continuous execution.** See MIGRATION_REPORT.md for the consolidated summary.
+
+## Task 1 (post-migration fix) — Zone gate modal stuck
+- **Root cause**: `DeliveryZone` rows exist (verified 8 active zones in the DB — seed was fine), so the reported "no zone options" wasn't missing data. The real bugs were in `components/ZoneGate.js`: (1) the fetch error path (`.catch(() => {})`) silently swallowed failures, leaving `zones=[]`/`loading=false` with no distinction from "zero zones exist" and no way to recover; (2) there was no explicit close/skip control, so a failed or empty load left the modal permanently blocking the app; (3) the waitlist "thanks" block and the zone list were separate always-rendered sections rather than mutually exclusive views, which is consistent with the reported "waitlist confirmation shown at the same time as no zone options" if `view`-equivalent state ever desynced.
+- **Fix**: rewrote the component around one explicit `view` state (`'loading' | 'zones' | 'error' | 'waitlist-thanks'`) so exactly one is ever rendered. Added a real error view with a Retry button. Added a dismissible close (×) button (`handleSkip`) so the modal can never trap the app regardless of load outcome. The waitlist "thanks" message now only renders after `handleWaitlist` actually succeeds, not on initial mount.
+- **RTL fix**: the modal's outer container now sets `dir` from the locale cookie; zone buttons show the locale-primary name first (Arabic name first when `locale==='ar'`) with the secondary name using logical `ms-2` spacing instead of a hardcoded `ml-2`; the close button uses logical `inset-e-4` positioning; all copy in the waitlist/error sections is now bilingual (previously hardcoded English-only strings inside an otherwise-translated component).
+- Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema change).
+
+---
