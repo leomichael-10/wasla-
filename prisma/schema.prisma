@@ -52,6 +52,7 @@ model SellerProfile {
   warrantyAvailable    Boolean            @default(false)
   warrantyDuration     String?
   maintenanceAvailable Boolean            @default(false)
+  isOpen               Boolean            @default(true)
   approvedByAdmin      Boolean            @default(false)
   subscriptionStatus   String             @default("PENDING")
   createdAt            DateTime           @default(now())

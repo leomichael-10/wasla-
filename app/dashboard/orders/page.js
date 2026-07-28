@@ -1,5 +1,29 @@
 ﻿'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+
+const POLL_MS = 20_000
+
+// Short two-tone chime via Web Audio — no asset file needed.
+function playNewOrderChime() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext
+    const ctx = new Ctx()
+    const now = ctx.currentTime
+    ;[880, 660].forEach((freq, i) => {
+      const osc  = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.frequency.value = freq
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      const start = now + i * 0.15
+      gain.gain.setValueAtTime(0.0001, start)
+      gain.gain.exponentialRampToValueAtTime(0.2, start + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.2)
+      osc.start(start)
+      osc.stop(start + 0.22)
+    })
+  } catch { /* ignore — audio isn't essential */ }
+}
 
 const STATUS_STYLES = {
   PLACED:           'bg-yellow-100 text-yellow-700',
@@ -33,9 +57,12 @@ export default function DashboardOrdersPage() {
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState('')
   const [updating, setUpdating] = useState(null) // order id being updated
+  const [hasNew,   setHasNew]   = useState(false)
+  const knownIds = useRef(new Set())
+  const firstLoad = useRef(true)
 
-  const fetchOrders = useCallback(async () => {
-    setLoading(true)
+  const fetchOrders = useCallback(async ({ silent } = {}) => {
+    if (!silent) setLoading(true)
     const token = localStorage.getItem('wasla_token')
     try {
       const res  = await fetch('/api/orders', {
@@ -43,7 +70,19 @@ export default function DashboardOrdersPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setOrders(data.orders ?? [])
+      const fresh = data.orders ?? []
+
+      if (!firstLoad.current) {
+        const newOnes = fresh.filter(o => o.status === 'PLACED' && !knownIds.current.has(o.id))
+        if (newOnes.length > 0) {
+          setHasNew(true)
+          playNewOrderChime()
+        }
+      }
+      knownIds.current = new Set(fresh.map(o => o.id))
+      firstLoad.current = false
+
+      setOrders(fresh)
     } catch (err) {
       setError(err.message || 'Failed to load orders.')
     } finally {
@@ -51,7 +90,11 @@ export default function DashboardOrdersPage() {
     }
   }, [])
 
-  useEffect(() => { fetchOrders() }, [fetchOrders])
+  useEffect(() => {
+    fetchOrders()
+    const interval = setInterval(() => fetchOrders({ silent: true }), POLL_MS)
+    return () => clearInterval(interval)
+  }, [fetchOrders])
 
   async function handleStatusChange(orderId, newStatus) {
     setUpdating(orderId)
@@ -87,7 +130,17 @@ export default function DashboardOrdersPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-gray-900">My Orders</h1>
+        <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2">
+          My Orders
+          {hasNew && (
+            <button
+              onClick={() => setHasNew(false)}
+              className="inline-flex items-center gap-1.5 text-xs font-bold bg-red-500 text-white px-2.5 py-1 rounded-full animate-pulse"
+            >
+              <span className="w-1.5 h-1.5 bg-white rounded-full" /> New order
+            </button>
+          )}
+        </h1>
         {!loading && (
           <div className="flex gap-4 mt-2 flex-wrap">
             {[

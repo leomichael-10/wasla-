@@ -162,6 +162,7 @@ export async function GET(request, { params }) {
             warrantyAvailable:    true,
             warrantyDuration:     true,
             maintenanceAvailable: true,
+            isOpen:               true,
           },
         },
         reviews: {

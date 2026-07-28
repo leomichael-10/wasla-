@@ -22,7 +22,7 @@ export async function GET(request) {
     const retailerProducts = await prisma.retailerProduct.findMany({
       where: {
         status:  'APPROVED',
-        retailer: { subscriptionStatus: 'ACTIVE', approvedByAdmin: true },
+        retailer: { subscriptionStatus: 'ACTIVE', approvedByAdmin: true, isOpen: true },
         masterProduct: masterWhere,
       },
       include: {

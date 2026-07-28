@@ -46,6 +46,7 @@ export async function GET(request, { params }) {
       maintenanceAvailable:seller.maintenanceAvailable,
       approvedByAdmin:     seller.approvedByAdmin,
       subscriptionStatus:  seller.subscriptionStatus,
+      isOpen:              seller.isOpen,
       averageRating:       Math.round(avg * 10) / 10,
       reviewCount:         seller.reviews.length,
       completedOrders:     seller.orders.length,
@@ -73,7 +74,7 @@ export async function GET(request, { params }) {
       description: rp.masterProduct.description,
       images:      rp.masterProduct.images,
       category:    rp.masterProduct.category,
-      seller:      { id: seller.id, businessName: seller.businessName, city: seller.city },
+      seller:      { id: seller.id, businessName: seller.businessName, city: seller.city, isOpen: seller.isOpen },
       variants: [{
         id:       rp.id,
         price: rp.price,

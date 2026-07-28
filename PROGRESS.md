@@ -61,3 +61,12 @@ Brand renamed Tobaki→Wasla, age-gate deleted, vape SKU tables/admin screen dro
 - Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema change this phase).
 
 ---
+
+## Phase 7 — Shop Dashboard
+- **Catalog claiming** (claim products from master catalog, set own price/stock) already existed pre-migration via `RetailerProduct` + `/dashboard/catalog` + `/api/seller/retailer-products` — no changes needed there, confirmed still functional after the currency/status renames.
+- **Zone coverage self-service**: new `GET/POST /api/seller/zone-coverage` (list every active zone annotated with this shop's coverage; upsert a zone's `isActive`/`feeOverride`/`minOrderValue`/`cutoffTime`) and a new `/dashboard/settings` page (added to the dashboard nav) rendering a toggle + fee/min-order/cutoff-time inputs per zone. This is shop self-service on top of the `ShopZoneCoverage` rows an admin or the Phase 4 seed already created.
+- **Open/closed toggle**: added `SellerProfile.isOpen` (additive column, migration `20260728191314_phase7_shop_open_toggle`, default `true`), `GET/PATCH /api/seller/profile`, and a status card at the top of `/dashboard/settings`. Closing a shop does **not** delete or deactivate its products — it's filtered out of general browse/homepage listings (`isOpen: true` added to the same where-clauses that already filtered on `subscriptionStatus`/`approvedByAdmin`, so this follows an existing pattern rather than inventing a new one) while still reachable directly via its shop page or product page, where `ProductCard` now shows "Shop Closed" and disables Add to Cart instead of hiding the listing outright.
+- **Order queue new-order indicator**: `/dashboard/orders` now polls `/api/orders` every 20s, diffs the `PLACED`-status order IDs against what it already knew about, and on a genuinely new order plays a short two-tone Web Audio chime (no asset file — synthesized oscillator) plus shows a dismissible pulsing "New order" badge next to the page title. Not real-time (no WebSocket/SSE) — 20s polling was the pragmatic choice here.
+- Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅.
+
+---

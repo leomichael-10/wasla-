@@ -32,7 +32,8 @@ export default function ProductCard({ product }) {
     : `EGP ${minPrice.toFixed(0)}–${maxPrice.toFixed(0)}`
 
   const variantLabels  = product.variants.map(v => v.label).filter(Boolean)
-  const inStockVariant = product.variants.find(v => v.inStock ?? v.stockQty > 0) ?? null
+  const shopClosed     = product.seller?.isOpen === false
+  const inStockVariant = shopClosed ? null : (product.variants.find(v => v.inStock ?? v.stockQty > 0) ?? null)
   const mainImage      = product.images?.[0] || product.variants?.find(v => v.image)?.image || null
 
   const reviews     = product.reviews ?? []
@@ -179,7 +180,7 @@ export default function ProductCard({ product }) {
                 </svg>
                 Added!
               </span>
-            ) : inStockVariant ? 'Add to Cart' : 'Out of Stock'}
+            ) : inStockVariant ? 'Add to Cart' : shopClosed ? 'Shop Closed' : 'Out of Stock'}
           </button>
         </div>
       </div>

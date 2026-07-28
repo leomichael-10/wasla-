@@ -50,7 +50,7 @@ async function getCategories() {
 async function getFeaturedProducts() {
   try {
     const raw = await prisma.product.findMany({
-      where:   { isActive: true },
+      where:   { isActive: true, seller: { isOpen: true } },
       orderBy: { createdAt: 'desc' },
       take:    8,
       include: {
