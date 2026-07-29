@@ -104,7 +104,7 @@ export default function CatalogPage() {
         placeholder="Search catalog…"
         value={search}
         onChange={e => setSearch(e.target.value)}
-        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
       />
 
       {/* Catalog grid */}
@@ -127,8 +127,8 @@ export default function CatalogPage() {
                 {p.images?.[0] ? (
                   <img src={p.images[0]} alt={p.name} className="w-full h-36 object-cover" />
                 ) : (
-                  <div className="w-full h-36 bg-purple-50 flex items-center justify-center">
-                    <span className="text-3xl font-black text-purple-200">{p.name[0]}</span>
+                  <div className="w-full h-36 bg-brand-50 flex items-center justify-center">
+                    <span className="text-3xl font-black text-brand-200">{p.name[0]}</span>
                   </div>
                 )}
 
@@ -141,7 +141,7 @@ export default function CatalogPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-purple-600 font-semibold mb-1">{p.category?.name}</p>
+                  <p className="text-xs text-brand-600 font-semibold mb-1">{p.category?.name}</p>
                   {(p.priceMin != null || p.priceMax != null) && (
                     <p className="text-xs text-gray-400 mb-2">
                       Suggested: EGP {p.priceMin != null ? Number(p.priceMin).toFixed(0) : '?'}
@@ -161,20 +161,20 @@ export default function CatalogPage() {
                           placeholder="Your price (EGP)"
                           value={f.price ?? ''}
                           onChange={e => setForm(prev => ({ ...prev, [p.id]: { ...prev[p.id], price: e.target.value } }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                          className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                         />
                         <input
                           type="number"
                           placeholder="Stock quantity"
                           value={f.stock ?? ''}
                           onChange={e => setForm(prev => ({ ...prev, [p.id]: { ...prev[p.id], stock: e.target.value } }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                          className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                         />
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleSelect(p.id)}
                             disabled={selecting === p.id}
-                            className="flex-1 bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
+                            className="flex-1 bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
                           >
                             {selecting === p.id ? 'Submitting…' : 'Submit for Approval'}
                           </button>
@@ -189,7 +189,7 @@ export default function CatalogPage() {
                     ) : (
                       <button
                         onClick={() => setOpenForm(p.id)}
-                        className="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold py-2 rounded-xl transition-colors"
+                        className="w-full bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-bold py-2 rounded-xl transition-colors"
                       >
                         + Add to My Store
                       </button>
@@ -216,14 +216,14 @@ export default function CatalogPage() {
               value={reqName}
               onChange={e => setReqName(e.target.value)}
               required
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
             <textarea
               placeholder="Notes (brand, specs, why you need it…)"
               value={reqNotes}
               onChange={e => setReqNotes(e.target.value)}
               rows={3}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
             />
             <button
               type="submit"

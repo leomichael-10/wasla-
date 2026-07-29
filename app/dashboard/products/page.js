@@ -57,7 +57,7 @@ export default function DashboardProductsPage() {
           {!loading && <p className="text-sm text-gray-500 mt-0.5">{items.length} product{items.length !== 1 ? 's' : ''}</p>}
         </div>
         <Link href="/dashboard/catalog"
-          className="bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors">
+          className="bg-brand-700 hover:bg-brand-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors">
           + Browse Catalog
         </Link>
       </div>
@@ -79,14 +79,14 @@ export default function DashboardProductsPage() {
           <div className="py-20 text-center">
             <p className="text-gray-500 font-semibold">No products selected yet</p>
             <Link href="/dashboard/catalog"
-              className="inline-block mt-4 bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
+              className="inline-block mt-4 bg-brand-700 hover:bg-brand-800 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors">
               Browse the catalog
             </Link>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+              <tr className="border-b border-gray-100 bg-[#FBF6EF]">
                 <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
                 <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Category</th>
                 <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Your Price</th>
@@ -98,15 +98,15 @@ export default function DashboardProductsPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {items.map(item => (
-                <tr key={item.id} className="hover:bg-[#f9f7ff] transition-colors">
+                <tr key={item.id} className="hover:bg-[#FBF6EF] transition-colors">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       {item.masterProduct?.images?.[0] ? (
                         <img src={item.masterProduct.images[0]} alt={item.masterProduct.name}
                           className="w-9 h-9 rounded-lg object-cover bg-gray-50 shrink-0" />
                       ) : (
-                        <div className="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center shrink-0">
-                          <span className="text-purple-400 font-black text-sm">{(item.masterProduct?.name ?? 'P')[0]}</span>
+                        <div className="w-9 h-9 rounded-lg bg-brand-50 flex items-center justify-center shrink-0">
+                          <span className="text-brand-400 font-black text-sm">{(item.masterProduct?.name ?? 'P')[0]}</span>
                         </div>
                       )}
                       <span className="font-semibold text-gray-900">{item.masterProduct?.name ?? '—'}</span>

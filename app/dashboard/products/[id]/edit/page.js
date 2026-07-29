@@ -6,11 +6,11 @@ import { useDropzone } from 'react-dropzone'
 const EMPTY_VARIANT = { label: '', price: '', stockQty: '', skuCode: '' }
 
 function VariantRow({ index, variant, onChange, onRemove, canRemove, isNew }) {
-  const inputCls = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition'
+  const inputCls = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition'
   const labelCls = 'block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1'
   function field(name) { return e => onChange(index, name, e.target.value) }
   return (
-    <div className={`rounded-2xl border p-4 ${isNew ? 'border-purple-200 bg-purple-50' : 'border-gray-200 bg-[#f9f7ff]'}`}>
+    <div className={`rounded-2xl border p-4 ${isNew ? 'border-brand-200 bg-brand-50' : 'border-gray-200 bg-[#FBF6EF]'}`}>
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-black text-gray-700">
           {isNew ? 'New Variant' : `Variant ${index + 1}`}
@@ -92,7 +92,7 @@ function ImageManager({ images, setImages }) {
         </div>
       )}
       {images.length < 5 && (
-        <div {...getRootProps()} className={`border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-colors ${isDragActive ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-600'}`}>
+        <div {...getRootProps()} className={`border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-colors ${isDragActive ? 'border-brand-600 bg-brand-50' : 'border-gray-200 hover:border-brand-600'}`}>
           <input {...getInputProps()} />
           <p className="text-sm text-gray-500">{uploading ? 'Uploading…' : isDragActive ? 'Drop here' : 'Drag & drop or click to add images'}</p>
           <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP · 5 MB max · {5 - images.length} remaining</p>
@@ -202,7 +202,7 @@ export default function EditProductPage() {
     }
   }
 
-  const inputCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition bg-white'
+  const inputCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition bg-white'
   const labelCls = 'block text-sm font-semibold text-gray-700 mb-1.5'
 
   if (loading) return (
@@ -260,7 +260,7 @@ export default function EditProductPage() {
           <div className="flex items-center justify-between">
             <h2 className="font-black text-gray-900">Add New Variants</h2>
             <button type="button" onClick={() => setNewVariants(prev => [...prev, { ...EMPTY_VARIANT }])}
-              className="text-sm font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors">
+              className="text-sm font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors">
               + Add Variant
             </button>
           </div>
@@ -278,7 +278,7 @@ export default function EditProductPage() {
 
         <div className="flex items-center gap-4 pb-6">
           <button type="submit" disabled={saving}
-            className="bg-purple-700 hover:bg-purple-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black px-8 py-3 rounded-xl transition-colors">
+            className="bg-brand-700 hover:bg-brand-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black px-8 py-3 rounded-xl transition-colors">
             {saving ? 'Saving…' : 'Save Changes'}
           </button>
           <a href="/dashboard/products" className="text-sm font-semibold text-gray-500 hover:text-gray-700">Cancel</a>

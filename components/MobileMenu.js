@@ -39,9 +39,9 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
 
       <div className={`fixed top-0 left-0 h-full w-72 bg-white z-50 shadow-2xl lg:hidden flex flex-col transition-transform duration-200 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
-        <div className="flex items-center justify-between px-5 py-4 bg-purple-700">
+        <div className="flex items-center justify-between px-5 py-4 bg-brand-700">
           <span className="text-white font-black text-xl tracking-tight">
-            toba<span className="text-amber-300">ki</span>
+            toba<span className="text-accent-300">ki</span>
           </span>
           <button
             onClick={onClose}
@@ -55,8 +55,8 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
         </div>
 
         {user && (
-          <div className="px-5 py-3 bg-purple-50 border-b border-purple-100">
-            <p className="text-xs font-bold text-purple-700 uppercase tracking-wide">{user.role}</p>
+          <div className="px-5 py-3 bg-brand-50 border-b border-brand-100">
+            <p className="text-xs font-bold text-brand-700 uppercase tracking-wide">{user.role}</p>
             <p className="text-sm font-semibold text-gray-800 truncate mt-0.5">{user.email}</p>
           </div>
         )}
@@ -67,7 +67,7 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
               key={link.href}
               href={link.href}
               onClick={onClose}
-              className="flex items-center px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors border-l-4 border-transparent hover:border-purple-200 min-h-11"
+              className="flex items-center px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 hover:bg-brand-50 hover:text-brand-700 transition-colors border-l-4 border-transparent hover:border-brand-200 min-h-11"
             >
               {link.label}
             </Link>
@@ -76,7 +76,7 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
             <Link
               href="/browse"
               onClick={onClose}
-              className="flex items-center px-4 py-3 rounded-xl text-sm font-semibold text-amber-600 hover:bg-amber-50 transition-colors border-l-4 border-transparent hover:border-amber-200 min-h-11"
+              className="flex items-center px-4 py-3 rounded-xl text-sm font-semibold text-accent-600 hover:bg-accent-50 transition-colors border-l-4 border-transparent hover:border-accent-200 min-h-11"
             >
               View as Customer
             </Link>
@@ -96,14 +96,14 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
               <Link
                 href="/login"
                 onClick={onClose}
-                className="flex-1 text-center border border-purple-400 text-purple-600 font-bold py-3 rounded-2xl text-sm hover:bg-purple-50 active:scale-95 transition-all duration-200 min-h-11 flex items-center justify-center"
+                className="flex-1 text-center border border-brand-400 text-brand-600 font-bold py-3 rounded-2xl text-sm hover:bg-brand-50 active:scale-95 transition-all duration-200 min-h-11 flex items-center justify-center"
               >
                 Sign in
               </Link>
               <Link
                 href="/register"
                 onClick={onClose}
-                className="flex-1 text-center bg-amber-400 hover:bg-amber-500 active:scale-95 text-gray-900 font-black py-3 rounded-2xl text-sm transition-all duration-200 min-h-11 flex items-center justify-center"
+                className="flex-1 text-center bg-accent-400 hover:bg-accent-500 active:scale-95 text-gray-900 font-black py-3 rounded-2xl text-sm transition-all duration-200 min-h-11 flex items-center justify-center"
               >
                 Register
               </Link>

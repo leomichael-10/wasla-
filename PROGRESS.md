@@ -139,3 +139,51 @@ Closed the gap explicitly flagged in Phase 4/MIGRATION_REPORT.md as not done: br
 - Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅.
 
 ---
+
+## PRO REDESIGN — data re-verification + real visual identity
+
+### Step 1 — Data re-verification (repeat check, same conclusion)
+Directly queried the confirmed database again: `Category` 11 rows (all Sudanese), `Product` 27 rows (0 vape-named), `MasterProduct` 0 rows, `RetailerProduct` 0 rows — checked this second, separate catalog path specifically because it's what `/products` and `/browse` actually query, and it's where the *old* pre-Phase-1 Excel-import script used to seed rows under categories literally named `Vapes`/`Cigarettes`/`Dokha`/`Disposables` — confirmed empty. All three local env files (`.env`, `.env.local`, `.env.vercel.local`) point at this same clean database. **The only remaining explanation for "vapes still showing" is the deployed Vercel environment's own `DATABASE_URL` (set in its dashboard) — no console access here to check or change it.** Flagged clearly; proceeded to design since unblocked.
+
+### Step 2 — Design token pass + real visual identity
+- **Palette**: added Tailwind v4 `@theme` custom color scales to `app/globals.css` — `brand-*` (jabana coffee brown), `accent-*` (terracotta/henna), `hibiscus-*` (karkade red, defined not yet applied), `nile-*` (Nile blue, defined not yet applied), `sand-*`/new `--background` (warm sand, replacing the lavender `#f9f7ff`). Swept `purple-*`→`brand-*`, `violet-*`→`brand-*`, `amber-*`→`accent-*`, and the `#f9f7ff` literal across all 37 files that referenced them.
+- **Typography**: added Reem Kufi (`next/font/google`) as the Arabic display face for the wordmark/headings, paired with the existing Cairo body face from Phase 6 — a real two-font identity instead of one sans reused everywhere.
+- **Signature/icons**: `components/CategoryIcon.js` — 11 hand-drawn monoline SVG icons, one per real Sudanese category (jabana pot, karkade glass, chili+jar, peanut, okra, wheat, oil jar, sweet, incense burner, thobe, woven basket), replacing the emoji placeholders in `app/page.js`'s category grid and a dead, only-5-of-11-categories text-abbreviation version in `components/CategoryCard.js` (confirmed unused anywhere, rewritten for consistency).
+- **Accessibility**: `:focus-visible` outline (accent color) and a `prefers-reduced-motion` rule collapsing all animation/transition durations, added once to `globals.css`'s base layer.
+- **Empty states**: `/browse` and `/products`' "no results" states now read "لسه مفيش منتجات هنا" / "جرّب تغيّر الفلاتر" with a small line-art icon instead of generic English text with no icon (loading skeletons already existed here from before this pass).
+- **Not done / acknowledged gaps**: no actual screenshot exists — this environment has no headless browser (Playwright/Puppeteer) to capture one, so self-critique was done by reviewing rendered HTML/class output, not a real visual capture. `hibiscus`/`nile` tokens are defined but not yet applied anywhere specific. Did not hand-tune all 37 swept files' individual visual hierarchy beyond the mechanical rename — a few (e.g. admin/dashboard internal tools) likely still read as a generic-template rename-in-place rather than a bespoke pass; the customer-facing storefront (homepage, browse, products, cart, zone gate) got the most direct attention.
+- Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema change).
+
+### Report against STEP 1 checklist
+- [x] DATABASE_URL endpoint printed and stated
+- [x] Categories + products queried, confirmed Sudanese not vape
+- [x] Root cause determined (deployed Vercel env var, not local files or seed)
+- [ ] Purge + reseed — **not needed**, data was already correct; nothing to purge
+- [x] Verified zero vape categories/products, counts printed
+
+### Report against STEP 2 / Definition-of-Done (frontend)
+- [x] Zone resolved on entry, shown at top (`ZoneBar`), tap-to-change
+- [x] Category grid is hero navigation, not a flat list
+- [x] Prominent search (homepage + browse/products pages, pre-existing)
+- [x] Product tiles with inline +/- steppers, no detail-page hop (`ProductTile`, built prior turn)
+- [x] Rails: الأكثر طلباً / اطلب تاني / منتجات من [origin] (built prior turn)
+- [x] Persistent cart bar (`CartBar`, built prior turn)
+- [x] Wishlist fully removed (prior turn)
+- [x] Zero vape anywhere in UI (re-verified this turn)
+- [~] Arabic-first, RTL-correct — infrastructure and highest-traffic surfaces yes (Phase 6 + this pass); not every dashboard/admin screen individually verified pixel-correct in RTL
+- [x] COD as default at checkout (Phase 5)
+- [x] Zone-based delivery fee/ETA shown before payment (Phase 4)
+- [x] Loading skeletons + real empty states (this pass, browse/products; other lists had skeletons from earlier phases)
+- [x] Real category icons replacing emoji (this pass)
+- [x] New subject-grounded palette + typography replacing generic purple template (this pass)
+
+### Report against Definition-of-Done (backend, already built in earlier phases — re-verified via build gate, not rebuilt)
+- [x] Multi-vendor model intact — untouched this pass
+- [x] Cart splits per shop w/ fee/min-order/ETA (Phase 4)
+- [x] Order status flow PLACED→...→DELIVERED/CANCELLED (Phase 4)
+- [x] Zone coverage resolves per shop, out-of-zone greyed (Phase 4 gap-closure, prior turn)
+- [x] Stock decremented on order (pre-existing, `POST /api/orders`)
+- [x] Shop dashboard: listings, zone toggles, order queue (Phase 7)
+- [x] `prisma migrate diff` clean; seed produces a browsable demo store (verified this turn)
+
+---

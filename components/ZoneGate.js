@@ -92,7 +92,7 @@ export default function ZoneGate() {
             </p>
             <button
               onClick={loadZones}
-              className="text-sm font-bold bg-purple-700 hover:bg-purple-800 text-white px-5 py-2 rounded-xl transition-colors"
+              className="text-sm font-bold bg-brand-700 hover:bg-brand-800 text-white px-5 py-2 rounded-xl transition-colors"
             >
               {locale === 'ar' ? 'إعادة المحاولة' : 'Retry'}
             </button>
@@ -105,7 +105,7 @@ export default function ZoneGate() {
               <button
                 key={zone.id}
                 onClick={() => handleSelect(zone)}
-                className="w-full text-start border border-gray-200 hover:border-purple-400 hover:bg-[#f9f7ff] rounded-2xl px-4 py-3 transition-colors flex items-center justify-between"
+                className="w-full text-start border border-gray-200 hover:border-brand-400 hover:bg-[#FBF6EF] rounded-2xl px-4 py-3 transition-colors flex items-center justify-between"
               >
                 <span>
                   <span className="font-bold text-gray-900 text-sm">
@@ -138,11 +138,11 @@ export default function ZoneGate() {
                 value={waitlistDistrict}
                 onChange={e => setWaitlistDistrict(e.target.value)}
                 placeholder={locale === 'ar' ? 'منطقتك' : 'Your area'}
-                className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               />
               <button
                 type="submit"
-                className="bg-gray-100 hover:bg-purple-50 hover:text-purple-700 text-gray-600 text-xs font-bold px-4 rounded-xl transition-colors shrink-0"
+                className="bg-gray-100 hover:bg-brand-50 hover:text-brand-700 text-gray-600 text-xs font-bold px-4 rounded-xl transition-colors shrink-0"
               >
                 {locale === 'ar' ? 'أبلغني' : 'Notify me'}
               </button>

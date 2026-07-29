@@ -14,9 +14,9 @@ function getDefaultVariants(productType) {
 
 function Chip({ label, onRemove }) {
   return (
-    <span className="inline-flex items-center gap-1 bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-1 rounded-full">
+    <span className="inline-flex items-center gap-1 bg-brand-100 text-brand-800 text-xs font-semibold px-2.5 py-1 rounded-full">
       {label}
-      <button type="button" onClick={onRemove} className="text-purple-400 hover:text-purple-700 leading-none">×</button>
+      <button type="button" onClick={onRemove} className="text-brand-400 hover:text-brand-700 leading-none">×</button>
     </span>
   )
 }
@@ -169,7 +169,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
             <input
               type="text" required value={name} onChange={e => setName(e.target.value)}
               placeholder="e.g. Bun Kassala 500g"
-              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
 
@@ -178,7 +178,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
             <textarea
               value={description} onChange={e => setDescription(e.target.value)}
               rows={3} placeholder="Short product description…"
-              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
             />
           </div>
 
@@ -186,7 +186,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Product Type</label>
             <select
               value={productType} onChange={e => handleTypeChange(e.target.value)}
-              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             >
               <option value="">— Select type —</option>
               {PRODUCT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
@@ -197,7 +197,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Category *</label>
             <select
               required value={categoryId} onChange={e => setCategoryId(e.target.value)}
-              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             >
               <option value="">— Select category —</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -209,7 +209,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
             <input
               type="text" value={brand} onChange={e => setBrand(e.target.value)}
               placeholder="e.g. Kassala"
-              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
 
@@ -218,7 +218,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
             <input
               type="text" value={sku} onChange={e => setSku(e.target.value)}
               placeholder="e.g. BUN-KSL-500G"
-              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
 
@@ -227,7 +227,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
             <input
               type="number" step="0.01" min="0" value={priceMin} onChange={e => setPriceMin(e.target.value)}
               placeholder="0.00"
-              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
 
@@ -236,7 +236,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
             <input
               type="number" step="0.01" min="0" value={priceMax} onChange={e => setPriceMax(e.target.value)}
               placeholder="0.00"
-              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
 
@@ -245,7 +245,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
             <input
               type="text" value={tags} onChange={e => setTags(e.target.value)}
               placeholder="e.g. coffee, kassala, bestseller"
-              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
         </section>
@@ -257,7 +257,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Images</p>
               <p className="text-xs text-gray-400 mt-0.5">First image is the cover. Use arrows to reorder.</p>
             </div>
-            <label className={`cursor-pointer bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold px-4 py-2 rounded-xl transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+            <label className={`cursor-pointer bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-bold px-4 py-2 rounded-xl transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
               {uploading ? 'Uploading…' : '+ Upload Images'}
               <input
                 ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp"
@@ -272,10 +272,10 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
                 <div key={url + i} className="relative group">
                   <img
                     src={url} alt={`Product image ${i + 1}`}
-                    className={`w-24 h-24 object-cover rounded-xl border-2 ${i === 0 ? 'border-purple-500' : 'border-gray-200'}`}
+                    className={`w-24 h-24 object-cover rounded-xl border-2 ${i === 0 ? 'border-brand-500' : 'border-gray-200'}`}
                   />
                   {i === 0 && (
-                    <span className="absolute top-1 left-1 bg-purple-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                    <span className="absolute top-1 left-1 bg-brand-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
                       COVER
                     </span>
                   )}
@@ -317,7 +317,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
 
           <div className="space-y-4">
             {Object.entries(variants).map(([attr, values]) => (
-              <div key={attr} className="bg-[#f9f7ff] rounded-xl p-4">
+              <div key={attr} className="bg-[#FBF6EF] rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <p className="text-sm font-bold text-gray-800 flex items-center gap-1.5">
                     {attr}
@@ -341,8 +341,8 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
                         disabled={values.includes(s)}
                         className={`text-xs px-2.5 py-1 rounded-full border font-semibold transition-colors ${
                           values.includes(s)
-                            ? 'bg-purple-100 text-purple-700 border-purple-200 opacity-50'
-                            : 'border-gray-300 text-gray-600 hover:border-purple-400 hover:text-purple-700'
+                            ? 'bg-brand-100 text-brand-700 border-brand-200 opacity-50'
+                            : 'border-gray-300 text-gray-600 hover:border-brand-400 hover:text-brand-700'
                         }`}
                       >
                         {s}
@@ -361,8 +361,8 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
                         disabled={values.includes(s)}
                         className={`text-xs px-2.5 py-1 rounded-full border font-semibold transition-colors ${
                           values.includes(s)
-                            ? 'bg-purple-100 text-purple-700 border-purple-200 opacity-50'
-                            : 'border-gray-300 text-gray-600 hover:border-purple-400 hover:text-purple-700'
+                            ? 'bg-brand-100 text-brand-700 border-brand-200 opacity-50'
+                            : 'border-gray-300 text-gray-600 hover:border-brand-400 hover:text-brand-700'
                         }`}
                       >
                         {s}
@@ -381,8 +381,8 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
                         disabled={values.includes(s)}
                         className={`text-xs px-2.5 py-1 rounded-full border font-semibold transition-colors ${
                           values.includes(s)
-                            ? 'bg-purple-100 text-purple-700 border-purple-200 opacity-50'
-                            : 'border-gray-300 text-gray-600 hover:border-purple-400 hover:text-purple-700'
+                            ? 'bg-brand-100 text-brand-700 border-brand-200 opacity-50'
+                            : 'border-gray-300 text-gray-600 hover:border-brand-400 hover:text-brand-700'
                         }`}
                       >
                         {s}
@@ -411,12 +411,12 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
                     onChange={e => setVariantInputs(prev => ({ ...prev, [attr]: e.target.value }))}
                     onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addVariantValue(attr, variantInputs[attr] ?? ''))}
                     placeholder={`Add ${attr} option…`}
-                    className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                   />
                   <button
                     type="button"
                     onClick={() => addVariantValue(attr, variantInputs[attr] ?? '')}
-                    className="bg-white border border-gray-200 hover:border-purple-400 hover:text-purple-700 text-gray-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                    className="bg-white border border-gray-200 hover:border-brand-400 hover:text-brand-700 text-gray-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
                   >
                     Add option
                   </button>
@@ -433,12 +433,12 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
               onChange={e => setNewAttrName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addAttr())}
               placeholder="New attribute name (e.g. Volume, Battery Size)…"
-              className="flex-1 border border-dashed border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-gray-400"
+              className="flex-1 border border-dashed border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 placeholder-gray-400"
             />
             <button
               type="button" onClick={addAttr}
               disabled={!newAttrName.trim()}
-              className="bg-gray-100 hover:bg-purple-50 hover:text-purple-700 disabled:opacity-40 text-gray-600 text-xs font-bold px-4 py-2 rounded-xl transition-colors"
+              className="bg-gray-100 hover:bg-brand-50 hover:text-brand-700 disabled:opacity-40 text-gray-600 text-xs font-bold px-4 py-2 rounded-xl transition-colors"
             >
               + Add Attribute
             </button>
@@ -454,7 +454,7 @@ export default function MasterProductForm({ categories, initial, onSave, onCance
         </button>
         <button
           type="submit" disabled={saving}
-          className="bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors"
+          className="bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors"
         >
           {saving ? 'Saving…' : initial ? 'Save Changes' : 'Add to Catalog'}
         </button>

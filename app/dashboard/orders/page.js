@@ -238,7 +238,7 @@ export default function DashboardOrdersPage() {
 
                 {/* Status actions */}
                 {nextOptions.length > 0 && (
-                  <div className="px-5 py-3 bg-[#f9f7ff] border-t border-gray-100 flex items-center gap-3 flex-wrap">
+                  <div className="px-5 py-3 bg-[#FBF6EF] border-t border-gray-100 flex items-center gap-3 flex-wrap">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">
                       Update status:
                     </span>
@@ -250,7 +250,7 @@ export default function DashboardOrdersPage() {
                         className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                           next === 'CANCELLED'
                             ? 'border-red-200 text-red-600 hover:bg-red-50'
-                            : 'border-purple-300 text-purple-700 hover:bg-purple-50'
+                            : 'border-brand-300 text-brand-700 hover:bg-brand-50'
                         }`}
                       >
                         {isUpdating ? '…' : `→ ${next.replaceAll('_', ' ')}`}
@@ -261,7 +261,7 @@ export default function DashboardOrdersPage() {
 
                 {/* Terminal state notice */}
                 {nextOptions.length === 0 && (
-                  <div className="px-5 py-3 bg-[#f9f7ff] border-t border-gray-100">
+                  <div className="px-5 py-3 bg-[#FBF6EF] border-t border-gray-100">
                     <span className="text-xs text-gray-400 font-medium">
                       {order.status === 'DELIVERED' ? 'Order completed' : 'Order cancelled'}
                     </span>

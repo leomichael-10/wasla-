@@ -10,7 +10,7 @@ function Stars({ rating }) {
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: 5 }).map((_, i) => (
-        <span key={i} className={`text-xs ${i < rounded ? 'text-amber-400' : 'text-gray-200'}`}>&#9733;</span>
+        <span key={i} className={`text-xs ${i < rounded ? 'text-accent-400' : 'text-gray-200'}`}>&#9733;</span>
       ))}
     </div>
   )
@@ -20,9 +20,9 @@ function ShopCard({ shop }) {
   return (
     <Link
       href={`/shops/${shop.id}`}
-      className="group bg-white rounded-3xl border border-purple-50 shadow-sm hover:shadow-lg hover:border-purple-200 transition-all duration-300 flex flex-col overflow-hidden"
+      className="group bg-white rounded-3xl border border-brand-50 shadow-sm hover:shadow-lg hover:border-brand-200 transition-all duration-300 flex flex-col overflow-hidden"
     >
-      <div className="h-20 bg-linear-to-br from-purple-700 to-violet-600 flex items-center px-5 gap-4 relative">
+      <div className="h-20 bg-linear-to-br from-brand-700 to-brand-500 flex items-center px-5 gap-4 relative">
         <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
           <span className="text-2xl font-black text-white select-none">
             {shop.businessName[0].toUpperCase()}
@@ -33,7 +33,7 @@ function ShopCard({ shop }) {
             {shop.businessName}
           </h3>
           {(shop.city || shop.area) && (
-            <p className="text-purple-200 text-xs truncate">
+            <p className="text-brand-200 text-xs truncate">
               {[shop.city, shop.area].filter(Boolean).join(', ')}
             </p>
           )}
@@ -79,9 +79,9 @@ function ShopCard({ shop }) {
           )}
         </div>
 
-        <div className="pt-2 border-t border-purple-50 flex items-center justify-between">
-          <span className="text-xs text-purple-600 font-bold group-hover:underline">View Shop</span>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-purple-400 group-hover:translate-x-0.5 transition-transform">
+        <div className="pt-2 border-t border-brand-50 flex items-center justify-between">
+          <span className="text-xs text-brand-600 font-bold group-hover:underline">View Shop</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-brand-400 group-hover:translate-x-0.5 transition-transform">
             <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
           </svg>
         </div>
@@ -116,13 +116,13 @@ export default function ShopsPage() {
   })
 
   return (
-    <div className="min-h-screen bg-[#f9f7ff]">
+    <div className="min-h-screen bg-[#FBF6EF]">
       <Navbar />
 
       <div className="bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center gap-2 text-sm text-gray-400 mb-1">
-            <Link href="/" className="hover:text-purple-600 transition-colors">Home</Link>
+            <Link href="/" className="hover:text-brand-600 transition-colors">Home</Link>
             <span>/</span>
             <span className="text-gray-700 font-medium">All Shops</span>
           </div>
@@ -148,7 +148,7 @@ export default function ShopsPage() {
               placeholder="Search by shop name or city..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full border border-gray-200 rounded-2xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
+              className="w-full border border-gray-200 rounded-2xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 bg-white"
             />
           </div>
 
@@ -159,8 +159,8 @@ export default function ShopsPage() {
                 onClick={() => setCity(c)}
                 className={`shrink-0 px-4 py-2 rounded-2xl text-sm font-semibold transition-all duration-200 active:scale-95 border ${
                   city === c
-                    ? 'bg-purple-700 text-white border-purple-700'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300 hover:text-purple-600'
+                    ? 'bg-brand-700 text-white border-brand-700'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-brand-300 hover:text-brand-600'
                 }`}
               >
                 {c}
@@ -182,23 +182,23 @@ export default function ShopsPage() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-3xl border border-purple-50 animate-pulse overflow-hidden">
-                <div className="h-20 bg-purple-50" />
+              <div key={i} className="bg-white rounded-3xl border border-brand-50 animate-pulse overflow-hidden">
+                <div className="h-20 bg-brand-50" />
                 <div className="p-4 space-y-2">
-                  <div className="h-3 bg-purple-50 rounded w-1/2" />
-                  <div className="h-3 bg-purple-50 rounded w-3/4" />
+                  <div className="h-3 bg-brand-50 rounded w-1/2" />
+                  <div className="h-3 bg-brand-50 rounded w-3/4" />
                 </div>
               </div>
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-purple-50 shadow-sm py-20 text-center">
+          <div className="bg-white rounded-3xl border border-brand-50 shadow-sm py-20 text-center">
             <p className="text-gray-500 font-semibold text-lg">No shops found</p>
             <p className="text-sm text-gray-400 mt-1">Try a different search or remove filters.</p>
             {(search || city !== 'All Emirates') && (
               <button
                 onClick={() => { setSearch(''); setCity('All Emirates') }}
-                className="mt-4 text-sm font-bold text-purple-600 hover:underline active:scale-95 transition-all"
+                className="mt-4 text-sm font-bold text-brand-600 hover:underline active:scale-95 transition-all"
               >
                 Clear filters
               </button>

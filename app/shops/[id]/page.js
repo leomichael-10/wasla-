@@ -59,7 +59,7 @@ export default function ShopPage() {
   }, [shop, activeTab])
 
   if (loading) return (
-    <div className="min-h-screen bg-[#f9f7ff]">
+    <div className="min-h-screen bg-[#FBF6EF]">
       <Navbar />
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-6 animate-pulse">
         <div className="h-48 bg-white rounded-2xl border border-gray-100" />
@@ -74,11 +74,11 @@ export default function ShopPage() {
   )
 
   if (error || !shop) return (
-    <div className="min-h-screen bg-[#f9f7ff]">
+    <div className="min-h-screen bg-[#FBF6EF]">
       <Navbar />
       <div className="max-w-6xl mx-auto px-4 py-24 text-center">
         <p className="text-gray-500 font-semibold">{error || 'Shop not found.'}</p>
-        <Link href="/shops" className="mt-4 inline-block text-purple-700 font-bold hover:underline text-sm">
+        <Link href="/shops" className="mt-4 inline-block text-brand-700 font-bold hover:underline text-sm">
           Browse Shops
         </Link>
       </div>
@@ -98,15 +98,15 @@ export default function ShopPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9f7ff]">
+    <div className="min-h-screen bg-[#FBF6EF]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar />
 
       {/* ── Shop hero banner ─────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-br from-purple-800 via-purple-600 to-violet-600">
+      <div className="bg-gradient-to-br from-brand-800 via-brand-600 to-brand-500">
         <div className="max-w-6xl mx-auto px-4 py-10">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-1.5 text-purple-100 text-xs mb-5">
+          <div className="flex items-center gap-1.5 text-brand-100 text-xs mb-5">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <span>/</span>
             <Link href="/shops" className="hover:text-white transition-colors">Shops</Link>
@@ -136,7 +136,7 @@ export default function ShopPage() {
               </div>
 
               {(shop.city || shop.area) && (
-                <p className="text-purple-100 text-sm mb-2">
+                <p className="text-brand-100 text-sm mb-2">
                   {[shop.city, shop.area].filter(Boolean).join(', ')}
                 </p>
               )}
@@ -176,11 +176,11 @@ export default function ShopPage() {
             <div className="flex gap-5 shrink-0">
               <div className="text-center">
                 <p className="text-2xl font-black text-white">{shop.productCount}</p>
-                <p className="text-xs text-purple-100 font-semibold uppercase tracking-wide mt-0.5">Products</p>
+                <p className="text-xs text-brand-100 font-semibold uppercase tracking-wide mt-0.5">Products</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-black text-white">{shop.completedOrders}</p>
-                <p className="text-xs text-purple-100 font-semibold uppercase tracking-wide mt-0.5">Orders</p>
+                <p className="text-xs text-brand-100 font-semibold uppercase tracking-wide mt-0.5">Orders</p>
               </div>
             </div>
           </div>
@@ -199,8 +199,8 @@ export default function ShopPage() {
                   onClick={() => setActiveTab(tab)}
                   className={`shrink-0 px-4 py-2 rounded-xl text-sm font-bold transition-colors ${
                     activeTab === tab
-                      ? 'bg-purple-700 text-white'
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-[#f9f7ff]'
+                      ? 'bg-brand-700 text-white'
+                      : 'text-gray-500 hover:text-gray-900 hover:bg-[#FBF6EF]'
                   }`}
                 >
                   {tab}
@@ -268,7 +268,7 @@ export default function ShopPage() {
             <div className="space-y-4">
               {shop.reviews.map(review => (
                 <div key={review.id} className="flex gap-3 border-b border-gray-50 last:border-0 pb-4 last:pb-0">
-                  <div className="w-9 h-9 rounded-full bg-purple-50 text-purple-700 flex items-center justify-center font-black text-sm shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center font-black text-sm shrink-0">
                     {(review.customer?.customerProfile?.fullName ?? 'C')[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">

@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Cairo } from 'next/font/google'
+import { Geist, Geist_Mono, Cairo, Reem_Kufi } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
@@ -25,6 +25,12 @@ const geistMono = Geist_Mono({
 const cairo = Cairo({
   variable: '--font-cairo',
   subsets:  ['arabic', 'latin'],
+})
+
+const reemKufi = Reem_Kufi({
+  variable: '--font-reem-kufi',
+  subsets:  ['arabic', 'latin'],
+  weight:   ['400', '500', '700'],
 })
 
 export const metadata = {
@@ -55,7 +61,7 @@ export const metadata = {
 }
 
 export const viewport = {
-  themeColor: '#7e22ce',
+  themeColor: '#6F4E37',
 }
 
 export default async function RootLayout({ children }) {
@@ -70,8 +76,8 @@ export default async function RootLayout({ children }) {
   const dir    = locale === 'ar' ? 'rtl' : 'ltr'
 
   return (
-    <html lang={locale} dir={dir} className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} h-full antialiased`}>
-      <body className={`min-h-full flex flex-col bg-[#f9f7ff] text-gray-900 ${locale === 'ar' ? 'font-(family-name:--font-cairo)' : ''}`}>
+    <html lang={locale} dir={dir} className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} ${reemKufi.variable} h-full antialiased`}>
+      <body className={`min-h-full flex flex-col bg-sand-50 text-brand-900 ${locale === 'ar' ? 'font-(family-name:--font-cairo)' : ''}`}>
         <SessionProviderWrapper>
         <UserProvider initialUser={initialUser}>
         <AuthSync />
@@ -97,14 +103,14 @@ export default async function RootLayout({ children }) {
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-lg font-black text-purple-600">Wasla</span>
+                <span className="text-lg font-black text-brand-600 font-(family-name:--font-reem-kufi)">Wasla</span>
                 <span className="text-gray-300">|</span>
                 <span className="text-xs text-gray-400">{t('footer.tagline', locale)}</span>
               </div>
               <nav className="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500">
-                <Link href="/products"          className="hover:text-purple-600 transition-colors">{t('footer.products', locale)}</Link>
-                <Link href="/terms"             className="hover:text-purple-600 transition-colors">{t('footer.terms', locale)}</Link>
-                <Link href="/privacy"           className="hover:text-purple-600 transition-colors">{t('footer.privacy', locale)}</Link>
+                <Link href="/products"          className="hover:text-accent-400 transition-colors">{t('footer.products', locale)}</Link>
+                <Link href="/terms"             className="hover:text-accent-400 transition-colors">{t('footer.terms', locale)}</Link>
+                <Link href="/privacy"           className="hover:text-accent-400 transition-colors">{t('footer.privacy', locale)}</Link>
               </nav>
               <p className="text-xs text-gray-400">
                 &copy; {new Date().getFullYear()} Wasla. {t('footer.rights', locale)}.

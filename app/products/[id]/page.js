@@ -7,7 +7,7 @@ import { addToCart } from '../../../lib/cart'
 
 function Skeleton() {
   return (
-    <div className="min-h-screen bg-[#f9f7ff]">
+    <div className="min-h-screen bg-[#FBF6EF]">
       <Navbar />
       <div className="max-w-4xl mx-auto px-4 py-8 animate-pulse">
         <div className="h-4 bg-gray-100 rounded w-48 mb-8" />
@@ -157,11 +157,11 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-[#f9f7ff]">
+      <div className="min-h-screen bg-[#FBF6EF]">
         <Navbar />
         <div className="max-w-4xl mx-auto px-4 py-24 text-center">
           <p className="text-gray-500 font-semibold text-lg">Product not found</p>
-          <Link href="/products" className="mt-4 inline-block text-purple-600 font-bold hover:underline text-sm">
+          <Link href="/products" className="mt-4 inline-block text-brand-600 font-bold hover:underline text-sm">
             Back to products
           </Link>
         </div>
@@ -189,21 +189,21 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9f7ff]">
+    <div className="min-h-screen bg-[#FBF6EF]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar />
       <div className="max-w-4xl mx-auto px-4 py-8">
 
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm text-gray-400 mb-7 flex-wrap">
-          <Link href="/"         className="hover:text-purple-600 transition-colors">Home</Link>
+          <Link href="/"         className="hover:text-brand-600 transition-colors">Home</Link>
           <span>/</span>
-          <Link href="/products" className="hover:text-purple-600 transition-colors">Products</Link>
+          <Link href="/products" className="hover:text-brand-600 transition-colors">Products</Link>
           {product.category && (
             <>
               <span>/</span>
               <Link href={`/products?category=${encodeURIComponent(product.category.name)}`}
-                className="hover:text-purple-600 transition-colors">{product.category.name}</Link>
+                className="hover:text-brand-600 transition-colors">{product.category.name}</Link>
             </>
           )}
           <span>/</span>
@@ -217,14 +217,14 @@ export default function ProductDetailPage() {
           <div className="space-y-3">
             {images.length > 0 ? (
               <>
-                <div className="aspect-square rounded-3xl overflow-hidden bg-white border border-purple-100 shadow-sm">
+                <div className="aspect-square rounded-3xl overflow-hidden bg-white border border-brand-100 shadow-sm">
                   <img src={images[mainImageIdx]} alt={product.name} className="w-full h-full object-cover" />
                 </div>
                 {images.length > 1 && (
                   <div className="flex gap-2 overflow-x-auto pb-1">
                     {images.map((url, i) => (
                       <button key={url} onClick={() => setMainImageIdx(i)}
-                        className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-colors ${i === mainImageIdx ? 'border-purple-500' : 'border-transparent hover:border-gray-300'}`}>
+                        className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-colors ${i === mainImageIdx ? 'border-brand-500' : 'border-transparent hover:border-gray-300'}`}>
                         <img src={url} alt="" className="w-full h-full object-cover" />
                       </button>
                     ))}
@@ -232,7 +232,7 @@ export default function ProductDetailPage() {
                 )}
               </>
             ) : (
-              <div className="bg-linear-to-br from-purple-700 to-violet-500 rounded-3xl aspect-square flex items-center justify-center shadow-sm">
+              <div className="bg-linear-to-br from-brand-700 to-brand-500 rounded-3xl aspect-square flex items-center justify-center shadow-sm">
                 <span className="text-6xl font-black text-white/30 select-none tracking-tighter">
                   {(product.brand ?? 'V')[0].toUpperCase()}
                 </span>
@@ -243,11 +243,11 @@ export default function ProductDetailPage() {
           {/* Product info */}
           <div className="flex flex-col gap-4">
             <div>
-              <span className="text-xs font-black text-purple-600 uppercase tracking-widest">{product.brand}</span>
+              <span className="text-xs font-black text-brand-600 uppercase tracking-widest">{product.brand}</span>
               <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mt-1 leading-tight">{product.name}</h1>
               {product.category && (
                 <Link href={`/products?category=${encodeURIComponent(product.category.name)}`}
-                  className="inline-block mt-2 bg-purple-50 text-purple-700 text-xs font-semibold px-3 py-1 rounded-full hover:bg-purple-100 transition-colors">
+                  className="inline-block mt-2 bg-brand-50 text-brand-700 text-xs font-semibold px-3 py-1 rounded-full hover:bg-brand-100 transition-colors">
                   {product.category.name}
                 </Link>
               )}
@@ -270,7 +270,7 @@ export default function ProductDetailPage() {
             {/* Variant selector */}
             <div>
               <p className="text-sm font-bold text-gray-800 mb-2.5">
-                Option{selectedVariant?.label && <span className="ml-2 font-normal text-purple-700">{selectedVariant.label}</span>}
+                Option{selectedVariant?.label && <span className="ml-2 font-normal text-brand-700">{selectedVariant.label}</span>}
               </p>
               <div className="flex flex-wrap gap-2">
                 {product.variants.map(variant => {
@@ -280,7 +280,7 @@ export default function ProductDetailPage() {
                     <button key={variant.id} onClick={() => !isOutOfStock && setSelectedVariant(variant)}
                       disabled={isOutOfStock}
                       className={`px-3.5 py-1.5 rounded-full text-sm font-semibold border transition-all duration-150
-                        ${isSelected ? 'bg-purple-700 border-purple-700 text-white shadow-sm' : 'bg-white border-gray-200 text-gray-700 hover:border-purple-400 hover:text-purple-600'}
+                        ${isSelected ? 'bg-brand-700 border-brand-700 text-white shadow-sm' : 'bg-white border-gray-200 text-gray-700 hover:border-brand-400 hover:text-brand-600'}
                         ${isOutOfStock ? 'opacity-35 cursor-not-allowed line-through' : 'cursor-pointer'}`}>
                       {variant.label ?? `Option ${variant.id}`}
                     </button>
@@ -309,7 +309,7 @@ export default function ProductDetailPage() {
               </span>
               <button onClick={handleAddToCart} disabled={!selectedVariant || outOfStock}
                 className={`flex-1 py-3.5 rounded-full font-black text-sm transition-all duration-200
-                  ${cartFeedback ? 'bg-green-500 text-white scale-95' : 'bg-purple-700 hover:bg-purple-800 active:bg-purple-900 text-white'}
+                  ${cartFeedback ? 'bg-green-500 text-white scale-95' : 'bg-brand-700 hover:bg-brand-800 active:bg-brand-900 text-white'}
                   disabled:opacity-40 disabled:cursor-not-allowed`}>
                 {cartFeedback ? 'Added to cart!' : outOfStock ? 'Out of Stock' : 'Add to Cart'}
               </button>
@@ -319,10 +319,10 @@ export default function ProductDetailPage() {
 
         {/* Seller info */}
         {product.seller && (
-          <div className="mt-10 bg-white rounded-3xl border border-purple-50 shadow-sm p-6">
+          <div className="mt-10 bg-white rounded-3xl border border-brand-50 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-black text-gray-900 text-base">Seller Information</h2>
-              <Link href={`/shops/${product.seller.id}`} className="text-sm font-bold text-purple-600 hover:underline">
+              <Link href={`/shops/${product.seller.id}`} className="text-sm font-bold text-brand-600 hover:underline">
                 View Shop
               </Link>
             </div>
@@ -360,7 +360,7 @@ export default function ProductDetailPage() {
 
           {/* Write a review */}
           {user?.role === 'customer' && canReview && !alreadyReviewed && (
-            <div className="bg-white rounded-3xl border border-purple-50 shadow-sm p-6">
+            <div className="bg-white rounded-3xl border border-brand-50 shadow-sm p-6">
               <h2 className="font-black text-gray-900 text-base mb-4">Write a Review</h2>
               {reviewSuccess ? (
                 <p className="text-green-600 font-semibold text-sm">Thank you! Your review has been submitted.</p>
@@ -374,11 +374,11 @@ export default function ProductDetailPage() {
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Comment (optional)</label>
                     <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)}
                       placeholder="Tell others about your experience…" rows={3}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none" />
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none" />
                   </div>
                   {reviewError && <p className="text-xs text-red-500">{reviewError}</p>}
                   <button type="submit" disabled={reviewLoading}
-                    className="bg-purple-700 hover:bg-purple-800 disabled:opacity-60 text-white font-black px-6 py-2.5 rounded-xl text-sm transition-colors">
+                    className="bg-brand-700 hover:bg-brand-800 disabled:opacity-60 text-white font-black px-6 py-2.5 rounded-xl text-sm transition-colors">
                     {reviewLoading ? 'Submitting…' : 'Submit Review'}
                   </button>
                 </form>
@@ -388,7 +388,7 @@ export default function ProductDetailPage() {
 
           {/* Reviews list */}
           {reviews.length > 0 && (
-            <div className="bg-white rounded-3xl border border-purple-50 shadow-sm p-6">
+            <div className="bg-white rounded-3xl border border-brand-50 shadow-sm p-6">
               <h2 className="font-black text-gray-900 text-base mb-5">
                 Customer Reviews
                 <span className="ml-2 text-gray-400 font-normal">({reviews.length})</span>
@@ -397,7 +397,7 @@ export default function ProductDetailPage() {
               <div className="space-y-4">
                 {reviews.map(review => (
                   <div key={review.id} className="flex gap-3 border-b border-gray-50 last:border-0 pb-4 last:pb-0">
-                    <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-black text-xs shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs shrink-0">
                       {(review.customer?.customerProfile?.fullName ?? 'C')[0].toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">

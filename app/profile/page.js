@@ -69,11 +69,11 @@ export default function ProfilePage() {
     }
   }
 
-  const inputCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition bg-white'
+  const inputCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition bg-white'
   const labelCls = 'block text-sm font-semibold text-gray-700 mb-1.5'
 
   return (
-    <div className="min-h-screen bg-[#f9f7ff]">
+    <div className="min-h-screen bg-[#FBF6EF]">
       <Navbar />
       <div className="max-w-2xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-black text-gray-900 mb-6">My Profile</h1>
@@ -94,7 +94,7 @@ export default function ProfilePage() {
               <div>
                 <label className={labelCls}>Email</label>
                 <input type="email" value={email} disabled
-                  className={`${inputCls} opacity-60 cursor-not-allowed bg-[#f9f7ff]`} />
+                  className={`${inputCls} opacity-60 cursor-not-allowed bg-[#FBF6EF]`} />
                 <p className="text-xs text-gray-400 mt-1">Email cannot be changed here.</p>
               </div>
             </section>
@@ -148,7 +148,7 @@ export default function ProfilePage() {
 
             <div className="pb-6">
               <button type="submit" disabled={saving}
-                className="bg-purple-700 hover:bg-purple-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black px-8 py-3 rounded-xl transition-colors">
+                className="bg-brand-700 hover:bg-brand-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black px-8 py-3 rounded-xl transition-colors">
                 {saving ? 'Saving…' : 'Save Profile'}
               </button>
             </div>

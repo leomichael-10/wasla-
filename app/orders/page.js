@@ -88,14 +88,14 @@ export default function OrdersPage() {
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-[#f9f7ff] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#FBF6EF] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#f9f7ff]">
+    <div className="min-h-screen bg-[#FBF6EF]">
       <Navbar />
 
       <div className="max-w-3xl mx-auto px-4 py-8">
@@ -122,7 +122,7 @@ export default function OrdersPage() {
             <p className="text-sm text-gray-400 mt-1">Start shopping to place your first order.</p>
             <Link
               href="/products"
-              className="inline-block mt-5 bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors"
+              className="inline-block mt-5 bg-brand-700 hover:bg-brand-800 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors"
             >
               Browse Products
             </Link>
@@ -167,12 +167,12 @@ export default function OrdersPage() {
                 </div>
 
                 {/* Footer */}
-                <div className="px-5 py-3 bg-[#f9f7ff] border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 gap-2 flex-wrap">
+                <div className="px-5 py-3 bg-[#FBF6EF] border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 gap-2 flex-wrap">
                   <span className="capitalize">Payment: {order.paymentMethod ?? 'cash'}</span>
                   {order.status === 'DELIVERED' && (
                     <button
                       onClick={() => handleReorder(order)}
-                      className="text-xs font-bold text-purple-700 hover:text-purple-800 transition-colors"
+                      className="text-xs font-bold text-brand-700 hover:text-brand-800 transition-colors"
                     >
                       Reorder
                     </button>

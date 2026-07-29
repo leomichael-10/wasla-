@@ -1,19 +1,87 @@
 @import "tailwindcss";
 
+/*
+  Wasla palette — grounded in the subject (Sudanese food & goods, Cairo
+  delivery), not a generic e-commerce purple. See DECISIONS.md for the
+  full token-pass rationale.
+    brand    — jabana coffee brown (primary chrome, buttons, nav)
+    accent   — terracotta/henna (CTAs, prices, quick-add)
+    hibiscus — karkade red (alerts, sale badges)
+    nile     — Nile blue (secondary info, delivery/trust badges)
+    sand     — warm desert sand (page background, replaces the old lavender tint)
+*/
 :root {
-  --background: #f9f7ff;
-  --foreground: #1a1025;
-  --primary: #7c3aed;
-  --primary-dark: #6d28d9;
-  --primary-light: #9333ea;
-  --accent: #f59e0b;
+  --background: #FBF6EF;
+  --foreground: #2B1B12;
+
+  --color-brand-50:  #F5EDE6;
+  --color-brand-100: #E8D5C4;
+  --color-brand-200: #D3B394;
+  --color-brand-300: #BC9068;
+  --color-brand-400: #9C7148;
+  --color-brand-500: #7A5638;
+  --color-brand-600: #6F4E37;
+  --color-brand-700: #563A29;
+  --color-brand-800: #40291C;
+  --color-brand-900: #2B1B12;
+
+  --color-accent-50:  #FBEAE3;
+  --color-accent-100: #F5CBB8;
+  --color-accent-200: #E9A182;
+  --color-accent-300: #D97952;
+  --color-accent-400: #C1502E;
+  --color-accent-500: #A83E22;
+  --color-accent-600: #8F331B;
+  --color-accent-700: #732715;
+
+  --color-hibiscus-50:  #FBE9ED;
+  --color-hibiscus-400: #C43A54;
+  --color-hibiscus-500: #A61C3C;
+  --color-hibiscus-600: #8A1631;
+
+  --color-nile-50:  #E7EEF0;
+  --color-nile-400: #2F6E80;
+  --color-nile-500: #1B4B5A;
+  --color-nile-600: #143A46;
+
+  --color-sand-50:  #FBF6EF;
+  --color-sand-100: #F5EBDD;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand-50:  var(--color-brand-50);
+  --color-brand-100: var(--color-brand-100);
+  --color-brand-200: var(--color-brand-200);
+  --color-brand-300: var(--color-brand-300);
+  --color-brand-400: var(--color-brand-400);
+  --color-brand-500: var(--color-brand-500);
+  --color-brand-600: var(--color-brand-600);
+  --color-brand-700: var(--color-brand-700);
+  --color-brand-800: var(--color-brand-800);
+  --color-brand-900: var(--color-brand-900);
+  --color-accent-50:  var(--color-accent-50);
+  --color-accent-100: var(--color-accent-100);
+  --color-accent-200: var(--color-accent-200);
+  --color-accent-300: var(--color-accent-300);
+  --color-accent-400: var(--color-accent-400);
+  --color-accent-500: var(--color-accent-500);
+  --color-accent-600: var(--color-accent-600);
+  --color-accent-700: var(--color-accent-700);
+  --color-hibiscus-50:  var(--color-hibiscus-50);
+  --color-hibiscus-400: var(--color-hibiscus-400);
+  --color-hibiscus-500: var(--color-hibiscus-500);
+  --color-hibiscus-600: var(--color-hibiscus-600);
+  --color-nile-50:  var(--color-nile-50);
+  --color-nile-400: var(--color-nile-400);
+  --color-nile-500: var(--color-nile-500);
+  --color-nile-600: var(--color-nile-600);
+  --color-sand-50:  var(--color-sand-50);
+  --color-sand-100: var(--color-sand-100);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-reem-kufi);
 }
 
 @layer base {
@@ -24,6 +92,21 @@
     font-family: var(--font-geist-sans), Arial, sans-serif;
     background: var(--background);
     color: var(--foreground);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent-400);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 

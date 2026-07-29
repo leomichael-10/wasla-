@@ -37,7 +37,7 @@ function StatCard({ label, value, icon, bg }) {
 
 // Small SVG icons for stat cards
 const IconBox = (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-purple-700">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-brand-700">
     <path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
   </svg>
 )
@@ -61,10 +61,10 @@ const QUICK_LINKS = [
   {
     href: '/dashboard/products',
     label: 'My Products',
-    bg: 'bg-purple-50',
-    border: 'border-purple-200 hover:border-purple-600',
+    bg: 'bg-brand-50',
+    border: 'border-brand-200 hover:border-brand-600',
     icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7 text-purple-600">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7 text-brand-600">
         <path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
       </svg>
     ),
@@ -83,10 +83,10 @@ const QUICK_LINKS = [
   {
     href: '/dashboard/products/add',
     label: 'Add Product',
-    bg: 'bg-purple-50',
-    border: 'border-purple-200 hover:border-purple-400',
+    bg: 'bg-brand-50',
+    border: 'border-brand-200 hover:border-brand-400',
     icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7 text-purple-500">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7 text-brand-500">
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
       </svg>
     ),
@@ -148,7 +148,7 @@ export default function DashboardOverviewPage() {
         <h1 className="text-2xl font-black text-gray-900">Overview</h1>
         <Link
           href="/dashboard/products/add"
-          className="bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors"
+          className="bg-brand-700 hover:bg-brand-800 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors"
         >
           + Add Product
         </Link>
@@ -219,7 +219,7 @@ export default function DashboardOverviewPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Products"     value={products.length}             icon={IconBox}      bg="bg-purple-50"   />
+        <StatCard label="Products"     value={products.length}             icon={IconBox}      bg="bg-brand-50"   />
         <StatCard label="Total Orders" value={orders.length}               icon={IconClipboard} bg="bg-blue-50"   />
         <StatCard label="Pending"      value={pendingCount}                icon={IconClock}    bg="bg-yellow-50" />
         <StatCard label="Revenue"      value={`EGP ${revenue.toFixed(0)}`} icon={IconBanknote} bg="bg-green-50"  />
@@ -257,7 +257,7 @@ export default function DashboardOverviewPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="font-black text-gray-900">Recent Orders</h2>
-            <Link href="/dashboard/orders" className="text-sm text-purple-700 font-semibold hover:underline">
+            <Link href="/dashboard/orders" className="text-sm text-brand-700 font-semibold hover:underline">
               View all
             </Link>
           </div>

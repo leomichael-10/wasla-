@@ -38,7 +38,7 @@ export default function CartBar() {
     <div dir={dir} className="fixed bottom-0 inset-x-0 z-30 px-3 pb-3 pointer-events-none">
       <Link
         href="/cart"
-        className="pointer-events-auto max-w-xl mx-auto flex items-center justify-between bg-purple-700 hover:bg-purple-800 active:scale-[0.98] text-white rounded-2xl shadow-2xl px-4 py-3.5 transition-all duration-150"
+        className="pointer-events-auto max-w-xl mx-auto flex items-center justify-between bg-brand-700 hover:bg-brand-800 active:scale-[0.98] text-white rounded-2xl shadow-2xl px-4 py-3.5 transition-all duration-150"
       >
         <span className="flex items-center gap-2 font-bold text-sm">
           <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-black">{count}</span>

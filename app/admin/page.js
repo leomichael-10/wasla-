@@ -371,8 +371,8 @@ export default function AdminPage() {
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-[#f9f7ff] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#FBF6EF] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -396,7 +396,7 @@ export default function AdminPage() {
   })
 
   return (
-    <div className="min-h-screen bg-[#f9f7ff]">
+    <div className="min-h-screen bg-[#FBF6EF]">
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
@@ -407,7 +407,7 @@ export default function AdminPage() {
             <h1 className="text-2xl font-black text-gray-900">Admin Panel</h1>
             <p className="text-sm text-gray-500 mt-0.5">Platform management and analytics</p>
           </div>
-          <Link href="/browse" className="text-sm font-semibold text-purple-700 hover:underline">
+          <Link href="/browse" className="text-sm font-semibold text-brand-700 hover:underline">
             View as Customer
           </Link>
         </div>
@@ -426,8 +426,8 @@ export default function AdminPage() {
               onClick={() => setActiveTab(tab)}
               className={`shrink-0 px-5 py-2 rounded-xl text-sm font-bold transition-colors ${
                 activeTab === tab
-                  ? 'bg-purple-700 text-white shadow-sm'
-                  : 'text-gray-500 hover:text-gray-900 hover:bg-[#f9f7ff]'
+                  ? 'bg-brand-700 text-white shadow-sm'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-[#FBF6EF]'
               }`}
             >
               {tab}
@@ -437,7 +437,7 @@ export default function AdminPage() {
                 </span>
               )}
               {tab === 'Approvals' && pendingApprovals.length > 0 && (
-                <span className="ml-1.5 bg-purple-400 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                <span className="ml-1.5 bg-brand-400 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
                   {pendingApprovals.length}
                 </span>
               )}
@@ -455,7 +455,7 @@ export default function AdminPage() {
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                   {[
                     { label: 'Total Users',    value: stats.totals.users,                       color: 'text-gray-900' },
-                    { label: 'Total Sellers',  value: stats.totals.sellers,                     color: 'text-purple-700' },
+                    { label: 'Total Sellers',  value: stats.totals.sellers,                     color: 'text-brand-700' },
                     { label: 'Total Products', value: stats.totals.products,                    color: 'text-blue-700' },
                     { label: 'Total Orders',   value: stats.totals.orders,                      color: 'text-yellow-700' },
                     { label: 'Revenue',        value: `EGP ${stats.totals.revenue.toFixed(0)}`, color: 'text-green-700' },
@@ -478,7 +478,7 @@ export default function AdminPage() {
                     <p className="text-sm text-gray-700 mt-2">
                       <span className="font-bold">{stats.bestSelling.productName}</span>
                       {stats.bestSelling.brand && <span className="text-gray-500"> · {stats.bestSelling.brand}</span>}
-                      <span className="ml-2 text-purple-700 font-semibold">{stats.bestSelling.units} units sold</span>
+                      <span className="ml-2 text-brand-700 font-semibold">{stats.bestSelling.units} units sold</span>
                     </p>
                   ) : <p className="text-sm text-gray-400 mt-2">No data yet</p>}
                 </div>
@@ -490,7 +490,7 @@ export default function AdminPage() {
                       {stats.topSellers.map((seller, i) => (
                         <div key={seller.sellerId} className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center text-xs font-black">{i + 1}</span>
+                            <span className="w-5 h-5 bg-brand-100 text-brand-700 rounded-full flex items-center justify-center text-xs font-black">{i + 1}</span>
                             <span className="font-semibold text-gray-900">{seller.businessName}</span>
                             {seller.city && <span className="text-gray-400 text-xs">{seller.city}</span>}
                           </div>
@@ -527,7 +527,7 @@ export default function AdminPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                        <tr className="border-b border-gray-100 bg-[#FBF6EF]">
                           <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Business</th>
                           <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Email</th>
                           <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">City</th>
@@ -540,7 +540,7 @@ export default function AdminPage() {
                       </thead>
                       <tbody className="divide-y divide-gray-50">
                         {pendingSubs.map(sub => (
-                          <tr key={sub.id} className="hover:bg-[#f9f7ff] transition-colors">
+                          <tr key={sub.id} className="hover:bg-[#FBF6EF] transition-colors">
                             <td className="px-5 py-4 font-semibold text-gray-900">{sub.seller?.businessName ?? '—'}</td>
                             <td className="px-4 py-4 text-gray-600">{sub.seller?.user?.email ?? '—'}</td>
                             <td className="px-4 py-4 text-gray-600">{sub.seller?.city ?? '—'}</td>
@@ -559,7 +559,7 @@ export default function AdminPage() {
                                 <button
                                   onClick={() => handleSubAction(sub.id, 'activate')}
                                   disabled={actioning === sub.id}
-                                  className="bg-purple-700 hover:bg-purple-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors"
+                                  className="bg-brand-700 hover:bg-brand-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors"
                                 >
                                   {actioning === sub.id ? '…' : 'Activate'}
                                 </button>
@@ -595,7 +595,7 @@ export default function AdminPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                        <tr className="border-b border-gray-100 bg-[#FBF6EF]">
                           <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Business</th>
                           <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Email</th>
                           <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">City</th>
@@ -607,7 +607,7 @@ export default function AdminPage() {
                       </thead>
                       <tbody className="divide-y divide-gray-50">
                         {subscriptions.map(sub => (
-                          <tr key={sub.id} className="hover:bg-[#f9f7ff] transition-colors">
+                          <tr key={sub.id} className="hover:bg-[#FBF6EF] transition-colors">
                             <td className="px-5 py-4 font-semibold text-gray-900">{sub.seller?.businessName ?? '—'}</td>
                             <td className="px-4 py-4 text-gray-600">{sub.seller?.user?.email ?? '—'}</td>
                             <td className="px-4 py-4 text-gray-600">{sub.seller?.city ?? '—'}</td>
@@ -648,7 +648,7 @@ export default function AdminPage() {
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                      <tr className="border-b border-gray-100 bg-[#FBF6EF]">
                         <th className="px-5 py-3.5 w-12" />
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Business</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Email</th>
@@ -658,14 +658,14 @@ export default function AdminPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {pending.map(seller => (
-                        <tr key={seller.id} className="hover:bg-[#f9f7ff] transition-colors">
+                        <tr key={seller.id} className="hover:bg-[#FBF6EF] transition-colors">
                           <td className="px-5 py-2.5">
                             {seller.logoUrl ? (
                               <img src={seller.logoUrl} alt={seller.businessName}
-                                  className="w-10 h-10 rounded-full object-cover bg-purple-50 shrink-0" />
+                                  className="w-10 h-10 rounded-full object-cover bg-brand-50 shrink-0" />
                             ) : (
-                              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
-                                <span className="text-purple-600 font-black text-sm">{(seller.businessName ?? 'S')[0].toUpperCase()}</span>
+                              <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
+                                <span className="text-brand-600 font-black text-sm">{(seller.businessName ?? 'S')[0].toUpperCase()}</span>
                               </div>
                             )}
                           </td>
@@ -676,7 +676,7 @@ export default function AdminPage() {
                             <button
                               onClick={() => handleApproveSeller(seller.id)}
                               disabled={approving === seller.id}
-                              className="bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white text-xs font-bold px-4 py-1.5 rounded-full transition-colors"
+                              className="bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white text-xs font-bold px-4 py-1.5 rounded-full transition-colors"
                             >
                               {approving === seller.id ? 'Approving…' : 'Approve'}
                             </button>
@@ -702,7 +702,7 @@ export default function AdminPage() {
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                      <tr className="border-b border-gray-100 bg-[#FBF6EF]">
                         <th className="px-5 py-3.5 w-12" />
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Business</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Email</th>
@@ -717,10 +717,10 @@ export default function AdminPage() {
                         const subStatus = seller.subscriptionStatus ?? 'PENDING'
                         const subColors = { ACTIVE: 'bg-green-100 text-green-700', SUSPENDED: 'bg-red-100 text-red-600', PENDING: 'bg-yellow-100 text-yellow-700' }
                         return (
-                        <tr key={seller.id} className="hover:bg-[#f9f7ff] transition-colors">
+                        <tr key={seller.id} className="hover:bg-[#FBF6EF] transition-colors">
                           <td className="px-5 py-2.5">
-                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
-                              <span className="text-purple-600 font-black text-sm">{(seller.businessName ?? 'S')[0].toUpperCase()}</span>
+                            <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
+                              <span className="text-brand-600 font-black text-sm">{(seller.businessName ?? 'S')[0].toUpperCase()}</span>
                             </div>
                           </td>
                           <td className="px-4 py-2.5 font-semibold text-gray-900">{seller.businessName}</td>
@@ -779,12 +779,12 @@ export default function AdminPage() {
                 placeholder="Search by email…"
                 value={userSearch}
                 onChange={e => setUserSearch(e.target.value)}
-                className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 w-56"
+                className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 w-56"
               />
               <select
                 value={userRole}
                 onChange={e => setUserRole(e.target.value)}
-                className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               >
                 <option value="">All roles</option>
                 <option value="customer">Customer</option>
@@ -808,7 +808,7 @@ export default function AdminPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                      <tr className="border-b border-gray-100 bg-[#FBF6EF]">
                         <th className="px-5 py-3.5 w-12" />
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Email</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Name</th>
@@ -824,17 +824,17 @@ export default function AdminPage() {
                       {filteredUsers.map(u => {
                         const displayName = u.customerProfile?.fullName || u.sellerProfile?.businessName || u.email
                         const roleColors  = {
-                          admin:      'bg-purple-100 text-purple-700',
+                          admin:      'bg-brand-100 text-brand-700',
                           wholesaler: 'bg-blue-100 text-blue-700',
-                          retailer:   'bg-amber-100 text-amber-700',
+                          retailer:   'bg-accent-100 text-accent-700',
                           customer:   'bg-gray-100 text-gray-600',
                         }
                         return (
-                        <tr key={u.id} className={`hover:bg-[#f9f7ff] transition-colors ${u.isBanned ? 'opacity-60' : ''}`}>
+                        <tr key={u.id} className={`hover:bg-[#FBF6EF] transition-colors ${u.isBanned ? 'opacity-60' : ''}`}>
                           <td className="px-5 py-2.5">
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-black text-sm ${
-                              u.role === 'admin'      ? 'bg-purple-100 text-purple-700' :
-                              u.role === 'retailer'   ? 'bg-amber-100 text-amber-700' :
+                              u.role === 'admin'      ? 'bg-brand-100 text-brand-700' :
+                              u.role === 'retailer'   ? 'bg-accent-100 text-accent-700' :
                               u.role === 'wholesaler' ? 'bg-blue-100 text-blue-700' :
                               'bg-gray-100 text-gray-600'
                             }`}>
@@ -896,12 +896,12 @@ export default function AdminPage() {
                 placeholder="Search by name or brand…"
                 value={productSearch}
                 onChange={e => setProductSearch(e.target.value)}
-                className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 w-64"
+                className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 w-64"
               />
               <select
                 value={productStatus}
                 onChange={e => setProductStatus(e.target.value)}
-                className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
               >
                 <option value="">All status</option>
                 <option value="active">Active</option>
@@ -923,7 +923,7 @@ export default function AdminPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                          <tr className="border-b border-gray-100 bg-[#FBF6EF]">
                             <th className="px-5 py-3.5 w-12" />
                             <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
                             <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Brand</th>
@@ -944,22 +944,22 @@ export default function AdminPage() {
                               : minP === maxP ? `${minP.toFixed(0)}`
                               : `${minP.toFixed(0)}–${maxP.toFixed(0)}`
                             return (
-                              <tr key={p.id} className={`hover:bg-[#f9f7ff] transition-colors ${!p.isActive ? 'opacity-60' : ''}`}>
+                              <tr key={p.id} className={`hover:bg-[#FBF6EF] transition-colors ${!p.isActive ? 'opacity-60' : ''}`}>
                                 <td className="px-5 py-2.5">
                                   {(() => {
                                     const thumb = p.images?.[0] || p.variants?.find(v => v.image)?.image || null
                                     return thumb ? (
                                       <img src={thumb} alt={p.name}
-                                        className="w-10 h-10 rounded-lg object-cover bg-purple-50 shrink-0" />
+                                        className="w-10 h-10 rounded-lg object-cover bg-brand-50 shrink-0" />
                                     ) : (
-                                      <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
-                                        <span className="text-purple-600 font-black text-sm">{(p.brand ?? p.name ?? 'P')[0].toUpperCase()}</span>
+                                      <div className="w-10 h-10 rounded-lg bg-brand-100 flex items-center justify-center shrink-0">
+                                        <span className="text-brand-600 font-black text-sm">{(p.brand ?? p.name ?? 'P')[0].toUpperCase()}</span>
                                       </div>
                                     )
                                   })()}
                                 </td>
                                 <td className="px-4 py-2.5">
-                                  <Link href={`/products/${p.id}`} className="font-semibold text-gray-900 hover:text-purple-700 transition-colors">
+                                  <Link href={`/products/${p.id}`} className="font-semibold text-gray-900 hover:text-brand-700 transition-colors">
                                     {p.name}
                                   </Link>
                                 </td>
@@ -1021,7 +1021,7 @@ export default function AdminPage() {
                     onChange={e => setCatForm(f => ({ ...f, name: e.target.value }))}
                     placeholder="e.g. Coffee & Jabana"
                     required
-                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 w-52"
+                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 w-52"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -1031,13 +1031,13 @@ export default function AdminPage() {
                     value={catForm.icon}
                     onChange={e => setCatForm(f => ({ ...f, icon: e.target.value }))}
                     placeholder="e.g. 💨"
-                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 w-32"
+                    className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 w-32"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={catSaving}
-                  className="bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors"
+                  className="bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors"
                 >
                   {catSaving ? 'Saving…' : 'Add Category'}
                 </button>
@@ -1064,16 +1064,16 @@ export default function AdminPage() {
                             value={editingCat.name}
                             onChange={e => setEditingCat(v => ({ ...v, name: e.target.value }))}
                             required
-                            className="border border-gray-200 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 w-44"
+                            className="border border-gray-200 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 w-44"
                           />
                           <input
                             type="text"
                             value={editingCat.icon ?? ''}
                             onChange={e => setEditingCat(v => ({ ...v, icon: e.target.value }))}
                             placeholder="Icon"
-                            className="border border-gray-200 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 w-24"
+                            className="border border-gray-200 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 w-24"
                           />
-                          <button type="submit" disabled={catSaving} className="bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors">
+                          <button type="submit" disabled={catSaving} className="bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors">
                             {catSaving ? '…' : 'Save'}
                           </button>
                           <button type="button" onClick={() => setEditingCat(null)} className="text-gray-500 hover:text-gray-700 text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 transition-colors">
@@ -1093,7 +1093,7 @@ export default function AdminPage() {
                         <div className="flex items-center gap-2 shrink-0">
                           <button
                             onClick={() => setEditingCat({ id: cat.id, name: cat.name, icon: cat.icon ?? '' })}
-                            className="text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:bg-[#f9f7ff] transition-colors"
+                            className="text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:bg-[#FBF6EF] transition-colors"
                           >
                             Edit
                           </button>
@@ -1119,9 +1119,9 @@ export default function AdminPage() {
                                 value={editingSub.name}
                                 onChange={e => setEditingSub(v => ({ ...v, name: e.target.value }))}
                                 required
-                                className="border border-gray-200 rounded-xl px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 w-44"
+                                className="border border-gray-200 rounded-xl px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 w-44"
                               />
-                              <button type="submit" disabled={catSaving} className="bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white text-xs font-bold px-3 py-1 rounded-full">
+                              <button type="submit" disabled={catSaving} className="bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white text-xs font-bold px-3 py-1 rounded-full">
                                 {catSaving ? '…' : 'Save'}
                               </button>
                               <button type="button" onClick={() => setEditingSub(null)} className="text-gray-500 text-xs font-bold px-3 py-1 rounded-full border border-gray-200">
@@ -1134,7 +1134,7 @@ export default function AdminPage() {
                               <div className="flex items-center gap-1.5">
                                 <button
                                   onClick={() => setEditingSub({ id: sub.id, name: sub.name })}
-                                  className="text-xs font-bold px-2.5 py-1 rounded-full border border-gray-200 text-gray-500 hover:bg-[#f9f7ff] transition-colors"
+                                  className="text-xs font-bold px-2.5 py-1 rounded-full border border-gray-200 text-gray-500 hover:bg-[#FBF6EF] transition-colors"
                                 >
                                   Edit
                                 </button>
@@ -1159,12 +1159,12 @@ export default function AdminPage() {
                           onChange={e => setSubForms(f => ({ ...f, [cat.id]: e.target.value }))}
                           onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddSubcategory(cat.id))}
                           placeholder="New subcategory…"
-                          className="border border-dashed border-gray-300 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 w-48 placeholder-gray-400"
+                          className="border border-dashed border-gray-300 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 w-48 placeholder-gray-400"
                         />
                         <button
                           onClick={() => handleAddSubcategory(cat.id)}
                           disabled={subSaving === cat.id || !subForms[cat.id]?.trim()}
-                          className="bg-gray-100 hover:bg-purple-50 hover:text-purple-700 disabled:opacity-40 text-gray-600 text-xs font-bold px-3 py-1.5 rounded-full transition-colors"
+                          className="bg-gray-100 hover:bg-brand-50 hover:text-brand-700 disabled:opacity-40 text-gray-600 text-xs font-bold px-3 py-1.5 rounded-full transition-colors"
                         >
                           {subSaving === cat.id ? '…' : '+ Add'}
                         </button>
@@ -1189,7 +1189,7 @@ export default function AdminPage() {
               <>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                   {[
-                    { label: 'Total Commission',      value: `EGP ${Number(commission.totalCommission ?? 0).toFixed(2)}`,  color: 'text-purple-700' },
+                    { label: 'Total Commission',      value: `EGP ${Number(commission.totalCommission ?? 0).toFixed(2)}`,  color: 'text-brand-700' },
                     { label: 'This Month',            value: `EGP ${Number(commission.monthCommission ?? 0).toFixed(2)}`,  color: 'text-blue-700' },
                     { label: 'Commission Rate',       value: '10%',                                                        color: 'text-gray-900' },
                   ].map(s => (
@@ -1208,7 +1208,7 @@ export default function AdminPage() {
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                            <tr className="border-b border-gray-100 bg-[#FBF6EF]">
                               <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">#</th>
                               <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Seller</th>
                               <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">City</th>
@@ -1219,14 +1219,14 @@ export default function AdminPage() {
                           </thead>
                           <tbody className="divide-y divide-gray-50">
                             {commission.bySeller.map((row, i) => (
-                              <tr key={row.sellerId} className="hover:bg-[#f9f7ff] transition-colors">
+                              <tr key={row.sellerId} className="hover:bg-[#FBF6EF] transition-colors">
                                 <td className="px-5 py-3.5 text-gray-400 text-xs">{i + 1}</td>
                                 <td className="px-4 py-3.5 font-semibold text-gray-900">{row.businessName}</td>
                                 <td className="px-4 py-3.5 text-gray-600">{row.city ?? '—'}</td>
                                 <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-gray-700">
                                   EGP {Number(row.totalRevenue).toFixed(2)}
                                 </td>
-                                <td className="px-4 py-3.5 text-right font-black tabular-nums text-purple-700">
+                                <td className="px-4 py-3.5 text-right font-black tabular-nums text-brand-700">
                                   EGP {Number(row.totalCommission).toFixed(2)}
                                 </td>
                                 <td className="px-4 py-3.5 text-center text-gray-600">{row.orderCount}</td>
@@ -1251,11 +1251,11 @@ export default function AdminPage() {
                             const pct = (Number(m.commission) / maxVal) * 100
                             return (
                               <div key={m.month} className="flex-1 flex flex-col items-center gap-1 min-w-0">
-                                <span className="text-[10px] font-bold text-purple-700 tabular-nums">
+                                <span className="text-[10px] font-bold text-brand-700 tabular-nums">
                                   {Number(m.commission) > 0 ? Number(m.commission).toFixed(0) : ''}
                                 </span>
                                 <div
-                                  className="w-full bg-purple-700 rounded-t-md transition-all"
+                                  className="w-full bg-brand-700 rounded-t-md transition-all"
                                   style={{ height: `${Math.max(pct, 2)}%` }}
                                 />
                                 <span className="text-[9px] text-gray-400 font-semibold truncate w-full text-center">{m.month}</span>
@@ -1301,7 +1301,7 @@ export default function AdminPage() {
                 <p className="text-sm text-gray-500">{masterProducts.length} product{masterProducts.length !== 1 ? 's' : ''} in catalog</p>
                 <button
                   onClick={() => { setEditingMaster(null); setShowMasterForm(true) }}
-                  className="bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors"
+                  className="bg-brand-700 hover:bg-brand-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors"
                 >
                   + Add to Catalog
                 </button>
@@ -1320,7 +1320,7 @@ export default function AdminPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                      <tr className="border-b border-gray-100 bg-[#FBF6EF]">
                         <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Type</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Category</th>
@@ -1332,14 +1332,14 @@ export default function AdminPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {masterProducts.map(p => (
-                        <tr key={p.id} className={`hover:bg-[#f9f7ff] transition-colors ${!p.isActive ? 'opacity-50' : ''}`}>
+                        <tr key={p.id} className={`hover:bg-[#FBF6EF] transition-colors ${!p.isActive ? 'opacity-50' : ''}`}>
                           <td className="px-5 py-3.5">
                             <div className="flex items-center gap-3">
                               {p.images?.[0] ? (
                                 <img src={p.images[0]} alt={p.name} className="w-9 h-9 rounded-lg object-cover bg-gray-50 shrink-0" />
                               ) : (
-                                <div className="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center shrink-0">
-                                  <span className="text-purple-300 font-black text-sm">{p.name[0]}</span>
+                                <div className="w-9 h-9 rounded-lg bg-brand-50 flex items-center justify-center shrink-0">
+                                  <span className="text-brand-300 font-black text-sm">{p.name[0]}</span>
                                 </div>
                               )}
                               <span className="font-semibold text-gray-900">{p.name}</span>
@@ -1361,7 +1361,7 @@ export default function AdminPage() {
                             <div className="flex items-center justify-end gap-2">
                               <button
                                 onClick={() => { setEditingMaster(p); setShowMasterForm(true) }}
-                                className="text-xs font-semibold text-purple-700 hover:text-purple-800 transition-colors"
+                                className="text-xs font-semibold text-brand-700 hover:text-brand-800 transition-colors"
                               >
                                 Edit
                               </button>
@@ -1405,7 +1405,7 @@ export default function AdminPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                        <tr className="border-b border-gray-100 bg-[#FBF6EF]">
                           <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product</th>
                           <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Retailer</th>
                           <th className="text-right px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Price EGP</th>
@@ -1416,7 +1416,7 @@ export default function AdminPage() {
                       </thead>
                       <tbody className="divide-y divide-gray-50">
                         {pendingApprovals.map(item => (
-                          <tr key={item.id} className="hover:bg-[#f9f7ff] transition-colors">
+                          <tr key={item.id} className="hover:bg-[#FBF6EF] transition-colors">
                             <td className="px-5 py-3.5 font-semibold text-gray-900">{item.masterProduct?.name ?? '—'}</td>
                             <td className="px-4 py-3.5 text-gray-600">{item.retailer?.businessName ?? '—'} {item.retailer?.city ? `· ${item.retailer.city}` : ''}</td>
                             <td className="px-4 py-3.5 text-right tabular-nums font-semibold">{Number(item.price).toFixed(0)}</td>
@@ -1427,7 +1427,7 @@ export default function AdminPage() {
                                 placeholder="Optional note…"
                                 value={noteRP[item.id] ?? ''}
                                 onChange={e => setNoteRP(n => ({ ...n, [item.id]: e.target.value }))}
-                                className="border border-gray-200 rounded-lg px-2 py-1 text-xs w-36 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                                className="border border-gray-200 rounded-lg px-2 py-1 text-xs w-36 focus:outline-none focus:ring-1 focus:ring-brand-400"
                               />
                             </td>
                             <td className="px-4 py-3.5">
@@ -1435,7 +1435,7 @@ export default function AdminPage() {
                                 <button
                                   onClick={() => handleRetailerProductAction(item.id, 'approve')}
                                   disabled={actioningRP === item.id}
-                                  className="bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors"
+                                  className="bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors"
                                 >
                                   Approve
                                 </button>
@@ -1477,7 +1477,7 @@ export default function AdminPage() {
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 bg-[#f9f7ff]">
+                      <tr className="border-b border-gray-100 bg-[#FBF6EF]">
                         <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Product Name</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Retailer</th>
                         <th className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wide">Notes</th>
@@ -1488,7 +1488,7 @@ export default function AdminPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {productRequests.map(r => (
-                        <tr key={r.id} className="hover:bg-[#f9f7ff] transition-colors">
+                        <tr key={r.id} className="hover:bg-[#FBF6EF] transition-colors">
                           <td className="px-5 py-3.5 font-semibold text-gray-900">{r.name}</td>
                           <td className="px-4 py-3.5 text-gray-600">{r.retailer?.businessName ?? '—'}</td>
                           <td className="px-4 py-3.5 text-gray-500 text-xs max-w-48 truncate">{r.notes ?? '—'}</td>
@@ -1526,14 +1526,14 @@ export default function AdminPage() {
             {/* Summary cards */}
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                { label: 'Total Page Views', value: traffic?.totalHits  ?? '—', color: 'text-purple-700' },
+                { label: 'Total Page Views', value: traffic?.totalHits  ?? '—', color: 'text-brand-700' },
                 { label: 'Unique IPs',        value: traffic?.uniqueIps ?? '—', color: 'text-blue-700'   },
                 { label: 'Days Tracked',      value: traffic?.dailyHits?.length ?? '—', color: 'text-gray-900' },
               ].map(s => (
                 <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{s.label}</p>
                   {loading
-                    ? <div className="h-8 w-20 bg-purple-50 rounded animate-pulse mt-1" />
+                    ? <div className="h-8 w-20 bg-brand-50 rounded animate-pulse mt-1" />
                     : <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
                   }
                 </div>
@@ -1544,7 +1544,7 @@ export default function AdminPage() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
               <h2 className="font-black text-gray-900 text-sm mb-4">Hits — Last 30 Days</h2>
               {loading ? (
-                <div className="h-24 bg-purple-50 rounded-xl animate-pulse" />
+                <div className="h-24 bg-brand-50 rounded-xl animate-pulse" />
               ) : traffic?.dailyHits?.length ? (
                 <div className="flex items-end gap-1 h-28">
                   {(() => {
@@ -1552,7 +1552,7 @@ export default function AdminPage() {
                     return traffic.dailyHits.map(d => (
                       <div key={d.date} className="flex-1 flex flex-col items-center gap-1 min-w-0" title={`${d.date}: ${d.count}`}>
                         <div
-                          className="w-full bg-purple-600 rounded-t"
+                          className="w-full bg-brand-600 rounded-t"
                           style={{ height: `${Math.max((d.count / max) * 96, 2)}px` }}
                         />
                       </div>
@@ -1571,14 +1571,14 @@ export default function AdminPage() {
                   <h2 className="font-black text-gray-900 text-sm">Top Pages</h2>
                 </div>
                 {loading ? (
-                  <div className="p-5 space-y-2">{[1,2,3].map(i => <div key={i} className="h-5 bg-purple-50 rounded animate-pulse" />)}</div>
+                  <div className="p-5 space-y-2">{[1,2,3].map(i => <div key={i} className="h-5 bg-brand-50 rounded animate-pulse" />)}</div>
                 ) : traffic?.topPages?.length ? (
                   <table className="w-full text-sm">
                     <tbody className="divide-y divide-gray-50">
                       {traffic.topPages.map((r, i) => (
-                        <tr key={i} className="hover:bg-[#f9f7ff] transition-colors">
+                        <tr key={i} className="hover:bg-[#FBF6EF] transition-colors">
                           <td className="px-5 py-3 text-gray-700 font-medium truncate max-w-[180px]">{r.page}</td>
-                          <td className="px-5 py-3 text-right font-black text-purple-700 tabular-nums">{r.count}</td>
+                          <td className="px-5 py-3 text-right font-black text-brand-700 tabular-nums">{r.count}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1593,14 +1593,14 @@ export default function AdminPage() {
                   <h2 className="font-black text-gray-900 text-sm">Top Countries</h2>
                 </div>
                 {loading ? (
-                  <div className="p-5 space-y-2">{[1,2,3].map(i => <div key={i} className="h-5 bg-purple-50 rounded animate-pulse" />)}</div>
+                  <div className="p-5 space-y-2">{[1,2,3].map(i => <div key={i} className="h-5 bg-brand-50 rounded animate-pulse" />)}</div>
                 ) : traffic?.topCountries?.length ? (
                   <table className="w-full text-sm">
                     <tbody className="divide-y divide-gray-50">
                       {traffic.topCountries.map((r, i) => (
-                        <tr key={i} className="hover:bg-[#f9f7ff] transition-colors">
+                        <tr key={i} className="hover:bg-[#FBF6EF] transition-colors">
                           <td className="px-5 py-3 text-gray-700 font-medium">{r.country}</td>
-                          <td className="px-5 py-3 text-right font-black text-purple-700 tabular-nums">{r.count}</td>
+                          <td className="px-5 py-3 text-right font-black text-brand-700 tabular-nums">{r.count}</td>
                         </tr>
                       ))}
                     </tbody>

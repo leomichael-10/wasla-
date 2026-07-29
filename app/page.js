@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar'
 import ZoneBar from '../components/ZoneBar'
 import ProductTile from '../components/ProductTile'
 import BuyAgainRail from '../components/BuyAgainRail'
+import CategoryIcon from '../components/CategoryIcon'
 import { DEFAULT_LOCALE, LOCALE_COOKIE, t } from '../lib/i18n'
 
 async function getShops() {
@@ -104,32 +105,16 @@ async function getOriginRails(zoneId) {
   } catch { return [] }
 }
 
-// Emoji glyphs per the real Sudanese category taxonomy — no icon asset
-// library available, so this is a pragmatic stand-in until real category
-// artwork exists (see MIGRATION_REPORT.md brand-assets gap).
-const CATEGORY_EMOJI = {
-  'Coffee & Jabana':         '☕',
-  'Tea & Drinks':            '🍵',
-  'Spices & Seasonings':     '🌶️',
-  'Dakwa & Peanut Products': '🥜',
-  'Weika & Dried Goods':     '🌿',
-  'Grains & Flour':          '🌾',
-  'Oils & Ghee':             '🫙',
-  'Sweets & Snacks':         '🍬',
-  'Bakhour & Perfumes':      '🕯️',
-  'Heritage Clothing':       '👘',
-  'Homeware & Handicrafts':  '🏺',
-}
-
 function CategoryTile({ category }) {
-  const emoji = CATEGORY_EMOJI[category.name] ?? '🛍️'
   return (
     <Link
       href={`/products?category=${encodeURIComponent(category.name)}`}
-      className="group flex flex-col items-center gap-2 bg-white rounded-2xl border border-purple-100 shadow-sm hover:shadow-md hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 py-4 px-2"
+      className="group flex flex-col items-center gap-2 bg-white rounded-2xl border border-brand-100 shadow-sm hover:shadow-md hover:border-accent-300 hover:bg-accent-50 transition-all duration-200 py-4 px-2"
     >
-      <span className="text-3xl sm:text-4xl">{emoji}</span>
-      <span className="text-xs font-bold text-gray-700 text-center leading-tight group-hover:text-purple-700 transition-colors">
+      <span className="w-11 h-11 rounded-full bg-brand-50 group-hover:bg-accent-100 flex items-center justify-center text-brand-600 group-hover:text-accent-500 transition-colors">
+        <CategoryIcon name={category.name} />
+      </span>
+      <span className="text-xs font-bold text-brand-800 text-center leading-tight group-hover:text-accent-500 transition-colors">
         {category.name}
       </span>
       {category._count?.products > 0 && (
@@ -146,7 +131,7 @@ function ProductRail({ title, products, viewAllHref, locale }) {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-black text-gray-900">{title}</h2>
         {viewAllHref && (
-          <Link href={viewAllHref} className="text-purple-600 font-semibold text-xs hover:text-purple-800 transition-colors">
+          <Link href={viewAllHref} className="text-brand-600 font-semibold text-xs hover:text-brand-800 transition-colors">
             {t('home.viewAll', locale)}
           </Link>
         )}
@@ -180,12 +165,12 @@ export default async function HomePage() {
   ])
 
   return (
-    <div className="min-h-screen bg-[#f9f7ff] pb-20">
+    <div className="min-h-screen bg-[#FBF6EF] pb-20">
       <Navbar />
       <ZoneBar />
 
       {/* Search */}
-      <section className="bg-purple-700 px-4 py-4">
+      <section className="bg-brand-700 px-4 py-4">
         <form action="/products" method="GET" className="max-w-2xl mx-auto">
           <div className="flex bg-white rounded-2xl shadow-lg overflow-hidden p-1">
             <input
@@ -196,7 +181,7 @@ export default async function HomePage() {
             />
             <button
               type="submit"
-              className="bg-amber-400 hover:bg-amber-500 active:scale-95 text-gray-900 font-black px-5 py-2.5 rounded-xl text-sm transition-all duration-200 shrink-0"
+              className="bg-accent-400 hover:bg-accent-500 active:scale-95 text-gray-900 font-black px-5 py-2.5 rounded-xl text-sm transition-all duration-200 shrink-0"
             >
               {t('home.search', locale)}
             </button>
@@ -234,7 +219,7 @@ export default async function HomePage() {
         <section className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-black text-gray-900">{t('home.shopsNearYou', locale)}</h2>
-            <Link href="/shops" className="text-purple-600 font-semibold text-xs hover:text-purple-800 transition-colors">
+            <Link href="/shops" className="text-brand-600 font-semibold text-xs hover:text-brand-800 transition-colors">
               {t('home.viewAll', locale)}
             </Link>
           </div>
@@ -243,9 +228,9 @@ export default async function HomePage() {
               <Link
                 key={shop.id}
                 href={`/shops/${shop.id}`}
-                className="w-40 shrink-0 bg-white rounded-2xl border border-purple-50 shadow-sm hover:shadow-md transition-all duration-200 p-3 flex flex-col gap-1"
+                className="w-40 shrink-0 bg-white rounded-2xl border border-brand-50 shadow-sm hover:shadow-md transition-all duration-200 p-3 flex flex-col gap-1"
               >
-                <div className="w-10 h-10 rounded-xl bg-purple-700 text-white font-black flex items-center justify-center text-sm">
+                <div className="w-10 h-10 rounded-xl bg-brand-700 text-white font-black flex items-center justify-center text-sm">
                   {shop.businessName[0].toUpperCase()}
                 </div>
                 <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 mt-1">{shop.businessName}</p>

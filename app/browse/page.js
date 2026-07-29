@@ -40,14 +40,14 @@ function BrowseProductCard({ product }) {
       href={`/products/${product.id}`}
       className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col h-full"
     >
-      <div className="bg-linear-to-br from-purple-50 via-purple-100 to-violet-100 aspect-square flex items-center justify-center">
-        <span className="text-4xl font-black text-purple-200 select-none tracking-tighter">
+      <div className="bg-linear-to-br from-brand-50 via-brand-100 to-brand-100 aspect-square flex items-center justify-center">
+        <span className="text-4xl font-black text-brand-200 select-none tracking-tighter">
           {(product.brand ?? 'V')[0].toUpperCase()}
         </span>
       </div>
       <div className="p-3 flex flex-col gap-1.5">
         {product.brand && (
-          <span className="text-[11px] font-bold text-purple-700 uppercase tracking-wide">{product.brand}</span>
+          <span className="text-[11px] font-bold text-brand-700 uppercase tracking-wide">{product.brand}</span>
         )}
         <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{product.name}</h3>
         {labels.length > 0 && (
@@ -114,7 +114,7 @@ function BrowseBrowser() {
   function clearFilters() { setSearch(''); setBrand(''); setCategory(''); setCity('') }
 
   return (
-    <div className="min-h-screen bg-[#f9f7ff]">
+    <div className="min-h-screen bg-[#FBF6EF]">
       <Navbar />
 
       {/* Read-only banner */}
@@ -163,7 +163,7 @@ function BrowseBrowser() {
             <select
               value={sort}
               onChange={e => setSort(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
+              className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 bg-white"
             >
               {SORT_OPTIONS.map(o => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -177,7 +177,7 @@ function BrowseBrowser() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search..."
-                className="border border-gray-200 rounded-xl pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 w-40"
+                className="border border-gray-200 rounded-xl pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 w-40"
               />
             </div>
 
@@ -204,9 +204,9 @@ function BrowseBrowser() {
               city     && { label: city,           clear: () => setCity('') },
             ].filter(Boolean).map(chip => (
               <button key={chip.label} onClick={chip.clear}
-                className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-purple-100 transition-colors">
+                className="flex items-center gap-1.5 bg-brand-50 text-brand-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-brand-100 transition-colors">
                 {chip.label}
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-purple-600">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-brand-600">
                   <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
                 </svg>
               </button>
@@ -234,10 +234,13 @@ function BrowseBrowser() {
               </div>
             ) : products.length === 0 ? (
               <div className="text-center py-24">
-                <p className="text-gray-500 font-semibold text-lg">No products found</p>
-                <p className="text-gray-400 text-sm mt-1">Try adjusting your filters</p>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.4} stroke="currentColor" className="w-12 h-12 mx-auto mb-3 text-brand-200">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 8c3-2 6 0 5 3-.7 2-3 2.5-4.5 1.5C8 11.3 7.5 9.3 9 8ZM4 20l6-6M14 14l6 6M4 4l16 16" />
+                </svg>
+                <p className="text-brand-800 font-bold text-lg">لسه مفيش منتجات هنا</p>
+                <p className="text-gray-400 text-sm mt-1">جرّب تغيّر الفلاتر</p>
                 {hasFilters && (
-                  <button onClick={clearFilters} className="mt-4 text-purple-700 font-bold hover:underline text-sm">Clear filters</button>
+                  <button onClick={clearFilters} className="mt-4 text-accent-500 font-bold hover:underline text-sm">مسح الفلاتر</button>
                 )}
               </div>
             ) : (
@@ -262,8 +265,8 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
         <div className="space-y-1.5">
           {BRANDS.map(b => (
             <label key={b} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="radio" name="browse-brand" checked={brand === b} onChange={() => setBrand(brand === b ? '' : b)} className="accent-purple-600 w-4 h-4" />
-              <span className="text-sm text-gray-700 group-hover:text-purple-700 transition-colors">{b}</span>
+              <input type="radio" name="browse-brand" checked={brand === b} onChange={() => setBrand(brand === b ? '' : b)} className="accent-brand-600 w-4 h-4" />
+              <span className="text-sm text-gray-700 group-hover:text-brand-700 transition-colors">{b}</span>
             </label>
           ))}
         </div>
@@ -273,14 +276,14 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
         <div className="space-y-1.5">
           {CITIES.map(c => (
             <label key={c} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="radio" name="browse-city" checked={city === c} onChange={() => setCity(city === c ? '' : c)} className="accent-purple-600 w-4 h-4" />
-              <span className="text-sm text-gray-700 group-hover:text-purple-700 transition-colors">{c}</span>
+              <input type="radio" name="browse-city" checked={city === c} onChange={() => setCity(city === c ? '' : c)} className="accent-brand-600 w-4 h-4" />
+              <span className="text-sm text-gray-700 group-hover:text-brand-700 transition-colors">{c}</span>
             </label>
           ))}
         </div>
       </div>
       {onClose && (
-        <button onClick={onClose} className="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">
+        <button onClick={onClose} className="w-full bg-brand-700 hover:bg-brand-800 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">
           Show results
         </button>
       )}
@@ -291,8 +294,8 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
 export default function BrowsePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#f9f7ff]">
-        <div className="h-16 bg-purple-700" />
+      <div className="min-h-screen bg-[#FBF6EF]">
+        <div className="h-16 bg-brand-700" />
         <div className="h-10 bg-yellow-50 border-b border-yellow-200" />
         <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
           {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}

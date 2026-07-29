@@ -36,7 +36,7 @@ export default function OrderConfirmationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9f7ff]">
+    <div className="min-h-screen bg-[#FBF6EF]">
       <Navbar />
 
       <div className="max-w-2xl mx-auto px-4 py-12">
@@ -73,7 +73,7 @@ export default function OrderConfirmationPage() {
                     </div>
                   ))}
                 </div>
-                <div className="px-5 py-3 bg-[#f9f7ff] border-t border-gray-100 grid grid-cols-3 text-xs text-gray-500 gap-2">
+                <div className="px-5 py-3 bg-[#FBF6EF] border-t border-gray-100 grid grid-cols-3 text-xs text-gray-500 gap-2">
                   <span>Payment: {order.paymentMethod ?? 'cod'}</span>
                   <span className="text-center text-green-600 font-semibold">Status: Placed</span>
                   <span className="text-right">Delivery: {order.promisedEta ? new Date(order.promisedEta).toLocaleString('en-EG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : 'TBD'}</span>
@@ -88,7 +88,7 @@ export default function OrderConfirmationPage() {
                         <p className="text-xs text-gray-500 mb-2">
                           Send payment via InstaPay or Vodafone Cash, then upload your receipt to confirm this order.
                         </p>
-                        <label className={`inline-block cursor-pointer bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold px-4 py-2 rounded-xl transition-colors ${uploading === order.id ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <label className={`inline-block cursor-pointer bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-bold px-4 py-2 rounded-xl transition-colors ${uploading === order.id ? 'opacity-50 pointer-events-none' : ''}`}>
                           {uploading === order.id ? 'Uploading…' : 'Upload Receipt'}
                           <input
                             type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
@@ -113,7 +113,7 @@ export default function OrderConfirmationPage() {
         <div className="flex items-center gap-4 justify-center">
           <Link
             href="/orders"
-            className="bg-purple-700 hover:bg-purple-800 text-white font-black px-6 py-3 rounded-xl text-sm transition-colors"
+            className="bg-brand-700 hover:bg-brand-800 text-white font-black px-6 py-3 rounded-xl text-sm transition-colors"
           >
             Track My Orders
           </Link>

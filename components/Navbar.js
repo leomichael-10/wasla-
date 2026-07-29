@@ -76,11 +76,11 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="bg-purple-700 sticky top-0 z-50 shadow-md">
+      <nav className="bg-brand-700 sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-3">
 
           <button
-            className="lg:hidden min-w-11 min-h-11 flex items-center justify-center text-white hover:text-amber-300 transition-colors shrink-0"
+            className="lg:hidden min-w-11 min-h-11 flex items-center justify-center text-white hover:text-accent-300 transition-colors shrink-0"
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
           >
@@ -91,7 +91,7 @@ export default function Navbar() {
 
           <Link href="/" className="shrink-0 leading-none lg:mr-0 absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
             <span className="text-white font-black text-xl tracking-tight">
-              was<span className="text-amber-300">la</span>
+              was<span className="text-accent-300">la</span>
             </span>
           </Link>
 
@@ -109,7 +109,7 @@ export default function Navbar() {
               {showBrowse && (
                 <Link
                   href="/browse"
-                  className="text-amber-300 hover:text-amber-200 text-sm font-semibold px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors whitespace-nowrap"
+                  className="text-accent-300 hover:text-accent-200 text-sm font-semibold px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors whitespace-nowrap"
                 >
                   View as Customer
                 </Link>
@@ -124,10 +124,10 @@ export default function Navbar() {
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder={t('nav.search', locale)}
-                className="w-full rounded-2xl pl-4 pr-10 py-2 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full rounded-2xl pl-4 pr-10 py-2 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-400"
               />
               <button type="submit" aria-label="Search"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-purple-600 hover:text-purple-800 transition-colors">
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-brand-600 hover:text-brand-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                 </svg>
@@ -139,7 +139,7 @@ export default function Navbar() {
             {user ? (
               <>
                 {userInitial && (
-                  <div className="hidden lg:flex w-8 h-8 rounded-full bg-purple-100 text-purple-700 font-black text-sm items-center justify-center shrink-0">
+                  <div className="hidden lg:flex w-8 h-8 rounded-full bg-brand-100 text-brand-700 font-black text-sm items-center justify-center shrink-0">
                     {userInitial}
                   </div>
                 )}
@@ -152,8 +152,8 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link href="/login"    className="hidden lg:inline-flex items-center text-white text-sm font-semibold hover:text-amber-300 transition-colors px-2 min-h-11">Sign in</Link>
-                <Link href="/register" className="hidden lg:block bg-amber-400 hover:bg-amber-500 active:scale-95 text-gray-900 text-sm font-black px-4 py-1.5 rounded-full transition-all duration-200">Register</Link>
+                <Link href="/login"    className="hidden lg:inline-flex items-center text-white text-sm font-semibold hover:text-accent-300 transition-colors px-2 min-h-11">Sign in</Link>
+                <Link href="/register" className="hidden lg:block bg-accent-400 hover:bg-accent-500 active:scale-95 text-gray-900 text-sm font-black px-4 py-1.5 rounded-full transition-all duration-200">Register</Link>
               </>
             )}
 
@@ -167,7 +167,7 @@ export default function Navbar() {
 
             <button
               onClick={() => setSearchOpen(v => !v)}
-              className="lg:hidden min-w-11 min-h-11 flex items-center justify-center text-white hover:text-amber-300 transition-colors"
+              className="lg:hidden min-w-11 min-h-11 flex items-center justify-center text-white hover:text-accent-300 transition-colors"
               aria-label="Toggle search"
             >
               {searchOpen ? (
@@ -182,12 +182,12 @@ export default function Navbar() {
             </button>
 
             {showCart && (
-              <Link href="/cart" aria-label="Cart" className="relative min-w-11 min-h-11 flex items-center justify-center text-white hover:text-amber-300 transition-colors">
+              <Link href="/cart" aria-label="Cart" className="relative min-w-11 min-h-11 flex items-center justify-center text-white hover:text-accent-300 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.847-7.148a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                 </svg>
                 {cartCount > 0 && (
-                  <span className="absolute top-1 right-1 bg-amber-400 text-gray-900 text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center leading-none">
+                  <span className="absolute top-1 right-1 bg-accent-400 text-gray-900 text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center leading-none">
                     {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
@@ -206,10 +206,10 @@ export default function Navbar() {
                 onChange={e => setQuery(e.target.value)}
                 placeholder={t('nav.search', locale)}
                 autoFocus={searchOpen}
-                className="w-full rounded-2xl pl-4 pr-10 py-2.5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full rounded-2xl pl-4 pr-10 py-2.5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-400"
               />
               <button type="submit" aria-label="Search"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-600 hover:text-purple-800 transition-colors">
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-600 hover:text-brand-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                 </svg>

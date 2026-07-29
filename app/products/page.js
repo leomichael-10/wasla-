@@ -16,13 +16,13 @@ const SORT_OPTIONS = [
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-3xl border border-purple-50 animate-pulse overflow-hidden">
-      <div className="aspect-square bg-purple-50" />
+    <div className="bg-white rounded-3xl border border-brand-50 animate-pulse overflow-hidden">
+      <div className="aspect-square bg-brand-50" />
       <div className="p-3 space-y-2">
-        <div className="h-2.5 bg-purple-50 rounded w-1/3" />
-        <div className="h-4 bg-purple-50 rounded w-3/4" />
-        <div className="h-2.5 bg-purple-50 rounded w-1/2" />
-        <div className="h-7 bg-purple-50 rounded-full mt-3 w-full" />
+        <div className="h-2.5 bg-brand-50 rounded w-1/3" />
+        <div className="h-4 bg-brand-50 rounded w-3/4" />
+        <div className="h-2.5 bg-brand-50 rounded w-1/2" />
+        <div className="h-7 bg-brand-50 rounded-full mt-3 w-full" />
       </div>
     </div>
   )
@@ -36,8 +36,8 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
         <div className="space-y-2.5">
           {BRANDS.map(b => (
             <label key={b} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="radio" name="brand" checked={brand === b} onChange={() => setBrand(brand === b ? '' : b)} className="accent-purple-600 w-4 h-4" />
-              <span className="text-sm text-gray-700 group-hover:text-purple-600 transition-colors">{b}</span>
+              <input type="radio" name="brand" checked={brand === b} onChange={() => setBrand(brand === b ? '' : b)} className="accent-brand-600 w-4 h-4" />
+              <span className="text-sm text-gray-700 group-hover:text-brand-600 transition-colors">{b}</span>
             </label>
           ))}
         </div>
@@ -48,15 +48,15 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
         <div className="space-y-2.5">
           {CITIES.map(c => (
             <label key={c} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="radio" name="city" checked={city === c} onChange={() => setCity(city === c ? '' : c)} className="accent-purple-600 w-4 h-4" />
-              <span className="text-sm text-gray-700 group-hover:text-purple-600 transition-colors">{c}</span>
+              <input type="radio" name="city" checked={city === c} onChange={() => setCity(city === c ? '' : c)} className="accent-brand-600 w-4 h-4" />
+              <span className="text-sm text-gray-700 group-hover:text-brand-600 transition-colors">{c}</span>
             </label>
           ))}
         </div>
       </div>
 
       {onClose && (
-        <button onClick={onClose} className="w-full bg-purple-700 hover:bg-purple-800 active:scale-95 text-white font-bold py-2.5 rounded-2xl text-sm transition-all duration-200">
+        <button onClick={onClose} className="w-full bg-brand-700 hover:bg-brand-800 active:scale-95 text-white font-bold py-2.5 rounded-2xl text-sm transition-all duration-200">
           Show results
         </button>
       )}
@@ -70,7 +70,7 @@ function CategoryRail({ categories, active, onSelect }) {
 
   return (
     <div
-      className="sm:hidden flex flex-col bg-white border-r border-purple-100 overflow-y-auto"
+      className="sm:hidden flex flex-col bg-white border-r border-brand-100 overflow-y-auto"
       style={{ position: 'fixed', left: 0, top: 64, bottom: 0, width: 56, zIndex: 30 }}
     >
       {items.map(cat => {
@@ -79,15 +79,15 @@ function CategoryRail({ categories, active, onSelect }) {
           <button
             key={cat.id}
             onClick={() => onSelect(cat.id === '__all__' ? '' : cat.name)}
-            className={`relative flex items-center justify-center transition-colors border-b border-purple-100 ${
+            className={`relative flex items-center justify-center transition-colors border-b border-brand-100 ${
               isActive
-                ? 'bg-purple-700 text-white'
-                : 'text-gray-500 hover:bg-purple-50 hover:text-purple-700'
+                ? 'bg-brand-700 text-white'
+                : 'text-gray-500 hover:bg-brand-50 hover:text-brand-700'
             }`}
             style={{ minHeight: 72 }}
           >
             {isActive && (
-              <span className="absolute right-0 top-0 bottom-0 w-1 bg-amber-400 rounded-l-full" />
+              <span className="absolute right-0 top-0 bottom-0 w-1 bg-accent-400 rounded-l-full" />
             )}
             <span
               className="text-[11px] font-bold leading-none select-none px-1"
@@ -152,7 +152,7 @@ function ProductsBrowser() {
   function clearFilters() { setSearch(''); setBrand(''); setCategory(''); setCity('') }
 
   return (
-    <div className="min-h-screen bg-[#f9f7ff]">
+    <div className="min-h-screen bg-[#FBF6EF]">
       <Navbar />
 
       {mobileOpen && (
@@ -181,7 +181,7 @@ function ProductsBrowser() {
             {!loading && (
               <p className="text-sm text-gray-500 mt-0.5">
                 {products.length} product{products.length !== 1 ? 's' : ''}
-                {category && <span> in <span className="font-semibold text-purple-600">{category}</span></span>}
+                {category && <span> in <span className="font-semibold text-brand-600">{category}</span></span>}
               </p>
             )}
           </div>
@@ -190,7 +190,7 @@ function ProductsBrowser() {
             <select
               value={sort}
               onChange={e => setSort(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
+              className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 bg-white"
             >
               {SORT_OPTIONS.map(o => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -206,7 +206,7 @@ function ProductsBrowser() {
               </svg>
               Filters
               {hasFilters && (
-                <span className="bg-purple-600 text-white text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center">·</span>
+                <span className="bg-brand-600 text-white text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center">·</span>
               )}
             </button>
           </div>
@@ -221,9 +221,9 @@ function ProductsBrowser() {
               city     && { label: city,           clear: () => setCity('') },
             ].filter(Boolean).map(chip => (
               <button key={chip.label} onClick={chip.clear}
-                className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-purple-100 active:scale-95 transition-all duration-200">
+                className="flex items-center gap-1.5 bg-brand-50 text-brand-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-brand-100 active:scale-95 transition-all duration-200">
                 {chip.label}
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-purple-400">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-brand-400">
                   <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
                 </svg>
               </button>
@@ -247,7 +247,7 @@ function ProductsBrowser() {
           <div className="flex gap-6 pt-2">
 
             <aside className="hidden sm:block w-52 shrink-0">
-              <div className="bg-white rounded-2xl border border-purple-50 shadow-sm p-5 sticky top-24">
+              <div className="bg-white rounded-2xl border border-brand-50 shadow-sm p-5 sticky top-24">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-black text-gray-900 text-sm">Filters</h2>
                   {hasFilters && <button onClick={clearFilters} className="text-xs text-red-400 hover:text-red-600 font-semibold">Clear</button>}
@@ -261,8 +261,8 @@ function ProductsBrowser() {
                         onClick={() => setCategory('')}
                         className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors border-l-4 ${
                           !category
-                            ? 'bg-purple-700 text-white border-amber-400'
-                            : 'text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-transparent'
+                            ? 'bg-brand-700 text-white border-accent-400'
+                            : 'text-gray-700 hover:bg-brand-50 hover:text-brand-700 border-transparent'
                         }`}
                       >
                         All
@@ -273,8 +273,8 @@ function ProductsBrowser() {
                           onClick={() => setCategory(category === cat.name ? '' : cat.name)}
                           className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors border-l-4 ${
                             category === cat.name
-                              ? 'bg-purple-700 text-white border-amber-400'
-                              : 'text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-transparent'
+                              ? 'bg-brand-700 text-white border-accent-400'
+                              : 'text-gray-700 hover:bg-brand-50 hover:text-brand-700 border-transparent'
                           }`}
                         >
                           {cat.name}
@@ -284,7 +284,7 @@ function ProductsBrowser() {
                   </div>
                 )}
 
-                <hr className="border-purple-100 mb-5" />
+                <hr className="border-brand-100 mb-5" />
                 <FilterPanel brand={brand} setBrand={setBrand} city={city} setCity={setCity} />
               </div>
             </aside>
@@ -296,10 +296,13 @@ function ProductsBrowser() {
                 </div>
               ) : products.length === 0 ? (
                 <div className="text-center py-24">
-                  <p className="text-gray-500 font-semibold text-lg">No products found</p>
-                  <p className="text-gray-400 text-sm mt-1">Try adjusting your filters</p>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.4} stroke="currentColor" className="w-12 h-12 mx-auto mb-3 text-brand-200">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 8c3-2 6 0 5 3-.7 2-3 2.5-4.5 1.5C8 11.3 7.5 9.3 9 8ZM4 20l6-6M14 14l6 6M4 4l16 16" />
+                  </svg>
+                  <p className="text-brand-800 font-bold text-lg">لسه مفيش منتجات هنا</p>
+                  <p className="text-gray-400 text-sm mt-1">جرّب تغيّر الفلاتر</p>
                   {hasFilters && (
-                    <button onClick={clearFilters} className="mt-4 text-purple-600 font-bold hover:underline text-sm">Clear filters</button>
+                    <button onClick={clearFilters} className="mt-4 text-accent-500 font-bold hover:underline text-sm">مسح الفلاتر</button>
                   )}
                 </div>
               ) : (
@@ -321,8 +324,8 @@ function ProductsBrowser() {
 export default function ProductsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#f9f7ff]">
-        <div className="h-16 bg-purple-700" />
+      <div className="min-h-screen bg-[#FBF6EF]">
+        <div className="h-16 bg-brand-700" />
         <div className="max-w-7xl mx-auto px-4 py-6 pl-18 sm:pl-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-10">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}

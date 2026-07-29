@@ -156,19 +156,19 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9f7ff]">
+    <div className="min-h-screen bg-[#FBF6EF]">
       <Navbar />
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-black text-gray-900 mb-6">{t('cart.title', locale)}</h1>
 
         {cartItems.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-purple-50 shadow-sm py-20 text-center">
+          <div className="bg-white rounded-3xl border border-brand-50 shadow-sm py-20 text-center">
             <p className="text-gray-500 font-semibold text-lg">Your cart is empty</p>
             <p className="text-sm text-gray-400 mt-1">Browse products and add something you like.</p>
             <Link
               href="/products"
-              className="inline-block mt-5 bg-purple-700 hover:bg-purple-800 active:scale-95 text-white text-sm font-bold px-6 py-2.5 rounded-2xl transition-all duration-200"
+              className="inline-block mt-5 bg-brand-700 hover:bg-brand-800 active:scale-95 text-white text-sm font-bold px-6 py-2.5 rounded-2xl transition-all duration-200"
             >
               Browse Products
             </Link>
@@ -178,7 +178,7 @@ export default function CartPage() {
 
             <div className="flex-1 space-y-3">
               {cartItems.map(item => (
-                <div key={item.productVariantId} className="bg-white rounded-3xl border border-purple-50 shadow-sm p-4 transition-all duration-300">
+                <div key={item.productVariantId} className="bg-white rounded-3xl border border-brand-50 shadow-sm p-4 transition-all duration-300">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <p className="font-bold text-gray-900 text-sm leading-snug">
@@ -187,7 +187,7 @@ export default function CartPage() {
                       </p>
                       <div className="flex flex-wrap gap-1.5 mt-1">
                         {item.label && (
-                          <span className="text-[11px] bg-purple-50 text-purple-700 font-semibold px-2 py-0.5 rounded-full">{item.label}</span>
+                          <span className="text-[11px] bg-brand-50 text-brand-700 font-semibold px-2 py-0.5 rounded-full">{item.label}</span>
                         )}
                       </div>
                       {item.sellerName && (
@@ -210,10 +210,10 @@ export default function CartPage() {
                   </div>
 
                   <div className="flex items-center gap-3 mt-3">
-                    <div className="flex items-center border border-purple-100 rounded-2xl overflow-hidden">
+                    <div className="flex items-center border border-brand-100 rounded-2xl overflow-hidden">
                       <button
                         onClick={() => updateQuantity(item.productVariantId, item.quantity - 1, userId)}
-                        className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-purple-50 transition-colors font-bold text-lg"
+                        className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-brand-50 transition-colors font-bold text-lg"
                       >
                         −
                       </button>
@@ -221,7 +221,7 @@ export default function CartPage() {
                       <button
                         onClick={() => updateQuantity(item.productVariantId, item.quantity + 1, userId)}
                         disabled={item.quantity >= 10}
-                        className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-purple-50 disabled:opacity-30 transition-colors font-bold text-lg"
+                        className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-brand-50 disabled:opacity-30 transition-colors font-bold text-lg"
                       >
                         +
                       </button>
@@ -233,11 +233,11 @@ export default function CartPage() {
             </div>
 
             <div className="lg:w-80 shrink-0 space-y-4">
-              <div className="bg-white rounded-3xl border border-purple-50 shadow-sm p-5 space-y-4">
+              <div className="bg-white rounded-3xl border border-brand-50 shadow-sm p-5 space-y-4">
                 <h2 className="font-black text-gray-900">Order Summary</h2>
 
                 {!zone && (
-                  <p className="text-xs bg-amber-50 text-amber-700 font-semibold rounded-xl px-3 py-2">
+                  <p className="text-xs bg-accent-50 text-accent-700 font-semibold rounded-xl px-3 py-2">
                     Select your delivery area to see fees and ETA.
                   </p>
                 )}
@@ -250,7 +250,7 @@ export default function CartPage() {
                       const name  = items[0]?.sellerName || 'Shop'
                       if (!q) return null
                       return (
-                        <div key={id} className="text-xs bg-[#f9f7ff] rounded-xl px-3 py-2">
+                        <div key={id} className="text-xs bg-[#FBF6EF] rounded-xl px-3 py-2">
                           <p className="font-bold text-gray-800">{name}</p>
                           {q.covered ? (
                             <p className="text-gray-500 mt-0.5">
@@ -275,7 +275,7 @@ export default function CartPage() {
                     <span>{t('cart.delivery', locale)}</span>
                     <span className="font-semibold tabular-nums">EGP {deliveryFee.toFixed(2)}</span>
                   </div>
-                  <div className="border-t border-purple-50 pt-2 flex justify-between font-black text-gray-900 text-base">
+                  <div className="border-t border-brand-50 pt-2 flex justify-between font-black text-gray-900 text-base">
                     <span>{t('cart.total', locale)}</span>
                     <span className="tabular-nums">EGP {total.toFixed(2)}</span>
                   </div>
@@ -292,7 +292,7 @@ export default function CartPage() {
                         onChange={e => setAddress(e.target.value)}
                         placeholder="Enter your full delivery address…"
                         rows={3}
-                        className="w-full border border-gray-200 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none transition"
+                        className="w-full border border-gray-200 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none transition"
                       />
                     </div>
 
@@ -303,7 +303,7 @@ export default function CartPage() {
                           <input
                             type="radio" checked={paymentMethod === 'cod'}
                             onChange={() => setPaymentMethod('cod')}
-                            className="accent-purple-600"
+                            className="accent-brand-600"
                           />
                           <span className="text-sm text-gray-700">Cash on Delivery</span>
                         </label>
@@ -311,12 +311,12 @@ export default function CartPage() {
                           <input
                             type="radio" checked={paymentMethod === 'manual_transfer'}
                             onChange={() => setPaymentMethod('manual_transfer')}
-                            className="accent-purple-600"
+                            className="accent-brand-600"
                           />
                           <span className="text-sm text-gray-700">InstaPay / Vodafone Cash (upload receipt)</span>
                         </label>
                         <label className="flex items-center gap-2 opacity-40 cursor-not-allowed">
-                          <input type="radio" disabled className="accent-purple-600" />
+                          <input type="radio" disabled className="accent-brand-600" />
                           <span className="text-sm text-gray-500">Card / Wallet via Paymob (coming soon)</span>
                         </label>
                       </div>
@@ -329,7 +329,7 @@ export default function CartPage() {
                     <button
                       onClick={handleCheckout}
                       disabled={placing}
-                      className="w-full bg-purple-700 hover:bg-purple-800 disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 text-white font-black py-3 rounded-2xl text-sm transition-all duration-200"
+                      className="w-full bg-brand-700 hover:bg-brand-800 disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 text-white font-black py-3 rounded-2xl text-sm transition-all duration-200"
                     >
                       {placing ? 'Placing Order…' : t('cart.checkout', locale)}
                     </button>
@@ -339,7 +339,7 @@ export default function CartPage() {
                     {error && <p className="text-xs text-red-500 font-semibold mb-2">{error}</p>}
                     <Link
                       href="/login?redirect=/cart"
-                      className="block w-full text-center bg-purple-700 hover:bg-purple-800 active:scale-95 text-white font-black py-3 rounded-2xl text-sm transition-all duration-200"
+                      className="block w-full text-center bg-brand-700 hover:bg-brand-800 active:scale-95 text-white font-black py-3 rounded-2xl text-sm transition-all duration-200"
                     >
                       Sign in to Checkout
                     </Link>
@@ -349,7 +349,7 @@ export default function CartPage() {
 
               <Link
                 href="/products"
-                className="block text-center text-sm font-semibold text-gray-500 hover:text-purple-600 transition-colors"
+                className="block text-center text-sm font-semibold text-gray-500 hover:text-brand-600 transition-colors"
               >
                 Continue Shopping
               </Link>

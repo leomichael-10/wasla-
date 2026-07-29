@@ -60,13 +60,13 @@ export default function ProductTile({ product }) {
   }
 
   return (
-    <div className={`relative bg-white rounded-2xl border border-purple-50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col ${unavailable ? 'opacity-60 grayscale-35' : ''}`}>
+    <div className={`relative bg-white rounded-2xl border border-brand-50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col ${unavailable ? 'opacity-60 grayscale-35' : ''}`}>
       <Link href={`/products/${product.id}`} className="block">
-        <div className="aspect-square bg-[#f9f7ff] flex items-center justify-center relative">
+        <div className="aspect-square bg-[#FBF6EF] flex items-center justify-center relative">
           {mainImage ? (
             <img src={mainImage} alt={product.name} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-3xl font-black text-purple-200 select-none">
+            <span className="text-3xl font-black text-brand-200 select-none">
               {(product.brand ?? product.name ?? 'W')[0].toUpperCase()}
             </span>
           )}
@@ -87,7 +87,7 @@ export default function ProductTile({ product }) {
           ) : !inStockVariant ? (
             <p className="text-[10px] text-gray-400 font-bold text-center py-1.5">Out of Stock</p>
           ) : qty > 0 ? (
-            <div className="flex items-center justify-between bg-purple-700 rounded-xl overflow-hidden h-8">
+            <div className="flex items-center justify-between bg-brand-700 rounded-xl overflow-hidden h-8">
               <button onClick={e => handleStep(e, -1)} className="w-8 h-full flex items-center justify-center text-white font-black active:scale-95 transition-transform">−</button>
               <span className="text-white text-xs font-black tabular-nums">{qty}</span>
               <button onClick={e => handleStep(e, 1)} disabled={qty >= 10} className="w-8 h-full flex items-center justify-center text-white font-black disabled:opacity-40 active:scale-95 transition-transform">+</button>
@@ -95,7 +95,7 @@ export default function ProductTile({ product }) {
           ) : (
             <button
               onClick={handleAdd}
-              className="w-full h-8 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-black rounded-xl transition-colors active:scale-95"
+              className="w-full h-8 bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-black rounded-xl transition-colors active:scale-95"
             >
               + إضافة
             </button>

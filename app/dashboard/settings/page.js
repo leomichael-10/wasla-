@@ -24,7 +24,7 @@ function ZoneRow({ entry, onSave }) {
   }
 
   return (
-    <div className={`border rounded-2xl p-4 transition-colors ${isActive ? 'border-purple-200 bg-[#f9f7ff]' : 'border-gray-100'}`}>
+    <div className={`border rounded-2xl p-4 transition-colors ${isActive ? 'border-brand-200 bg-[#FBF6EF]' : 'border-gray-100'}`}>
       <div className="flex items-center justify-between gap-3 mb-3">
         <div>
           <p className="font-bold text-gray-900 text-sm">{zone.nameEn}</p>
@@ -32,7 +32,7 @@ function ZoneRow({ entry, onSave }) {
         </div>
         <label className="relative inline-flex items-center cursor-pointer shrink-0">
           <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} className="sr-only peer" />
-          <div className="w-10 h-5.5 bg-gray-200 peer-checked:bg-purple-600 rounded-full transition-colors" />
+          <div className="w-10 h-5.5 bg-gray-200 peer-checked:bg-brand-600 rounded-full transition-colors" />
           <div className="absolute left-0.5 top-0.5 w-4.5 h-4.5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4.5" />
         </label>
       </div>
@@ -43,17 +43,17 @@ function ZoneRow({ entry, onSave }) {
             <label className="text-[10px] font-bold text-gray-400 uppercase">Fee override (EGP)</label>
             <input type="number" min="0" value={feeOverride} onChange={e => setFeeOverride(e.target.value)}
               placeholder={`${Number(zone.baseFee).toFixed(0)}`}
-              className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400" />
+              className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400" />
           </div>
           <div>
             <label className="text-[10px] font-bold text-gray-400 uppercase">Min order (EGP)</label>
             <input type="number" min="0" value={minOrderValue} onChange={e => setMinOrderValue(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400" />
+              className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400" />
           </div>
           <div>
             <label className="text-[10px] font-bold text-gray-400 uppercase">Cutoff time</label>
             <input type="time" value={cutoffTime} onChange={e => setCutoffTime(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400" />
+              className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400" />
           </div>
         </div>
       )}
@@ -61,7 +61,7 @@ function ZoneRow({ entry, onSave }) {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="text-xs font-bold bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white px-4 py-1.5 rounded-xl transition-colors"
+        className="text-xs font-bold bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white px-4 py-1.5 rounded-xl transition-colors"
       >
         {saving ? 'Saving…' : 'Save'}
       </button>

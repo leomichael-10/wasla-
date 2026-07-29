@@ -82,8 +82,8 @@ export default function PWAInstall() {
 
   return (
     <div dir={dir} className="fixed bottom-4 inset-x-4 z-40 max-w-sm mx-auto sm:inset-x-auto sm:end-4">
-      <div className="bg-white rounded-2xl shadow-2xl border border-purple-100 p-4 flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-purple-700 flex items-center justify-center shrink-0 text-white font-black">
+      <div className="bg-white rounded-2xl shadow-2xl border border-brand-100 p-4 flex items-start gap-3">
+        <div className="w-10 h-10 rounded-xl bg-brand-700 flex items-center justify-center shrink-0 text-white font-black">
           W
         </div>
         <div className="flex-1 min-w-0">
@@ -103,7 +103,7 @@ export default function PWAInstall() {
             {!showIosHint && (
               <button
                 onClick={handleInstall}
-                className="text-xs font-bold bg-purple-700 hover:bg-purple-800 text-white px-4 py-1.5 rounded-xl transition-colors"
+                className="text-xs font-bold bg-brand-700 hover:bg-brand-800 text-white px-4 py-1.5 rounded-xl transition-colors"
               >
                 {t('pwa.installButton', locale)}
               </button>

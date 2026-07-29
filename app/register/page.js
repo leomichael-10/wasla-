@@ -142,14 +142,14 @@ export default function RegisterPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#f9f7ff] flex flex-col">
-        <div className="bg-purple-700 px-6 py-4">
+      <div className="min-h-screen bg-[#FBF6EF] flex flex-col">
+        <div className="bg-brand-700 px-6 py-4">
           <Link href="/" className="text-white font-black text-xl tracking-tight">
-            was<span className="text-amber-300">la</span>
+            was<span className="text-accent-300">la</span>
           </Link>
         </div>
         <div className="flex-1 flex items-center justify-center px-4 py-12">
-          <div className="bg-white rounded-3xl shadow-lg border border-purple-50 w-full max-w-md p-8 text-center">
+          <div className="bg-white rounded-3xl shadow-lg border border-brand-50 w-full max-w-md p-8 text-center">
             <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-7 h-7 text-green-600">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -161,7 +161,7 @@ export default function RegisterPage() {
             </p>
             <Link
               href="/"
-              className="inline-block mt-6 bg-purple-700 hover:bg-purple-800 active:scale-95 text-white font-black px-6 py-2.5 rounded-2xl text-sm transition-all duration-200"
+              className="inline-block mt-6 bg-brand-700 hover:bg-brand-800 active:scale-95 text-white font-black px-6 py-2.5 rounded-2xl text-sm transition-all duration-200"
             >
               Back to Wasla
             </Link>
@@ -172,16 +172,16 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9f7ff] flex flex-col">
+    <div className="min-h-screen bg-[#FBF6EF] flex flex-col">
 
-      <div className="bg-purple-700 px-6 py-4">
+      <div className="bg-brand-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
-          was<span className="text-amber-300">la</span>
+          was<span className="text-accent-300">la</span>
         </Link>
       </div>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="bg-white rounded-3xl shadow-lg border border-purple-50 w-full max-w-md p-8">
+        <div className="bg-white rounded-3xl shadow-lg border border-brand-50 w-full max-w-md p-8">
 
           {step === 1 && (
             <>
@@ -211,8 +211,8 @@ export default function RegisterPage() {
                         onClick={() => setForm(p => ({ ...p, role: opt.value }))}
                         className={`py-2.5 rounded-2xl text-sm font-semibold border transition-all active:scale-95 ${
                           form.role === opt.value
-                            ? 'bg-purple-700 border-purple-700 text-white'
-                            : 'bg-white border-gray-200 text-gray-600 hover:border-purple-300'
+                            ? 'bg-brand-700 border-brand-700 text-white'
+                            : 'bg-white border-gray-200 text-gray-600 hover:border-brand-300'
                         }`}
                       >
                         {opt.label}
@@ -225,14 +225,14 @@ export default function RegisterPage() {
                   <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">Email address</label>
                   <input id="email" type="email" autoComplete="email" required value={form.email} onChange={set('email')}
                     placeholder="you@example.com"
-                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition" />
+                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
                 </div>
 
                 <div>
                   <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
                   <input id="password" type="password" autoComplete="new-password" required minLength={6}
                     value={form.password} onChange={set('password')} placeholder="At least 6 characters"
-                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition" />
+                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
                 </div>
 
                 {isSeller && (
@@ -242,7 +242,7 @@ export default function RegisterPage() {
                     </label>
                     <input id="businessName" type="text" required value={form.businessName} onChange={set('businessName')}
                       placeholder="e.g. Kassala Coffee House"
-                      className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition" />
+                      className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
                   </div>
                 )}
 
@@ -252,7 +252,7 @@ export default function RegisterPage() {
                   </label>
                   <input id="phone" type="tel" autoComplete="tel" value={form.phone} onChange={set('phone')}
                     placeholder="+20 10 0000 0000"
-                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition" />
+                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
                 </div>
 
                 <div>
@@ -260,7 +260,7 @@ export default function RegisterPage() {
                     City <span className="text-gray-400 font-normal">(optional)</span>
                   </label>
                   <select id="city" value={form.city} onChange={set('city')}
-                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition bg-white">
+                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition bg-white">
                     <option value="">Select your city</option>
                     {EGYPT_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -269,7 +269,7 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={step1Loading}
-                  className="w-full bg-purple-700 hover:bg-purple-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200 mt-2"
+                  className="w-full bg-brand-700 hover:bg-brand-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200 mt-2"
                 >
                   {step1Loading ? 'Creating account…' : (isSeller && SUBSCRIPTIONS_ENABLED ? 'Continue to Subscription' : 'Create account')}
                 </button>
@@ -286,7 +286,7 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => signIn('google', { callbackUrl: '/auth/redirect' })}
-                    className="mt-3 w-full flex items-center justify-center gap-3 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#f9f7ff] active:bg-gray-100 active:scale-95 transition-all duration-200"
+                    className="mt-3 w-full flex items-center justify-center gap-3 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#FBF6EF] active:bg-gray-100 active:scale-95 transition-all duration-200"
                   >
                     <svg viewBox="0 0 24 24" className="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -301,7 +301,7 @@ export default function RegisterPage() {
 
               <p className="text-center text-sm text-gray-500 mt-6">
                 Already have an account?{' '}
-                <Link href="/login" className="text-purple-600 font-semibold hover:underline">Sign in</Link>
+                <Link href="/login" className="text-brand-600 font-semibold hover:underline">Sign in</Link>
               </p>
             </>
           )}
@@ -321,13 +321,13 @@ export default function RegisterPage() {
                   </div>
                 )}
 
-                <div className="border-2 border-purple-600 rounded-2xl p-5 bg-purple-50">
+                <div className="border-2 border-brand-600 rounded-2xl p-5 bg-brand-50">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <p className="text-3xl font-black text-gray-900">EGP 500</p>
                       <p className="text-sm text-gray-500 font-medium">per month</p>
                     </div>
-                    <span className="bg-purple-700 text-white text-xs font-black px-3 py-1 rounded-full">STANDARD</span>
+                    <span className="bg-brand-700 text-white text-xs font-black px-3 py-1 rounded-full">STANDARD</span>
                   </div>
                   <ul className="space-y-2">
                     {[
@@ -336,7 +336,7 @@ export default function RegisterPage() {
                       'Featured on Wasla marketplace',
                     ].map(feature => (
                       <li key={feature} className="flex items-center gap-2 text-sm text-gray-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-purple-700 shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-brand-700 shrink-0">
                           <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
                         </svg>
                         {feature}
@@ -353,8 +353,8 @@ export default function RegisterPage() {
                         key={pm.value}
                         className={`flex items-start gap-3 cursor-pointer border-2 rounded-2xl p-4 transition-all ${
                           paymentMethod === pm.value
-                            ? 'border-purple-600 bg-purple-50'
-                            : 'border-gray-200 hover:border-purple-200'
+                            ? 'border-brand-600 bg-brand-50'
+                            : 'border-gray-200 hover:border-brand-200'
                         }`}
                       >
                         <div className="relative shrink-0 mt-0.5">
@@ -366,9 +366,9 @@ export default function RegisterPage() {
                             onChange={() => setPaymentMethod(pm.value)}
                             className="sr-only"
                           />
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === pm.value ? 'border-purple-600' : 'border-gray-300'}`}>
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === pm.value ? 'border-brand-600' : 'border-gray-300'}`}>
                             {paymentMethod === pm.value && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-purple-600" />
+                              <div className="w-2.5 h-2.5 rounded-full bg-brand-600" />
                             )}
                           </div>
                         </div>
@@ -384,7 +384,7 @@ export default function RegisterPage() {
                 <label className="flex items-start gap-3 cursor-pointer group">
                   <div className="relative shrink-0 mt-0.5">
                     <input type="checkbox" checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} className="sr-only" />
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${termsAccepted ? 'bg-purple-700 border-purple-700' : 'border-gray-300 group-hover:border-purple-400'}`}>
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${termsAccepted ? 'bg-brand-700 border-brand-700' : 'border-gray-300 group-hover:border-brand-400'}`}>
                       {termsAccepted && (
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-white">
                           <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
@@ -393,14 +393,14 @@ export default function RegisterPage() {
                     </div>
                   </div>
                   <span className="text-sm text-gray-600 leading-snug select-none">
-                    I agree to <span className="text-purple-600 font-semibold">Wasla terms and conditions</span>
+                    I agree to <span className="text-brand-600 font-semibold">Wasla terms and conditions</span>
                   </span>
                 </label>
 
                 <button
                   type="submit"
                   disabled={step2Loading || !termsAccepted}
-                  className="w-full bg-purple-700 hover:bg-purple-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200"
+                  className="w-full bg-brand-700 hover:bg-brand-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200"
                 >
                   {step2Loading ? 'Submitting…' : 'Submit Registration'}
                 </button>

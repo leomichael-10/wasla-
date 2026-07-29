@@ -52,16 +52,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9f7ff] flex flex-col">
+    <div className="min-h-screen bg-[#FBF6EF] flex flex-col">
 
-      <div className="bg-purple-700 px-6 py-4">
+      <div className="bg-brand-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
-          was<span className="text-amber-300">la</span>
+          was<span className="text-accent-300">la</span>
         </Link>
       </div>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="bg-white rounded-3xl shadow-lg border border-purple-50 w-full max-w-md p-8">
+        <div className="bg-white rounded-3xl shadow-lg border border-brand-50 w-full max-w-md p-8">
 
           <div className="mb-8 text-center">
             <h1 className="text-2xl font-black text-gray-900">Welcome back</h1>
@@ -88,7 +88,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition"
+                className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition"
               />
             </div>
 
@@ -104,14 +104,14 @@ export default function LoginPage() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition"
+                className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-purple-700 hover:bg-purple-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200 mt-2"
+              className="w-full bg-brand-700 hover:bg-brand-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200 mt-2"
             >
               {loading ? 'Signing in…' : 'Sign in'}
             </button>
@@ -127,7 +127,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => signIn('google', { callbackUrl: '/auth/redirect' })}
-            className="mt-3 w-full flex items-center justify-center gap-3 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#f9f7ff] active:bg-gray-100 active:scale-95 transition-all duration-200"
+            className="mt-3 w-full flex items-center justify-center gap-3 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#FBF6EF] active:bg-gray-100 active:scale-95 transition-all duration-200"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -140,7 +140,7 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-gray-500 mt-6">
             Don&apos;t have an account?{' '}
-            <Link href="/register" className="text-purple-600 font-semibold hover:underline">
+            <Link href="/register" className="text-brand-600 font-semibold hover:underline">
               Register
             </Link>
           </p>

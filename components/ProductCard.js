@@ -9,7 +9,7 @@ function StarRating({ rating, count }) {
     <div className="flex items-center gap-1">
       <div className="flex gap-0.5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <span key={i} className={`text-xs ${i < rounded ? 'text-amber-400' : 'text-gray-200'}`}>&#9733;</span>
+          <span key={i} className={`text-xs ${i < rounded ? 'text-accent-400' : 'text-gray-200'}`}>&#9733;</span>
         ))}
       </div>
       {count > 0 && <span className="text-[11px] text-gray-400">({count})</span>}
@@ -68,30 +68,30 @@ export default function ProductCard({ product }) {
   }
 
   return (
-    <div className={`relative group bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-purple-50 hover:border-purple-200 overflow-hidden flex flex-col h-full ${unavailable ? 'opacity-60 grayscale-35' : ''}`}>
+    <div className={`relative group bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-brand-50 hover:border-brand-200 overflow-hidden flex flex-col h-full ${unavailable ? 'opacity-60 grayscale-35' : ''}`}>
 
       <Link href={`/products/${product.id}`} className="absolute inset-0 z-0" aria-label={`View ${product.name}`} />
 
-      <div className="relative bg-linear-to-br from-purple-700 to-violet-600 pt-5 pb-8 px-4 flex items-center justify-center">
+      <div className="relative bg-linear-to-br from-brand-700 to-brand-500 pt-5 pb-8 px-4 flex items-center justify-center">
         <div className="w-28 h-28 rounded-full bg-white border-4 border-white/80 overflow-hidden flex items-center justify-center shadow-lg">
           {mainImage ? (
             <img src={mainImage} alt={product.name}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
           ) : (
-            <span className="text-4xl font-black text-purple-200 select-none tracking-tighter">
+            <span className="text-4xl font-black text-brand-200 select-none tracking-tighter">
               {(product.brand ?? 'V')[0].toUpperCase()}
             </span>
           )}
         </div>
 
-        <div className="absolute bottom-0 translate-y-1/2 right-4 bg-amber-400 text-gray-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg z-10">
+        <div className="absolute bottom-0 translate-y-1/2 right-4 bg-accent-400 text-gray-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg z-10">
           {priceLabel}
         </div>
       </div>
 
       <div className="pt-6 px-4 pb-4 flex flex-col flex-1 gap-1.5">
         {product.brand && (
-          <span className="text-[11px] font-bold text-purple-500 uppercase tracking-wide">{product.brand}</span>
+          <span className="text-[11px] font-bold text-brand-500 uppercase tracking-wide">{product.brand}</span>
         )}
         <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 min-h-10">{product.name}</h3>
         {variantLabels.length > 0 ? (
@@ -106,7 +106,7 @@ export default function ProductCard({ product }) {
         {product.seller && (
           <Link
             href={`/shops/${product.seller.id}`}
-            className="relative z-10 text-xs text-gray-400 hover:text-purple-600 transition-colors"
+            className="relative z-10 text-xs text-gray-400 hover:text-brand-600 transition-colors"
             onClick={e => e.stopPropagation()}
           >
             {product.seller.businessName}{product.seller.city ? ` · ${product.seller.city}` : ''}
@@ -119,7 +119,7 @@ export default function ProductCard({ product }) {
               feedback
                 ? 'bg-green-500 scale-95'
                 : inStockVariant
-                  ? 'bg-purple-700 hover:bg-purple-800'
+                  ? 'bg-brand-700 hover:bg-brand-800'
                   : 'bg-gray-300 cursor-not-allowed'
             }`}
             onClick={handleAddToCart}
