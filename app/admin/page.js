@@ -1019,7 +1019,7 @@ export default function AdminPage() {
                     type="text"
                     value={catForm.name}
                     onChange={e => setCatForm(f => ({ ...f, name: e.target.value }))}
-                    placeholder="e.g. Disposables"
+                    placeholder="e.g. Coffee & Jabana"
                     required
                     className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 w-52"
                   />

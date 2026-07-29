@@ -8,6 +8,7 @@ import AuthSync from '../components/AuthSync'
 import GlobalTracker from '../components/GlobalTracker'
 import ZoneGate from '../components/ZoneGate'
 import PWAInstall from '../components/PWAInstall'
+import CartBar from '../components/CartBar'
 import { DEFAULT_LOCALE, LOCALE_COOKIE, t } from '../lib/i18n'
 import './globals.css'
 
@@ -77,6 +78,7 @@ export default async function RootLayout({ children }) {
         <GlobalTracker />
         <ZoneGate />
         <PWAInstall />
+        <CartBar />
         <Toaster
           position="top-right"
           toastOptions={{

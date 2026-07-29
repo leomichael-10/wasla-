@@ -24,7 +24,7 @@ export default function PrivacyPage() {
               <li>Profile information: full name, phone number, WhatsApp number, city, gender</li>
               <li>Delivery information: delivery address provided at checkout</li>
               <li>Transaction data: orders placed, products purchased, payment method</li>
-              <li>Usage data: pages visited, search queries, wishlist items</li>
+              <li>Usage data: pages visited, search queries, cart activity</li>
               <li>For sellers: business name, trade licence details, working hours, subscription records</li>
             </ul>
           </section>

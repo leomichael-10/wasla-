@@ -114,3 +114,28 @@ Closed the gap explicitly flagged in Phase 4/MIGRATION_REPORT.md as not done: br
 - Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema change — pure query/annotation addition).
 
 ---
+
+## STOREFRONT REBUILD — vape→Sudanese data bug + quick-commerce UI
+
+### Step 1 — Root cause of the vape data appearing
+- **`.env` was correct** (points to `ep-silent-frost-axbvo9ct`, the fully-migrated database: 27 Sudanese products, 11 correct categories, verified by direct query).
+- **`.env.local` and `.env.vercel.local` both still pointed at the pre-migration database** (`ep-muddy-glade-am2exqpn`: 16 vape products — Elf Bar, Vozol, Lost Mary — under vape categories). Next.js loads `.env.local` with higher priority than `.env`, so the running app (dev server, local builds) was reading the **old vape database** this whole time regardless of how correct every prior migration phase was.
+- Fixed both local files to point at the correct database. This is a config fix, not a data or schema fix — no migration involved.
+- **Not fixed, flagged**: `.env.vercel.local` is just a local cache from `vercel env pull` — the actual deployed Vercel preview reads `DATABASE_URL` from the Vercel project dashboard, which this environment has no console access to (hard-stop #2). If the deployed preview still shows vapes, `DATABASE_URL` needs updating there directly.
+
+### Step 2 — Deleted wishlist + remaining vape UI
+- Wishlist removed entirely: `Wishlist` Prisma model (0 rows — confirmed empty before dropping, migration `20260729131653_remove_wishlist` contains only `DROP TABLE "Wishlist"` plus its two FK constraints, no data-holding drop), `app/api/wishlist/`, `app/wishlist/`, the heart-icon toggle in `ProductCard.js`, and the nav links in `Navbar.js`/`MobileMenu.js`. Also scrubbed a leftover "wishlist items" mention in `app/privacy/page.js`'s data-collection list.
+- Found and fixed a second vape-remnant bug independent of the DB mix-up: `app/page.js` had a hardcoded `CATEGORY_ICONS` map keyed on the old vape category names (`Disposables`, `Devices`, `Juices & E-Liquids`, `Spareparts`) — dead code that rendered nothing once real categories replaced the vape ones, but confirms Phase 1's category-icon cleanup (`components/CategoryCard.js`) missed this second, separate icon map in the homepage file. Replaced entirely as part of the Step 3 rebuild.
+- Also fixed a stray "e.g. Disposables" category-name placeholder in the admin category form (`app/admin/page.js`).
+
+### Step 3 — Quick-commerce storefront (Breadfast/Rabbit-style shopper UI, multi-vendor backend kept)
+- **`components/ZoneBar.js`**: persistent bar under the navbar showing "التوصيل إلى [zone]" from the zone cookie; tapping it clears the cookie and reloads, which re-triggers `ZoneGate`.
+- **`components/ProductTile.js`**: compact quick-add tile — image, name, price, and an inline +/- stepper that reads/writes the cart directly (no detail-page hop required); syncs to external cart changes via the existing `cartUpdated` event. Reuses the same `shopClosed`/`outOfZone` unavailable-state pattern as the old `ProductCard`.
+- **`components/CartBar.js`**: fixed bottom bar, item count + total, links to `/cart`; hidden on `/cart`, `/dashboard/*`, `/admin`, `/login`, `/register`, `/onboarding`, and for non-customer roles; hidden entirely when the cart is empty.
+- **`components/BuyAgainRail.js`**: the wishlist replacement — derives up to 10 distinct recently-purchased products from the signed-in customer's own order history (`GET /api/orders`, already includes `productVariant.product`; added `images` to that select), rendered as a horizontal `ProductTile` rail. No new model.
+- **`app/page.js` rebuilt** around: search bar → category grid (11 Sudanese categories, emoji-glyph tiles as real category art doesn't exist yet) as the primary navigation surface → "الأكثر طلباً" (most popular) rail → Buy Again rail → per-origin rails (`Product.originRegion`, capped at 4 regions) → a de-emphasized shops rail at the bottom. Removed the old giant marketing hero and static "How It Works" section to keep the page focused on browsing/buying.
+- Cart still splits by shop with its own fee/ETA/minimum at checkout (Phase 4 logic, untouched) — the quick-commerce changes are entirely about browsing/adding, not checkout.
+- **Verified** on a production build (`npm run start`): homepage HTML contains zero matches for "vape"/"Elf Bar"/"Vozol"/"disposable"/"wishlist" (case-insensitive), Sudanese category names render, and `/wishlist` now 404s.
+- Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅.
+
+---

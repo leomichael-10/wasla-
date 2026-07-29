@@ -24,7 +24,6 @@ model User {
   sellerProfile   SellerProfile?
   orders          Order[]
   reviews         Review[]
-  wishlist        Wishlist[]
   addresses       Address[]
 }
 
@@ -138,7 +137,6 @@ model Product {
   subCategory    SubCategory?     @relation(fields: [subCategoryId], references: [id])
   variants       ProductVariant[]
   reviews        Review[]
-  wishlists      Wishlist[]
 }
 
 model ProductVariant {
@@ -256,17 +254,6 @@ model Review {
   customer   User          @relation(fields: [customerId], references: [id])
   seller     SellerProfile @relation(fields: [sellerId], references: [id])
   product    Product?      @relation(fields: [productId], references: [id])
-}
-
-model Wishlist {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  productId Int
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, productId])
 }
 
 model AdCampaign {

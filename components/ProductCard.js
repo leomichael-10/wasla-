@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useState, useEffect, useLayoutEffect } from 'react'
+import { useState, useLayoutEffect } from 'react'
 import { addToCart } from '../lib/cart'
 
 function StarRating({ rating, count }) {
@@ -19,9 +19,6 @@ function StarRating({ rating, count }) {
 
 export default function ProductCard({ product }) {
   const [feedback,    setFeedback]    = useState(false)
-  const [wishlisted,  setWishlisted]  = useState(false)
-  const [wishLoading, setWishLoading] = useState(false)
-  const [isCustomer,  setIsCustomer]  = useState(false)
   const [userId,      setUserId]      = useState('guest')
 
   const prices     = product.variants.map(v => Number(v.price))
@@ -49,21 +46,8 @@ export default function ProductCard({ product }) {
       const raw  = localStorage.getItem('wasla_user')
       const user = raw ? JSON.parse(raw) : null
       if (user?.id) setUserId(user.id)
-      if (user?.role === 'customer') setIsCustomer(true)
     } catch { /* ignore */ }
   }, [])
-
-  useEffect(() => {
-    if (!isCustomer) return
-    const token = localStorage.getItem('wasla_token')
-    fetch('/api/wishlist', { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(data => {
-        const ids = (data.wishlist ?? []).map(w => w.id)
-        setWishlisted(ids.includes(product.id))
-      })
-      .catch(() => {})
-  }, [product.id, isCustomer])
 
   function handleAddToCart(e) {
     e.preventDefault()
@@ -83,46 +67,12 @@ export default function ProductCard({ product }) {
     setTimeout(() => setFeedback(false), 2000)
   }
 
-  async function handleWishlist(e) {
-    e.preventDefault()
-    if (!isCustomer || wishLoading) return
-    setWishLoading(true)
-    const token  = localStorage.getItem('wasla_token')
-    const method = wishlisted ? 'DELETE' : 'POST'
-    try {
-      const res = await fetch('/api/wishlist', {
-        method,
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ productId: product.id }),
-      })
-      if (res.ok) setWishlisted(prev => !prev)
-    } catch { /* ignore */ } finally {
-      setWishLoading(false)
-    }
-  }
-
   return (
     <div className={`relative group bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-purple-50 hover:border-purple-200 overflow-hidden flex flex-col h-full ${unavailable ? 'opacity-60 grayscale-35' : ''}`}>
 
       <Link href={`/products/${product.id}`} className="absolute inset-0 z-0" aria-label={`View ${product.name}`} />
 
       <div className="relative bg-linear-to-br from-purple-700 to-violet-600 pt-5 pb-8 px-4 flex items-center justify-center">
-        {isCustomer && (
-          <button
-            onClick={handleWishlist}
-            disabled={wishLoading}
-            className="absolute top-3 right-3 z-10 w-10 h-10 flex items-center justify-center bg-white/20 hover:bg-white/30 rounded-full transition-colors"
-            aria-label={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-              fill={wishlisted ? '#ef4444' : 'none'}
-              stroke={wishlisted ? '#ef4444' : 'white'}
-              strokeWidth={2} className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-            </svg>
-          </button>
-        )}
-
         <div className="w-28 h-28 rounded-full bg-white border-4 border-white/80 overflow-hidden flex items-center justify-center shadow-lg">
           {mainImage ? (
             <img src={mainImage} alt={product.name}

@@ -2,7 +2,9 @@
 
 Sudanese products, delivered in Cairo. Wasla is a multi-vendor marketplace where real Sudanese shops in Cairo and Giza list their own inventory and fulfill their own orders — coffee, spices, tea, dried goods, heritage clothing, and handicrafts, delivered same-day inside covered zones.
 
-Migrated in place from an earlier UAE vape-marketplace codebase (Tobaki) — the architecture (master catalog + per-shop listings, role-based dashboard, order/review/wishlist models, media uploads, auth) is domain-agnostic and carried over unchanged; only the domain, brand, and Egypt-specific features are new. See `MIGRATION_REPORT.md` for the full history of that migration and `DECISIONS.md`/`PROGRESS.md` for the reasoning behind specific calls made along the way.
+Migrated in place from an earlier UAE vape-marketplace codebase (Tobaki) — the architecture (master catalog + per-shop listings, role-based dashboard, order/review models, media uploads, auth) is domain-agnostic and carried over unchanged; only the domain, brand, and Egypt-specific features are new. See `MIGRATION_REPORT.md` for the full history of that migration and `DECISIONS.md`/`PROGRESS.md` for the reasoning behind specific calls made along the way.
+
+The storefront follows a quick-commerce pattern (category-grid home, inline quick-add tiles, persistent cart bar) rather than a traditional detail-page-first e-commerce flow — see the "STOREFRONT REBUILD" entry in `PROGRESS.md`.
 
 ## Stack
 

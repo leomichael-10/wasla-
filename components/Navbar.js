@@ -17,7 +17,6 @@ function navLinksFor(user) {
     { href: '/shops',    label: 'Shops'     },
     { href: '/products', label: 'Products'  },
     { href: '/orders',   label: 'My Orders' },
-    { href: '/wishlist', label: 'Wishlist'  },
   ]
   return [
     { href: '/dashboard',          label: 'Dashboard'   },
