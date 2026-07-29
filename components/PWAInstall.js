@@ -1,19 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { getLocaleCookie, t } from '../lib/i18n'
+import { onPromptAvailable, triggerInstall, isStandalone, isIos } from '../lib/pwaInstall'
 
 const DISMISS_KEY = 'wasla_pwa_dismissed_at'
 const DISMISS_DAYS = 7
-
-function isStandalone() {
-  if (typeof window === 'undefined') return false
-  return window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true
-}
-
-function isIos() {
-  if (typeof navigator === 'undefined') return false
-  return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream
-}
 
 function recentlyDismissed() {
   if (typeof window === 'undefined') return false
@@ -25,7 +16,6 @@ function recentlyDismissed() {
 
 export default function PWAInstall() {
   const [locale,       setLocale]       = useState('ar')
-  const [deferred,     setDeferred]     = useState(null)
   const [showBanner,   setShowBanner]   = useState(false)
   const [showIosHint,  setShowIosHint]  = useState(false)
 
@@ -43,12 +33,7 @@ export default function PWAInstall() {
       return
     }
 
-    function onBeforeInstallPrompt(e) {
-      e.preventDefault()
-      setDeferred(e)
-      setShowBanner(true)
-    }
-    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt)
+    const unsubscribe = onPromptAvailable(() => setShowBanner(true))
 
     function onInstalled() {
       setShowBanner(false)
@@ -57,7 +42,7 @@ export default function PWAInstall() {
     window.addEventListener('appinstalled', onInstalled)
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt)
+      unsubscribe()
       window.removeEventListener('appinstalled', onInstalled)
     }
   }, [])
@@ -69,11 +54,8 @@ export default function PWAInstall() {
   }
 
   async function handleInstall() {
-    if (!deferred) return
-    deferred.prompt()
-    await deferred.userChoice
-    setDeferred(null)
-    setShowBanner(false)
+    const accepted = await triggerInstall()
+    if (accepted) setShowBanner(false)
   }
 
   if (!showBanner && !showIosHint) return null
@@ -81,7 +63,7 @@ export default function PWAInstall() {
   const dir = locale === 'ar' ? 'rtl' : 'ltr'
 
   return (
-    <div dir={dir} className="fixed bottom-4 inset-x-4 z-40 max-w-sm mx-auto sm:inset-x-auto sm:end-4">
+    <div dir={dir} className="fixed bottom-20 lg:bottom-4 inset-x-4 z-40 max-w-sm mx-auto sm:inset-x-auto sm:inset-e-4">
       <div className="bg-white rounded-2xl shadow-2xl border border-brand-100 p-4 flex items-start gap-3">
         <div className="w-10 h-10 rounded-xl bg-brand-700 flex items-center justify-center shrink-0 text-white font-black">
           W

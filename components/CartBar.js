@@ -35,7 +35,7 @@ export default function CartBar() {
   const dir = locale === 'ar' ? 'rtl' : 'ltr'
 
   return (
-    <div dir={dir} className="fixed bottom-0 inset-x-0 z-30 px-3 pb-3 pointer-events-none">
+    <div dir={dir} className="fixed bottom-20 lg:bottom-0 inset-x-0 z-30 px-3 pb-3 pointer-events-none">
       <Link
         href="/cart"
         className="pointer-events-auto max-w-xl mx-auto flex items-center justify-between bg-brand-700 hover:bg-brand-800 active:scale-[0.98] text-white rounded-2xl shadow-2xl px-4 py-3.5 transition-all duration-150"

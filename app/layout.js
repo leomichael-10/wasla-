@@ -9,6 +9,7 @@ import GlobalTracker from '../components/GlobalTracker'
 import ZoneGate from '../components/ZoneGate'
 import PWAInstall from '../components/PWAInstall'
 import CartBar from '../components/CartBar'
+import MobileTabBar from '../components/MobileTabBar'
 import { DEFAULT_LOCALE, LOCALE_COOKIE, t } from '../lib/i18n'
 import './globals.css'
 
@@ -85,6 +86,7 @@ export default async function RootLayout({ children }) {
         <ZoneGate />
         <PWAInstall />
         <CartBar />
+        <MobileTabBar />
         <Toaster
           position="top-right"
           toastOptions={{
@@ -98,7 +100,7 @@ export default async function RootLayout({ children }) {
             error:   { style: { background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' } },
           }}
         />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 pb-16 lg:pb-0">{children}</main>
         <footer className="bg-white border-t border-gray-100 mt-auto">
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">

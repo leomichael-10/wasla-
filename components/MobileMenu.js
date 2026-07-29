@@ -41,7 +41,7 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
 
         <div className="flex items-center justify-between px-5 py-4 bg-brand-700">
           <span className="text-white font-black text-xl tracking-tight">
-            toba<span className="text-accent-300">ki</span>
+            was<span className="text-accent-300">la</span>
           </span>
           <button
             onClick={onClose}

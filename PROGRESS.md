@@ -187,3 +187,25 @@ Directly queried the confirmed database again: `Category` 11 rows (all Sudanese)
 - [x] `prisma migrate diff` clean; seed produces a browsable demo store (verified this turn)
 
 ---
+
+## FIX + BUILD — mobile navigation
+
+### 1. "Tobaki" leftovers found and fixed
+Grepped the whole codebase (case-insensitive) for "tobaki" and "toba" fragments (to catch split-span wordmark patterns like the one found and fixed in Navbar.js during Phase 6). Found **two** live, user-facing hits the prior sweeps missed:
+- `components/MobileMenu.js` — the mobile hamburger drawer's header wordmark: `toba<span>ki</span>` → `was<span>la</span>`.
+- `lib/emailTemplates.js` — the transactional email header: `<h1>toba<span>ki</span></h1>` → `<h1>was<span>la</span></h1>`.
+
+Both were split across a nested `<span>` for the two-tone brand coloring (first part solid, last two letters accent-colored) — exactly the pattern that a literal-string "Tobaki" grep would miss, which is why they survived every previous sweep. Confirmed via a case-insensitive grep across `app/`, `components/`, `lib/` (`.js` only) that zero "tobaki" strings remain anywhere in source. The only remaining "Tobaki" mentions in the repo are in `MIGRATION_AUDIT.md`/`MIGRATION_REPORT.md`/`PROGRESS.md`/`README.md` — all intentional historical/migration-narrative references, not live UI.
+
+### 2. Real mobile bottom tab bar
+- **`components/MobileTabBar.js`**: fixed bottom tab bar (`lg:hidden`, so desktop keeps the existing top nav), 5 tabs — Home, Categories (label centralized in one `CATEGORIES_TAB` constant per the task's own note, currently pointing at `/products`; trivial to repoint to a Shops/Brands tab later), Cart (live badge via the same `cartUpdated` event pattern used elsewhere), Orders, and Account (opens a bottom sheet rather than navigating). Hidden on `/dashboard`, `/admin`, `/login`, `/register`, `/onboarding`, and for non-customer roles (they already have the dashboard sidebar) — mirrors `CartBar`'s existing hide logic.
+- **Account sheet**: profile link, saved-addresses link (points at `/profile`'s existing single-address field — there's no dedicated multi-address CRUD UI yet, flagging this honestly rather than overbuilding it as part of a nav task), a language toggle (AR/EN, reuses `setLocaleCookie`), an "Install App" entry, and logout.
+- **PWA install de-duplication**: extracted the `beforeinstallprompt` capture into `lib/pwaInstall.js` (a shared singleton with subscribe/trigger functions) so both the existing `PWAInstall` banner and the new Account sheet's "Install App" button share one captured event instead of each racing to attach its own listener. `PWAInstall.js` refactored to consume it; behavior unchanged from the user's perspective.
+- **Safe-area**: the tab bar and the Account sheet both pad for `env(safe-area-inset-bottom)` so they clear the iOS home indicator. `<main>` gets `pb-16 lg:pb-0` globally so page content isn't hidden behind the fixed bar (minor cosmetic nit: this padding also applies on the few hidden-tab-bar pages like `/login`, harmless extra whitespace, not fixed since it's not a functional bug).
+- **`CartBar` repositioned** on mobile (`bottom-20` instead of `bottom-0`) to sit above the new tab bar instead of overlapping it — kept rather than removed, since it shows the live cart *total* (not just count), which the tab bar's badge doesn't.
+- **RTL**: tab bar sets `dir` from the locale cookie; relied on native CSS `flex-direction: row` + ancestor `dir="rtl"` mirroring (already how the rest of the app handles RTL) rather than manually reversing tab order — no hardcoded left/right physical properties in the new components, only logical ones (`ms-auto`, `-end-2`, `inset-e-4`).
+- **Accessibility**: uses the existing global `:focus-visible` outline and `prefers-reduced-motion` rules from the design-pass `globals.css` changes — no new exceptions introduced.
+- **Verified** on a production build: zero "tobaki" strings on the homepage HTML, and all 5 tab labels (الرئيسية / التصنيفات / السلة / طلباتي / حسابي) render in the grid-cols-5 tab bar markup.
+- Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema change).
+
+---
