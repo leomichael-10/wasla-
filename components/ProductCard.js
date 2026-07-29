@@ -31,10 +31,12 @@ export default function ProductCard({ product }) {
     ? `EGP ${minPrice.toFixed(0)}`
     : `EGP ${minPrice.toFixed(0)}–${maxPrice.toFixed(0)}`
 
-  const variantLabels  = product.variants.map(v => v.label).filter(Boolean)
-  const shopClosed     = product.seller?.isOpen === false
-  const inStockVariant = shopClosed ? null : (product.variants.find(v => v.inStock ?? v.stockQty > 0) ?? null)
-  const mainImage      = product.images?.[0] || product.variants?.find(v => v.image)?.image || null
+  const variantLabels   = product.variants.map(v => v.label).filter(Boolean)
+  const shopClosed      = product.seller?.isOpen === false
+  const outOfZone       = product.seller?.deliversToZone === false
+  const unavailable     = shopClosed || outOfZone
+  const inStockVariant  = unavailable ? null : (product.variants.find(v => v.inStock ?? v.stockQty > 0) ?? null)
+  const mainImage       = product.images?.[0] || product.variants?.find(v => v.image)?.image || null
 
   const reviews     = product.reviews ?? []
   const avgRating   = reviews.length
@@ -100,7 +102,7 @@ export default function ProductCard({ product }) {
   }
 
   return (
-    <div className="relative group bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-purple-50 hover:border-purple-200 overflow-hidden flex flex-col h-full">
+    <div className={`relative group bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-purple-50 hover:border-purple-200 overflow-hidden flex flex-col h-full ${unavailable ? 'opacity-60 grayscale-35' : ''}`}>
 
       <Link href={`/products/${product.id}`} className="absolute inset-0 z-0" aria-label={`View ${product.name}`} />
 
@@ -180,7 +182,7 @@ export default function ProductCard({ product }) {
                 </svg>
                 Added!
               </span>
-            ) : inStockVariant ? 'Add to Cart' : shopClosed ? 'Shop Closed' : 'Out of Stock'}
+            ) : inStockVariant ? 'Add to Cart' : shopClosed ? 'Shop Closed' : outOfZone ? 'لا يوصل لمنطقتك' : 'Out of Stock'}
           </button>
         </div>
       </div>

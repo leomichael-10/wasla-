@@ -8,6 +8,7 @@ export async function GET(request) {
   const category = searchParams.get('category')
   const search   = searchParams.get('search')
   const sort     = searchParams.get('sort') ?? 'az'
+  const zoneId   = parseInt(searchParams.get('zoneId'), 10) || null
 
   const masterWhere = { isActive: true }
   if (category) masterWhere.category = { name: { contains: category, mode: 'insensitive' } }
@@ -35,13 +36,26 @@ export async function GET(request) {
       },
     })
 
+    // If the visitor has a selected delivery zone, annotate each product
+    // with whether its shop actually covers that zone — the listing shows
+    // it either way (per the brief: "hidden or greyed"; we grey, since a
+    // hard hide would make an otherwise-relevant search result vanish).
+    let coverageMap = {}
+    if (zoneId) {
+      const sellerIds = [...new Set(retailerProducts.map(rp => rp.retailer.id))]
+      const coverage = await prisma.shopZoneCoverage.findMany({
+        where: { zoneId, sellerId: { in: sellerIds }, isActive: true },
+      })
+      coverageMap = Object.fromEntries(coverage.map(c => [c.sellerId, true]))
+    }
+
     let products = retailerProducts.map(rp => ({
       id:          rp.id,
       name:        rp.masterProduct.name,
       description: rp.masterProduct.description,
       images:      rp.masterProduct.images,
       category:    rp.masterProduct.category,
-      seller:      rp.retailer,
+      seller:      { ...rp.retailer, deliversToZone: zoneId ? Boolean(coverageMap[rp.retailer.id]) : undefined },
       variants: [{
         id:       rp.id,
         price: rp.price,

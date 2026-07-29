@@ -103,3 +103,14 @@ Brand renamed Tobaki→Wasla, age-gate deleted, vape SKU tables/admin screen dro
 - Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema change).
 
 ---
+
+## Task 3 — Resumed migration: zone-aware product listings
+Closed the gap explicitly flagged in Phase 4/MIGRATION_REPORT.md as not done: browse/products/homepage listings previously ignored the visitor's selected delivery zone entirely.
+- `GET /api/products` now accepts an optional `zoneId` query param; when present, batch-fetches `ShopZoneCoverage` for the sellers in the result set and annotates each product's `seller.deliversToZone` (`true`/`false`; omitted entirely when no zone is selected, so nothing changes for a visitor who hasn't picked one yet).
+- `app/page.js`'s `getFeaturedProducts` does the same for the `Product`-model homepage listing, reading the `wasla_zone` cookie server-side.
+- `app/browse/page.js` and `app/products/page.js` now read the zone cookie client-side (`lib/zone.getZoneCookie`) and pass `zoneId` into their existing `/api/products` fetch.
+- `components/ProductCard.js`: chose **grey, not hide** (the brief said "hidden or greyed" — greying keeps an otherwise-relevant search result visible instead of vanishing, matching how `shopClosed` already worked). Cards for out-of-zone shops get reduced opacity + partial greyscale, the Add-to-Cart button is disabled and reads "لا يوصل لمنطقتك", same treatment path as a closed shop.
+- Did not extend this to the shop-detail page (`/shops/[id]`) — a visitor who explicitly opened a specific shop's page already knows which shop they're looking at; showing every one of that shop's products as unavailable there felt like the wrong call without being asked for it specifically.
+- Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema change — pure query/annotation addition).
+
+---

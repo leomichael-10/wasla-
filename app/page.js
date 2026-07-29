@@ -47,7 +47,7 @@ async function getCategories() {
   } catch { return [] }
 }
 
-async function getFeaturedProducts() {
+async function getFeaturedProducts(zoneId) {
   try {
     const raw = await prisma.product.findMany({
       where:   { isActive: true, seller: { isOpen: true } },
@@ -62,7 +62,22 @@ async function getFeaturedProducts() {
         category: { select: { id: true, name: true } },
       },
     })
-    return JSON.parse(JSON.stringify(raw))
+
+    let coverageMap = {}
+    if (zoneId) {
+      const sellerIds = [...new Set(raw.map(p => p.sellerId))]
+      const coverage  = await prisma.shopZoneCoverage.findMany({
+        where: { zoneId, sellerId: { in: sellerIds }, isActive: true },
+      })
+      coverageMap = Object.fromEntries(coverage.map(c => [c.sellerId, true]))
+    }
+
+    const withZone = raw.map(p => ({
+      ...p,
+      seller: { ...p.seller, deliversToZone: zoneId ? Boolean(coverageMap[p.sellerId]) : undefined },
+    }))
+
+    return JSON.parse(JSON.stringify(withZone))
   } catch { return [] }
 }
 
@@ -150,10 +165,16 @@ export default async function HomePage() {
   const cookieStore = await cookies()
   const locale = cookieStore.get(LOCALE_COOKIE)?.value ?? DEFAULT_LOCALE
 
+  let zoneId = null
+  try {
+    const raw = cookieStore.get('wasla_zone')?.value
+    if (raw) zoneId = JSON.parse(decodeURIComponent(raw))?.id ?? null
+  } catch { /* ignore malformed cookie */ }
+
   const [shops, categories, products] = await Promise.all([
     getShops(),
     getCategories(),
-    getFeaturedProducts(),
+    getFeaturedProducts(zoneId),
   ])
 
   return (

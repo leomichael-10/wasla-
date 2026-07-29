@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
+import { getZoneCookie } from '../../lib/zone'
 
 const SORT_OPTIONS = [
   { value: 'az',         label: 'A to Z'            },
@@ -94,6 +95,8 @@ function BrowseBrowser() {
     if (category) params.set('category', category)
     if (city)     params.set('city',     city)
     params.set('sort', sort)
+    const zone = getZoneCookie()
+    if (zone) params.set('zoneId', zone.id)
     try {
       const res  = await fetch(`/api/products?${params}`)
       const data = await res.json()

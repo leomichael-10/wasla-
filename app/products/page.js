@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Navbar from '../../components/Navbar'
 import ProductCard from '../../components/ProductCard'
+import { getZoneCookie } from '../../lib/zone'
 
 const BRANDS = ['Kassala', 'Gedaref', 'El Obeid']
 const CITIES = ['Cairo', 'Giza', '6th of October', 'Alexandria']
@@ -132,6 +133,8 @@ function ProductsBrowser() {
     if (category) params.set('category', category)
     if (city)     params.set('city',     city)
     params.set('sort', sort)
+    const zone = getZoneCookie()
+    if (zone) params.set('zoneId', zone.id)
 
     try {
       const res  = await fetch(`/api/products?${params}`)
