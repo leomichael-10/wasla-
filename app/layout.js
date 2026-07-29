@@ -7,6 +7,7 @@ import SessionProviderWrapper from '../components/SessionProviderWrapper'
 import AuthSync from '../components/AuthSync'
 import GlobalTracker from '../components/GlobalTracker'
 import ZoneGate from '../components/ZoneGate'
+import PWAInstall from '../components/PWAInstall'
 import { DEFAULT_LOCALE, LOCALE_COOKIE, t } from '../lib/i18n'
 import './globals.css'
 
@@ -40,6 +41,20 @@ export const metadata = {
     index:  true,
     follow: true,
   },
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable:      true,
+    statusBarStyle: 'default',
+    title:        'Wasla',
+  },
+  icons: {
+    icon:  ['/icons/icon-192.png', '/icons/icon-512.png'],
+    apple: '/icons/apple-touch-icon.png',
+  },
+}
+
+export const viewport = {
+  themeColor: '#7e22ce',
 }
 
 export default async function RootLayout({ children }) {
@@ -61,6 +76,7 @@ export default async function RootLayout({ children }) {
         <AuthSync />
         <GlobalTracker />
         <ZoneGate />
+        <PWAInstall />
         <Toaster
           position="top-right"
           toastOptions={{

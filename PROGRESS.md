@@ -91,3 +91,15 @@ Brand renamed Tobaki→Wasla, age-gate deleted, vape SKU tables/admin screen dro
 - Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema change).
 
 ---
+
+## Task 2 — "Add to Home Screen" PWA install
+- **Scoping call** (logged in DECISIONS.md): hand-rolled a real service worker + manifest instead of pulling in `next-pwa`/`serwist`. This app runs Next.js 16.2.3 (very recent); a build-time PWA plugin's compatibility can't be confirmed here without a full device/browser test matrix, so a plugin failure would be a silent risk. The hand-rolled `public/sw.js` is a real, working service worker (cache-first for static assets/icons, network-first-with-cache-fallback for pages, API requests always bypass the cache) — not a stub — and can be swapped for a plugin-based precaching strategy later without restructuring anything.
+- `public/manifest.webmanifest`: name/short_name, Arabic `lang`/`dir` by default, standalone display, theme color matching the purple brand, `any` + `maskable` icon sets.
+- **Icons**: generated real PNGs (192/512, plus a padded maskable variant, plus an iOS apple-touch-icon) from a placeholder "W" wordmark SVG, rasterized via `sharp` (already a transitive Next.js dependency — no new install needed). These are placeholder icons pending the real Wasla logo asset (already flagged as missing in MIGRATION_REPORT.md).
+- `app/layout.js` wired via the Next.js Metadata API (`manifest`, `appleWebApp`, `icons`, `viewport.themeColor`) rather than hand-written `<link>` tags — Next generates the correct tags for both platforms.
+- `components/PWAInstall.js`: registers the service worker on mount; on Android/Chrome, captures `beforeinstallprompt`, suppresses the browser's native mini-infobar (`e.preventDefault()`), and shows a bilingual RTL-aware bottom banner with an Install button that calls `prompt()`; on iOS Safari (which has no `beforeinstallprompt`), shows a "tap Share → Add to Home Screen" instruction banner instead, since iOS has no programmatic install API. Hides entirely when already running standalone (`display-mode: standalone` or `navigator.standalone`). Dismissible, and the dismissal is remembered for 7 days via `localStorage` so it isn't naggy.
+- **Verified**: `manifest.webmanifest` (200), `sw.js` (200), and `icons/icon-192.png` (200) all serve correctly from a production build (`npm run start`), and the manifest `<link>` tag renders in the HTML `<head>`.
+- **Not verified**: installability on an actual deployed preview URL, per the task's explicit ask — this environment has no deployment/Vercel access (would require credentials/console access I don't have — hard-stop #2 territory for that specific verification step only, not for building the feature). The build-time smoke test above is the strongest verification available here.
+- Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema change).
+
+---
