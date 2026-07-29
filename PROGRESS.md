@@ -209,3 +209,21 @@ Both were split across a nested `<span>` for the two-tone brand coloring (first 
 - Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema change).
 
 ---
+
+## STEP 0 + STEP 1 — DB re-verification + real screenshot self-critique
+
+### Step 0
+Re-ran `prisma migrate diff` (clean) and checked the live dev server: same root cause as the previous "still broken" report — the running process (new PID this time) had been started, and once confirmed warm, `/api/zones` returned 200 with full zone data and `/api/orders` returned 401 (auth error, not 500). No migration was needed; the schema/DB were never actually out of sync in this pass.
+
+### Step 1 — real screenshot capture (first time this was possible)
+Installed Playwright + Chromium (`npm install -D playwright && npx playwright install chromium`) specifically to capture a real mobile-viewport (390×844) screenshot instead of reasoning from rendered HTML/class names, since no headless browser had been available in this environment in earlier passes. Removed the dev dependency again afterward (`npm uninstall playwright`) since it was a one-off verification tool, not something the app needs at runtime.
+
+**Found and fixed two real bugs the screenshot exposed that HTML-only review had missed:**
+1. **Navbar wordmark/cart-icon collision in RTL** — `components/Navbar.js`'s logo used `absolute left-1/2 -translate-x-1/2` (a physical-property centering hack) originally meant to keep the logo centered when desktop nav links flanked it. On mobile, nav links are hidden anyway, so nothing justified forcing it out of flow — and centering combined with RTL's mirrored icon-cluster ordering visually crowded the wordmark against the cart icon. Fixed by removing the absolute-centering hack entirely and letting the logo sit in normal flex flow, which is now direction-agnostic by construction rather than by physical-property coincidence.
+2. **Redundant mobile primary nav** — the top navbar still rendered a hamburger button and a cart icon on mobile for customers/guests, duplicating the new `MobileTabBar`'s Home/Categories/Cart/Orders/Account tabs — exactly the "keep hamburger AND add tab bar" anti-pattern the task explicitly said not to do. Hidden both for customers/guests (`hasMobileTabBar` flag) while keeping them for sellers/admins, who have no bottom tab bar and still need the hamburger drawer.
+
+**Self-critique notes**: a category tile (`Heritage Clothing`) appeared with a persistent hover-tinted border in the first two capture attempts; traced it to the Playwright script's zone-picker click leaving the synthetic mouse cursor at a screen coordinate that happened to land on that tile after the modal closed — confirmed it disappears once the mouse is explicitly moved away and settled before the screenshot, so **not a real CSS bug**, just a test-harness artifact, and no code change was made for it. Applying the "remove one accessory" check to the resulting layout: found nothing worth cutting — the category grid, rails, and product tiles were already fairly restrained from the prior design pass; the two real fixes above were the actual yield of this exercise, not a decorative trim.
+
+Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema change).
+
+---
