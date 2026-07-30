@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '../../../../lib/prisma'
+import { getVerificationProvider } from '../../../../lib/verification'
 
 const rateLimitMap = new Map()
 function isRateLimited(ip) {
@@ -98,6 +99,14 @@ export async function POST(request) {
           subscriptionStatus: subscriptionsEnabled ? 'PENDING' : 'ACTIVE',
         }
       })
+    }
+
+    // Fire off the email verification code — never block registration if
+    // sending fails (the user can always tap "resend" from /verify-email).
+    try {
+      await getVerificationProvider('email').requestCode({ target: user.email, purpose: 'signup' })
+    } catch (err) {
+      console.error('[Register] Failed to send verification code:', err?.message ?? err)
     }
 
     return NextResponse.json({

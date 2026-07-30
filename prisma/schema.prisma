@@ -18,6 +18,7 @@ model User {
   city            String?
   isBanned        Boolean          @default(false)
   isOnboarded     Boolean          @default(false)
+  emailVerified   Boolean          @default(false)
   gender          String?
   createdAt       DateTime         @default(now())
   customerProfile CustomerProfile?
@@ -41,6 +42,7 @@ model SellerProfile {
   userId               Int                @unique
   businessName         String
   whatsappNumber       String?
+  whatsappVerified     Boolean            @default(false)
   tradeLicense         String?
   city                 String?
   area                 String?
@@ -205,6 +207,24 @@ model DeliveryWaitlist {
   district  String
   phone     String?
   createdAt DateTime @default(now())
+}
+
+// Shared OTP core for email + WhatsApp ownership verification. Only used
+// directly when a channel has no external OTP service to delegate to
+// (email always; WhatsApp only when no Twilio Verify credentials are
+// configured — see lib/verification/whatsappOtp.js and DECISIONS.md).
+model VerificationCode {
+  id         Int       @id @default(autoincrement())
+  channel    String // 'email' | 'whatsapp'
+  target     String // email address or phone number
+  purpose    String    @default("signup")
+  codeHash   String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([channel, target, purpose])
 }
 
 model Order {

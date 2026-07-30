@@ -276,6 +276,7 @@ async function seedShops() {
             create: {
               businessName:      shop.businessName,
               whatsappNumber:    shop.whatsappNumber,
+              whatsappVerified:  true, // demo shops are pre-verified so the seeded store is immediately checkout-testable
               city:              shop.city,
               area:              shop.area,
               approvedByAdmin:   true,

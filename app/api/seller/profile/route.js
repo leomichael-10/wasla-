@@ -43,7 +43,12 @@ export async function PATCH(request) {
       if (!isEgyptianPhone(body.whatsappNumber)) {
         return NextResponse.json({ error: 'A valid Egyptian WhatsApp number is required (e.g. 01012345678)' }, { status: 400 })
       }
-      data.whatsappNumber = normalizeDigits(body.whatsappNumber)
+      const normalized = normalizeDigits(body.whatsappNumber)
+      const current = await prisma.sellerProfile.findUnique({ where: { userId: auth.userId }, select: { whatsappNumber: true } })
+      data.whatsappNumber = normalized
+      // Changing the number invalidates any prior verification — must
+      // re-verify via /api/seller/whatsapp/send-code + verify-code.
+      if (current?.whatsappNumber !== normalized) data.whatsappVerified = false
     }
 
     if (Object.keys(data).length === 0) {

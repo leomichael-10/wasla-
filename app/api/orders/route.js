@@ -76,6 +76,14 @@ export async function POST(request) {
   }
 
   try {
+    const customer = await prisma.user.findUnique({ where: { id: auth.userId }, select: { emailVerified: true } })
+    if (!customer?.emailVerified) {
+      return NextResponse.json(
+        { error: 'Please verify your email before placing orders.', code: 'EMAIL_NOT_VERIFIED' },
+        { status: 403 }
+      )
+    }
+
     const body = await request.json()
     const { sellerId, deliveryAddress, paymentMethod, items, zoneId, orderGroupId } = body
 
@@ -83,6 +91,20 @@ export async function POST(request) {
       return NextResponse.json(
         { error: 'sellerId, deliveryAddress, and at least one item are required' },
         { status: 400 }
+      )
+    }
+
+    const sellerProfile = await prisma.sellerProfile.findUnique({
+      where: { id: sellerId },
+      select: { whatsappVerified: true },
+    })
+    if (!sellerProfile) {
+      return NextResponse.json({ error: 'Shop not found' }, { status: 404 })
+    }
+    if (!sellerProfile.whatsappVerified) {
+      return NextResponse.json(
+        { error: 'This shop has not completed WhatsApp verification yet and cannot receive orders.', code: 'SHOP_NOT_VERIFIED' },
+        { status: 403 }
       )
     }
 

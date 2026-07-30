@@ -134,7 +134,13 @@ export default function CartPage() {
           }),
         })
         const data = await res.json()
-        if (!res.ok) throw new Error(data.error ?? 'Order failed')
+        if (!res.ok) {
+          if (data.code === 'EMAIL_NOT_VERIFIED') {
+            router.push(`/verify-email?email=${encodeURIComponent(user?.email ?? '')}`)
+            return
+          }
+          throw new Error(data.error ?? 'Order failed')
+        }
         placedOrders.push(data.order)
       }
 

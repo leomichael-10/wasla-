@@ -75,9 +75,13 @@ export default function DashboardSettingsPage() {
   const [loading,  setLoading]  = useState(true)
   const [toggling, setToggling] = useState(false)
   const [error,    setError]    = useState('')
-  const [whatsapp, setWhatsapp] = useState('')
-  const [savingWa,  setSavingWa]  = useState(false)
-  const [waSaved,   setWaSaved]   = useState(false)
+  const [whatsapp,   setWhatsapp]   = useState('')
+  const [codeStep,   setCodeStep]   = useState(false)
+  const [code,       setCode]       = useState('')
+  const [sendingWa,  setSendingWa]  = useState(false)
+  const [verifyingWa, setVerifyingWa] = useState(false)
+  const [waMsg,      setWaMsg]      = useState('')
+  const [devCode,    setDevCode]    = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -121,25 +125,49 @@ export default function DashboardSettingsPage() {
     }
   }
 
-  async function handleSaveWhatsapp() {
-    setSavingWa(true)
-    setWaSaved(false)
+  async function handleSendCode() {
+    setSendingWa(true)
+    setWaMsg('')
+    setDevCode('')
     const token = localStorage.getItem('wasla_token')
     try {
-      const res  = await fetch('/api/seller/profile', {
-        method:  'PATCH',
+      const res  = await fetch('/api/seller/whatsapp/send-code', {
+        method:  'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body:    JSON.stringify({ whatsappNumber: whatsapp }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setProfile(data.profile)
-      setWhatsapp(data.profile.whatsappNumber ?? '')
-      setWaSaved(true)
+      setWaMsg(data.message)
+      if (data.devCode) setDevCode(data.devCode) // only ever present in the no-Twilio-Verify dev stub
+      setCodeStep(true)
     } catch (err) {
-      setError(err.message || 'Failed to save WhatsApp number.')
+      setError(err.message || 'Failed to send verification code.')
     } finally {
-      setSavingWa(false)
+      setSendingWa(false)
+    }
+  }
+
+  async function handleVerifyCode() {
+    setVerifyingWa(true)
+    setWaMsg('')
+    const token = localStorage.getItem('wasla_token')
+    try {
+      const res  = await fetch('/api/seller/whatsapp/verify-code', {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ whatsappNumber: whatsapp, code }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setProfile(data.profile)
+      setCodeStep(false)
+      setCode('')
+      setWaMsg('تم توثيق رقم الواتساب بنجاح!')
+    } catch (err) {
+      setError(err.message || 'Failed to verify code.')
+    } finally {
+      setVerifyingWa(false)
     }
   }
 
@@ -193,29 +221,63 @@ export default function DashboardSettingsPage() {
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <p className="font-black text-gray-900 mb-1">WhatsApp number</p>
+        <div className="flex items-center justify-between mb-1">
+          <p className="font-black text-gray-900">WhatsApp number</p>
+          {profile?.whatsappVerified && (
+            <span className="text-[10px] font-bold bg-green-50 text-green-700 px-2 py-0.5 rounded-full uppercase tracking-wide">Verified</span>
+          )}
+        </div>
         <p className="text-sm text-gray-500 mb-3">
-          Required to receive orders — new orders are sent here so you can confirm them fast.
+          Required and verified before you can receive orders — new orders are sent here so you can confirm them fast.
         </p>
+
         <div className="flex gap-2">
           <input
             type="tel"
             value={whatsapp}
-            onChange={e => { setWhatsapp(e.target.value); setWaSaved(false) }}
+            onChange={e => { setWhatsapp(e.target.value); setCodeStep(false); setWaMsg('') }}
             placeholder="01012345678"
             className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
           />
           <button
-            onClick={handleSaveWhatsapp}
-            disabled={savingWa}
-            className="text-sm font-bold bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl transition-colors"
+            onClick={handleSendCode}
+            disabled={sendingWa || !whatsapp}
+            className="text-sm font-bold bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap"
           >
-            {savingWa ? '…' : 'Save'}
+            {sendingWa ? '…' : profile?.whatsappVerified && whatsapp === profile.whatsappNumber ? 'Re-verify' : 'Send Code'}
           </button>
         </div>
-        {waSaved && <p className="text-xs text-green-600 font-semibold mt-2">Saved.</p>}
-        {!profile?.whatsappNumber && (
-          <p className="text-xs text-red-500 font-semibold mt-2">No WhatsApp number on file — you can't receive orders yet.</p>
+
+        {waMsg && <p className="text-xs text-gray-500 mt-2">{waMsg}</p>}
+        {devCode && (
+          <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-2 font-mono">
+            Dev-only stub code (no Twilio Verify configured): <strong>{devCode}</strong>
+          </p>
+        )}
+
+        {codeStep && (
+          <div className="flex gap-2 mt-3">
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              value={code}
+              onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
+              placeholder="123456"
+              className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-center tracking-[0.3em] font-bold focus:outline-none focus:ring-2 focus:ring-brand-400"
+            />
+            <button
+              onClick={handleVerifyCode}
+              disabled={verifyingWa || code.length !== 6}
+              className="text-sm font-bold bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap"
+            >
+              {verifyingWa ? '…' : 'Verify'}
+            </button>
+          </div>
+        )}
+
+        {!profile?.whatsappVerified && (
+          <p className="text-xs text-red-500 font-semibold mt-2">Not verified yet — you can't receive orders until this is confirmed.</p>
         )}
       </div>
 

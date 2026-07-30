@@ -243,3 +243,35 @@ Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no differen
 - Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅.
 
 ---
+
+## BUILD — email + WhatsApp ownership verification (OTP)
+
+### Schema (additive only — 2 ALTER TABLE ADD COLUMN + 1 CREATE TABLE, no drops)
+Migration `20260730102240_email_whatsapp_verification`: `User.emailVerified` (Boolean, default false), `SellerProfile.whatsappVerified` (Boolean, default false), and a new `VerificationCode` model (`channel`, `target`, `purpose`, `codeHash`, `attempts`, `expiresAt`, `consumedAt`) shared by every channel that needs its own code storage.
+
+### Shared core (`lib/verification/`)
+- `core.js`: the actual security logic — 6-digit codes, **bcrypt-hashed storage** (never plaintext), 10-minute expiry, single-use consumption (`consumedAt`), a 3-sends-per-10-minutes rate limit per channel+target, and a 5-wrong-tries lockout per code.
+- `VerificationProvider.js`: interface (`requestCode`/`checkCode`), mirroring the `lib/payments/` pattern already in this codebase.
+- `EmailOtpProvider` (`emailOtp.js`) and `WhatsAppOtpProvider` (`whatsappOtp.js`, only when unconfigured) both go through the shared core; `WhatsAppOtpProvider` delegates entirely to Twilio Verify instead when configured, since Twilio then owns code lifecycle.
+
+### Email verification — fully live, not a stub
+No `RESEND_API_KEY`, but `lib/email.js` already falls back to the working SMTP pipeline (from the earlier Resend-integration task), so `EmailOtpProvider` sends real codes today. Wired into:
+- `POST /api/auth/register` — fires a code automatically after account creation (non-blocking; failures are logged, never block signup).
+- `POST /api/auth/resend-email-code` — **always returns the same generic message** regardless of whether the email exists or is already verified (classic OTP-enumeration leak, avoided per the task's explicit ask), silently no-ops the actual send when there's nothing to verify.
+- `POST /api/auth/verify-email` — checks the code, sets `emailVerified: true`.
+- `app/verify-email/page.js` — 6-digit input, resend button with a 30s client-side cooldown, redirects to `/login` on success. Wired into `app/register/page.js`'s customer signup path.
+- **Enforcement**: `POST /api/orders` now checks `customer.emailVerified` first and rejects with `403 { code: 'EMAIL_NOT_VERIFIED' }` if not; `app/cart/page.js` catches that specific code and redirects straight to `/verify-email` instead of just showing an error banner.
+
+### WhatsApp verification — hard stop for live send, fully stubbed and testable
+No Twilio Verify credentials (`TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN`/`TWILIO_VERIFY_SERVICE_SID`) exist — genuinely blocked on external provisioning (Twilio account + Meta WhatsApp Business approval + a Verify Service in the Twilio console), not a scoping choice. Exact steps to go live are in DECISIONS.md. Until then:
+- `POST /api/seller/whatsapp/send-code` — sellers only; sends to either the number already on file or a new candidate number (not persisted until verified); returns a `devCode` in the response **only** in the unconfigured stub path (never when a real provider is live) so the flow is testable in the dashboard UI, and also logs it server-side.
+- `POST /api/seller/whatsapp/verify-code` — checks the code, on success persists the (possibly new) number and sets `whatsappVerified: true`. This is the only place that flag flips on.
+- `PATCH /api/seller/profile` (existing route) now resets `whatsappVerified: false` whenever the number actually changes through that path — a changed number always needs re-verification.
+- `app/dashboard/settings/page.js`: verified/unverified badge, send-code + code-entry UI, shows the dev stub code inline when present.
+- Added the WhatsApp field + client/server validation to seller registration (`app/register/page.js`, `app/api/auth/register/route.js`).
+- **Enforcement**: `POST /api/orders` also checks `sellerProfile.whatsappVerified` and rejects with `403 { code: 'SHOP_NOT_VERIFIED' }` if the shop hasn't completed verification — this is the actual "shops MUST verify before they can receive orders" choke point.
+- **Backfill**: gating on `whatsappVerified` would have broken checkout for the 3 existing seeded demo shops (new rows default to `false`). Backfilled `whatsappVerified: true` for those 3 (trusted first-party demo data) and added it to `scripts/seed.js` for future reseeds — doesn't weaken the property for real signups.
+
+Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅.
+
+---

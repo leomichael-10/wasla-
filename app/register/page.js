@@ -113,7 +113,7 @@ export default function RegisterPage() {
           router.push('/dashboard')
         }
       } else {
-        router.push('/login')
+        router.push(`/verify-email?email=${encodeURIComponent(form.email)}`)
       }
     } catch {
       setStep1Error('Unable to connect. Check your internet connection.')
