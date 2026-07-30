@@ -35,28 +35,31 @@ const ADMIN_USER = {
 
 const SHOPS = [
   {
-    email:        'seller@wasla.com',
-    password:     'seller1234',
-    role:         'retailer',
-    city:         'Cairo',
-    area:         'Faisal',
-    businessName: 'Kassala Coffee House',
+    email:          'seller@wasla.com',
+    password:       'seller1234',
+    role:           'retailer',
+    city:           'Cairo',
+    area:           'Faisal',
+    businessName:   'Kassala Coffee House',
+    whatsappNumber: '201001234567',
   },
   {
-    email:        'seller2@wasla.com',
-    password:     'seller2024',
-    role:         'retailer',
-    city:         'Giza',
-    area:         'Ard El Lewa',
-    businessName: 'Ard El Lewa Sudanese Market',
+    email:          'seller2@wasla.com',
+    password:       'seller2024',
+    role:           'retailer',
+    city:           'Giza',
+    area:           'Ard El Lewa',
+    businessName:   'Ard El Lewa Sudanese Market',
+    whatsappNumber: '201002345678',
   },
   {
-    email:        'seller3@wasla.com',
-    password:     'seller3024',
-    role:         'retailer',
-    city:         'Cairo',
-    area:         'Nasr City',
-    businessName: 'Bayt Al Sudan Heritage Store',
+    email:          'seller3@wasla.com',
+    password:       'seller3024',
+    role:           'retailer',
+    city:           'Cairo',
+    area:           'Nasr City',
+    businessName:   'Bayt Al Sudan Heritage Store',
+    whatsappNumber: '201003456789',
   },
 ]
 
@@ -272,6 +275,7 @@ async function seedShops() {
           sellerProfile: {
             create: {
               businessName:      shop.businessName,
+              whatsappNumber:    shop.whatsappNumber,
               city:              shop.city,
               area:              shop.area,
               approvedByAdmin:   true,

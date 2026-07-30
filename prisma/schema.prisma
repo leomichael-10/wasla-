@@ -40,6 +40,7 @@ model SellerProfile {
   id                   Int                @id @default(autoincrement())
   userId               Int                @unique
   businessName         String
+  whatsappNumber       String?
   tradeLicense         String?
   city                 String?
   area                 String?

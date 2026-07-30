@@ -75,6 +75,9 @@ export default function DashboardSettingsPage() {
   const [loading,  setLoading]  = useState(true)
   const [toggling, setToggling] = useState(false)
   const [error,    setError]    = useState('')
+  const [whatsapp, setWhatsapp] = useState('')
+  const [savingWa,  setSavingWa]  = useState(false)
+  const [waSaved,   setWaSaved]   = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -88,6 +91,7 @@ export default function DashboardSettingsPage() {
       const zoneData = await zoneRes.json()
       if (!profRes.ok) throw new Error(profData.error)
       setProfile(profData.profile)
+      setWhatsapp(profData.profile?.whatsappNumber ?? '')
       setZones(zoneData.zones ?? [])
     } catch (err) {
       setError(err.message || 'Failed to load settings.')
@@ -114,6 +118,28 @@ export default function DashboardSettingsPage() {
       setError(err.message || 'Failed to update shop status.')
     } finally {
       setToggling(false)
+    }
+  }
+
+  async function handleSaveWhatsapp() {
+    setSavingWa(true)
+    setWaSaved(false)
+    const token = localStorage.getItem('wasla_token')
+    try {
+      const res  = await fetch('/api/seller/profile', {
+        method:  'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ whatsappNumber: whatsapp }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setProfile(data.profile)
+      setWhatsapp(data.profile.whatsappNumber ?? '')
+      setWaSaved(true)
+    } catch (err) {
+      setError(err.message || 'Failed to save WhatsApp number.')
+    } finally {
+      setSavingWa(false)
     }
   }
 
@@ -164,6 +190,33 @@ export default function DashboardSettingsPage() {
         >
           {toggling ? '…' : profile?.isOpen ? 'Close Shop' : 'Open Shop'}
         </button>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <p className="font-black text-gray-900 mb-1">WhatsApp number</p>
+        <p className="text-sm text-gray-500 mb-3">
+          Required to receive orders — new orders are sent here so you can confirm them fast.
+        </p>
+        <div className="flex gap-2">
+          <input
+            type="tel"
+            value={whatsapp}
+            onChange={e => { setWhatsapp(e.target.value); setWaSaved(false) }}
+            placeholder="01012345678"
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+          />
+          <button
+            onClick={handleSaveWhatsapp}
+            disabled={savingWa}
+            className="text-sm font-bold bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl transition-colors"
+          >
+            {savingWa ? '…' : 'Save'}
+          </button>
+        </div>
+        {waSaved && <p className="text-xs text-green-600 font-semibold mt-2">Saved.</p>}
+        {!profile?.whatsappNumber && (
+          <p className="text-xs text-red-500 font-semibold mt-2">No WhatsApp number on file — you can't receive orders yet.</p>
+        )}
       </div>
 
       <div>

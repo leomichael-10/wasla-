@@ -39,6 +39,15 @@ export async function POST(request) {
       )
     }
 
+    // Sellers must supply a WhatsApp number — orders are sent there, so
+    // without one the shop can't receive orders (see WaMeProvider).
+    if ((role === 'retailer' || role === 'wholesaler') && !body.whatsappNumber) {
+      return NextResponse.json(
+        { error: 'whatsappNumber is required for shops' },
+        { status: 400 }
+      )
+    }
+
     // Check if email already exists
     const existingUser = await prisma.user.findUnique({
       where: { email }
@@ -78,12 +87,13 @@ export async function POST(request) {
     // Subscriptions are shelved for launch (NEXT_PUBLIC_SUBSCRIPTIONS_ENABLED=false) —
     // every shop starts on the free tier instead of waiting on a subscription payment.
     if (role === 'retailer' || role === 'wholesaler') {
-      const { businessName } = body
+      const { businessName, whatsappNumber } = body
       const subscriptionsEnabled = process.env.NEXT_PUBLIC_SUBSCRIPTIONS_ENABLED === 'true'
       await prisma.sellerProfile.create({
         data: {
           userId: user.id,
           businessName: businessName || 'My Shop',
+          whatsappNumber,
           approvedByAdmin: false,
           subscriptionStatus: subscriptionsEnabled ? 'PENDING' : 'ACTIVE',
         }

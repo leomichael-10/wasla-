@@ -19,7 +19,7 @@ const ORDER_INCLUDE = {
       },
     },
   },
-  seller: { select: { id: true, businessName: true, city: true } },
+  seller: { select: { id: true, businessName: true, city: true, whatsappNumber: true } },
 }
 
 // GET /api/orders

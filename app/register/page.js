@@ -34,6 +34,7 @@ export default function RegisterPage() {
     phone:        '',
     city:         '',
     businessName: '',
+    whatsappNumber: '',
   })
   const [step1Error,     setStep1Error]     = useState('')
   const [step1Loading,   setStep1Loading]   = useState(false)
@@ -60,6 +61,10 @@ export default function RegisterPage() {
       setStep1Error('Please enter a valid Egyptian mobile number (e.g. 01012345678).')
       return
     }
+    if (isSeller && !isEgyptianPhone(form.whatsappNumber)) {
+      setStep1Error('A valid WhatsApp number is required to receive orders (e.g. 01012345678).')
+      return
+    }
 
     setStep1Loading(true)
 
@@ -70,7 +75,10 @@ export default function RegisterPage() {
       phone:    form.phone ? normalizeDigits(form.phone) : undefined,
       city:     form.city  || undefined,
     }
-    if (isSeller) body.businessName = form.businessName
+    if (isSeller) {
+      body.businessName   = form.businessName
+      body.whatsappNumber = normalizeDigits(form.whatsappNumber)
+    }
 
     try {
       const regRes  = await fetch('/api/auth/register', {
@@ -236,14 +244,25 @@ export default function RegisterPage() {
                 </div>
 
                 {isSeller && (
-                  <div>
-                    <label htmlFor="businessName" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                      Business name <span className="text-red-400">*</span>
-                    </label>
-                    <input id="businessName" type="text" required value={form.businessName} onChange={set('businessName')}
-                      placeholder="e.g. Kassala Coffee House"
-                      className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
-                  </div>
+                  <>
+                    <div>
+                      <label htmlFor="businessName" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        Business name <span className="text-red-400">*</span>
+                      </label>
+                      <input id="businessName" type="text" required value={form.businessName} onChange={set('businessName')}
+                        placeholder="e.g. Kassala Coffee House"
+                        className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
+                    </div>
+                    <div>
+                      <label htmlFor="whatsappNumber" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        WhatsApp number <span className="text-red-400">*</span>
+                      </label>
+                      <input id="whatsappNumber" type="tel" required value={form.whatsappNumber} onChange={set('whatsappNumber')}
+                        placeholder="01012345678"
+                        className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
+                      <p className="text-xs text-gray-400 mt-1">Orders are sent here — without it, you can't receive orders.</p>
+                    </div>
+                  </>
                 )}
 
                 <div>

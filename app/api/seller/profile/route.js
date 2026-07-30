@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
 import { getUser } from '../../../../lib/auth'
+import { isEgyptianPhone, normalizeDigits } from '../../../../lib/phone'
 
 // GET /api/seller/profile — the logged-in seller's own shop profile
 export async function GET(request) {
@@ -18,9 +19,10 @@ export async function GET(request) {
   }
 }
 
-// PATCH /api/seller/profile — currently just the open/closed toggle.
-// Closing a shop hides its products from checkout without deleting anything.
-// Body: { isOpen: boolean }
+// PATCH /api/seller/profile — the open/closed toggle and/or the WhatsApp
+// number orders get sent to. Closing a shop hides its products from
+// checkout without deleting anything.
+// Body: { isOpen?: boolean, whatsappNumber?: string }
 export async function PATCH(request) {
   const auth = getUser(request)
   if (!auth || (auth.role !== 'retailer' && auth.role !== 'wholesaler')) {
@@ -28,12 +30,29 @@ export async function PATCH(request) {
   }
   try {
     const body = await request.json()
-    if (typeof body.isOpen !== 'boolean') {
-      return NextResponse.json({ error: 'isOpen must be a boolean' }, { status: 400 })
+    const data = {}
+
+    if (body.isOpen !== undefined) {
+      if (typeof body.isOpen !== 'boolean') {
+        return NextResponse.json({ error: 'isOpen must be a boolean' }, { status: 400 })
+      }
+      data.isOpen = body.isOpen
     }
+
+    if (body.whatsappNumber !== undefined) {
+      if (!isEgyptianPhone(body.whatsappNumber)) {
+        return NextResponse.json({ error: 'A valid Egyptian WhatsApp number is required (e.g. 01012345678)' }, { status: 400 })
+      }
+      data.whatsappNumber = normalizeDigits(body.whatsappNumber)
+    }
+
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
+    }
+
     const profile = await prisma.sellerProfile.update({
       where: { userId: auth.userId },
-      data:  { isOpen: body.isOpen },
+      data,
     })
     return NextResponse.json({ profile: JSON.parse(JSON.stringify(profile)) })
   } catch (error) {
