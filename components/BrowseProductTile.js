@@ -88,12 +88,22 @@ export default function BrowseProductTile({ product, locale }) {
       </div>
 
       {canAdd && (
-        qty > 0 ? (
-          <div className="absolute bottom-2 end-2 flex items-center bg-brand-700 rounded-full shadow-md overflow-hidden h-8">
+        <div className="absolute bottom-2 end-2 grid">
+          {/* Both states stay mounted and cross-fade/scale in place — a
+              conditional unmount here would swap them with no bridge. */}
+          <div
+            className="col-start-1 row-start-1 flex items-center bg-brand-700 rounded-full shadow-md overflow-hidden h-8 transition-[opacity,transform] duration-160"
+            style={{
+              transitionTimingFunction: 'var(--ease-out)',
+              opacity:        qty > 0 ? 1 : 0,
+              transform:      qty > 0 ? 'scale(1)' : 'scale(0.92)',
+              pointerEvents:  qty > 0 ? 'auto' : 'none',
+            }}
+          >
             <button
               onClick={e => handleStep(e, -1)}
               aria-label="Decrease quantity"
-              className="w-8 h-full flex items-center justify-center text-white font-black active:scale-90 transition-transform"
+              className="w-8 h-full flex items-center justify-center text-white font-black active:scale-95 transition-transform"
             >
               −
             </button>
@@ -102,20 +112,25 @@ export default function BrowseProductTile({ product, locale }) {
               onClick={e => handleStep(e, 1)}
               disabled={qty >= 10}
               aria-label="Increase quantity"
-              className="w-8 h-full flex items-center justify-center text-white font-black disabled:opacity-40 active:scale-90 transition-transform"
+              className="w-8 h-full flex items-center justify-center text-white font-black disabled:opacity-40 active:scale-95 transition-transform"
             >
               +
             </button>
           </div>
-        ) : (
           <button
             onClick={handleAdd}
             aria-label={t('browse.addToCart', locale)}
-            className="absolute bottom-2 end-2 w-9 h-9 rounded-full bg-accent-400 hover:bg-accent-500 active:scale-90 text-gray-900 font-black text-lg shadow-md flex items-center justify-center transition-all duration-150"
+            className="col-start-1 row-start-1 w-9 h-9 rounded-full bg-accent-400 hover:bg-accent-500 active:scale-95 text-gray-900 font-black text-lg shadow-md flex items-center justify-center transition-[opacity,transform] duration-160"
+            style={{
+              transitionTimingFunction: 'var(--ease-out)',
+              opacity:       qty > 0 ? 0 : 1,
+              transform:     qty > 0 ? 'scale(0.92)' : 'scale(1)',
+              pointerEvents: qty > 0 ? 'none' : 'auto',
+            }}
           >
             +
           </button>
-        )
+        </div>
       )}
     </div>
   )

@@ -86,19 +86,36 @@ export default function ProductTile({ product }) {
             </p>
           ) : !inStockVariant ? (
             <p className="text-[10px] text-gray-400 font-bold text-center py-1.5">Out of Stock</p>
-          ) : qty > 0 ? (
-            <div className="flex items-center justify-between bg-brand-700 rounded-xl overflow-hidden h-8">
-              <button onClick={e => handleStep(e, -1)} className="w-8 h-full flex items-center justify-center text-white font-black active:scale-95 transition-transform">−</button>
-              <span className="text-white text-xs font-black tabular-nums">{qty}</span>
-              <button onClick={e => handleStep(e, 1)} disabled={qty >= 10} className="w-8 h-full flex items-center justify-center text-white font-black disabled:opacity-40 active:scale-95 transition-transform">+</button>
-            </div>
           ) : (
-            <button
-              onClick={handleAdd}
-              className="w-full h-8 bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-black rounded-xl transition-colors active:scale-95"
-            >
-              + إضافة
-            </button>
+            <div className="grid h-8">
+              {/* Both states stay mounted and cross-fade/scale in place —
+                  a conditional unmount here would swap them with no bridge. */}
+              <div
+                className="col-start-1 row-start-1 flex items-center justify-between bg-brand-700 rounded-xl overflow-hidden h-8 transition-[opacity,transform] duration-160"
+                style={{
+                  transitionTimingFunction: 'var(--ease-out)',
+                  opacity:       qty > 0 ? 1 : 0,
+                  transform:     qty > 0 ? 'scale(1)' : 'scale(0.95)',
+                  pointerEvents: qty > 0 ? 'auto' : 'none',
+                }}
+              >
+                <button onClick={e => handleStep(e, -1)} className="w-8 h-full flex items-center justify-center text-white font-black active:scale-95 transition-transform">−</button>
+                <span className="text-white text-xs font-black tabular-nums">{qty}</span>
+                <button onClick={e => handleStep(e, 1)} disabled={qty >= 10} className="w-8 h-full flex items-center justify-center text-white font-black disabled:opacity-40 active:scale-95 transition-transform">+</button>
+              </div>
+              <button
+                onClick={handleAdd}
+                className="col-start-1 row-start-1 w-full h-8 bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-black rounded-xl transition-[opacity,transform,background-color] duration-160 active:scale-95"
+                style={{
+                  transitionTimingFunction: 'var(--ease-out)',
+                  opacity:       qty > 0 ? 0 : 1,
+                  transform:     qty > 0 ? 'scale(0.95)' : 'scale(1)',
+                  pointerEvents: qty > 0 ? 'none' : 'auto',
+                }}
+              >
+                + إضافة
+              </button>
+            </div>
           )}
         </div>
       </div>
