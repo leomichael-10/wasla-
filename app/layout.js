@@ -1,5 +1,5 @@
 import { Geist, Geist_Mono, Cairo, Reem_Kufi } from 'next/font/google'
-import { Toaster } from 'react-hot-toast'
+import { Toaster } from 'sonner'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { UserProvider } from '../lib/UserContext'
@@ -88,16 +88,16 @@ export default async function RootLayout({ children }) {
         <CartBar />
         <MobileTabBar />
         <Toaster
-          position="top-right"
+          position="top-center"
+          dir={dir}
+          richColors
           toastOptions={{
             duration: 3000,
             style: {
-              borderRadius: '12px',
+              borderRadius: '16px',
               fontWeight:   '600',
               fontSize:     '14px',
             },
-            success: { style: { background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' } },
-            error:   { style: { background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' } },
           }}
         />
         <main className="flex-1 pb-16 lg:pb-0">{children}</main>
