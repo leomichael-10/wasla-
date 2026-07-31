@@ -46,6 +46,11 @@
 
   --color-sand-50:  #FBF6EF;
   --color-sand-100: #F5EBDD;
+
+  /* Shared motion vocabulary — extend these, don't invent parallel curves. */
+  --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 @theme inline {
