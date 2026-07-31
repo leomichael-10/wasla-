@@ -82,8 +82,8 @@ function CategoryTile({ category, locale }) {
       href={`/products?category=${encodeURIComponent(category.name)}`}
       className="group flex flex-col items-center gap-2 bg-white rounded-2xl border border-brand-100 shadow-sm hover:shadow-md hover:border-accent-300 hover:bg-accent-50 transition-all duration-200 py-4 px-2"
     >
-      <span className="w-11 h-11 rounded-full bg-[#FBF6EF] flex items-center justify-center overflow-hidden">
-        <CategoryIcon slug={category.icon} name={category.name} locale={locale} className="w-9 h-9" />
+      <span className="w-16 h-16 rounded-full bg-[#FBF6EF] flex items-center justify-center overflow-hidden">
+        <CategoryIcon slug={category.icon} name={category.name} locale={locale} className="w-14 h-14" />
       </span>
       <span className="text-xs font-bold text-brand-800 text-center leading-tight group-hover:text-accent-500 transition-colors">
         {categoryName(category.name, locale)}

@@ -63,8 +63,8 @@ function CategoryRail({ categories, active, onSelect, locale }) {
             {isAll ? (
               <AllIcon className="w-6 h-6 shrink-0" />
             ) : (
-              <span className="w-9 h-9 rounded-xl bg-[#FBF6EF] flex items-center justify-center overflow-hidden shrink-0">
-                <CategoryIcon slug={cat.icon} name={cat.name} locale={locale} className="w-7 h-7" />
+              <span className="w-12 h-12 rounded-xl bg-[#FBF6EF] flex items-center justify-center overflow-hidden shrink-0">
+                <CategoryIcon slug={cat.icon} name={cat.name} locale={locale} className="w-10 h-10" />
               </span>
             )}
             <span className="text-[10px] font-bold leading-tight text-center">
@@ -283,7 +283,7 @@ function ProductsBrowser() {
             ) : products.length === 0 ? (
               <div className="text-center py-24">
                 <span className="inline-flex text-accent-300 mb-3">
-                  {category ? <CategoryIcon slug={categories.find(c => c.name === category)?.icon} name={category} locale={locale} className="w-12 h-12" /> : (
+                  {category ? <CategoryIcon slug={categories.find(c => c.name === category)?.icon} name={category} locale={locale} className="w-16 h-16" /> : (
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.4} stroke="currentColor" className="w-12 h-12">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 8c3-2 6 0 5 3-.7 2-3 2.5-4.5 1.5C8 11.3 7.5 9.3 9 8ZM4 20l6-6M14 14l6 6M4 4l16 16" />
                     </svg>
