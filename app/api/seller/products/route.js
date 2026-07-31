@@ -24,7 +24,7 @@ export async function GET(request) {
       include: {
         category:    { select: { id: true, name: true } },
         subCategory: { select: { id: true, name: true } },
-        _count:      { select: { variants: true } },
+        variants:    { select: { id: true, label: true, price: true, stockQty: true }, orderBy: { price: 'asc' } },
       },
       orderBy: { createdAt: 'desc' },
     })
