@@ -652,3 +652,31 @@ Gate: `npm run build` ✅ (no schema changes, migrate diff not
 applicable this pass). Verified home page renders all 11 real
 illustrated icons with zero `[CategoryIcon]` fallback warnings,
 matching the Browse rail exactly.
+
+## Mobile bottom tab bar — icons were invisible, not missing
+
+### 1–2. Located the component, confirmed the existing icon convention
+`components/MobileTabBar.js`'s `TabIcon` already had a full icon set
+(home/categories/cart/orders/account, heroicons-outline-style inline
+SVG paths) — this project has no icon package dependency
+(`lucide-react`/`react-icons`/`@heroicons` — confirmed absent from
+`package.json`), just inline SVGs matching heroicons' outline set
+throughout (`Navbar.js`, `MobileMenu.js`, `CategoryIcon.js`'s fallback).
+
+### 3. Root cause
+`TabIcon`'s `<svg>` had `fill="none"` but was the one place in the
+codebase missing `stroke="currentColor"`. With no stroke color set,
+every path painted with SVG's default `stroke: none` too — fill
+disabled, stroke disabled, so the icon slot was never actually empty
+of markup, just invisible. One-line fix: add `stroke="currentColor"`
+to match every other icon in this project. No new dependency, no
+rewrite of the icon set itself.
+
+Also aligned the inactive icon color (`text-brand-300` →
+`text-brand-400`) to match the inactive label's color exactly.
+
+Gate: `npm run build` ✅. Screenshot (390px mobile, Arabic/RTL)
+confirms all 5 tabs — house (Home), grid (Categories), cart (Cart,
+count badge still rendering over it), receipt (Orders), person
+(Account) — with the active tab (Home) in terracotta and the rest
+muted brown, correct RTL tab order.
