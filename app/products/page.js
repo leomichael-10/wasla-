@@ -38,16 +38,16 @@ function SkeletonCard() {
   )
 }
 
-// Upright icon-tile category rail. First in DOM so it naturally sits at the
-// inline-start edge of the flex row — right in RTL, left in LTR — with no
-// hardcoded left/right, since flexbox's main axis follows the ambient
-// `dir` rather than a fixed physical side.
+// Desktop (sm+) only: upright icon-tile rail down the side. First in DOM so
+// it naturally sits at the inline-start edge of the flex row — right in
+// RTL, left in LTR — with no hardcoded left/right, since flexbox's main
+// axis follows the ambient `dir` rather than a fixed physical side.
 function CategoryRail({ categories, active, onSelect, locale }) {
   const items = [{ id: '__all__', name: null }, ...categories]
 
   return (
     <div
-      className="w-20 sm:w-24 shrink-0 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto flex flex-col gap-2 pe-0.5"
+      className="hidden sm:flex w-20 sm:w-24 shrink-0 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto flex-col gap-2 pe-0.5"
       style={{ scrollSnapType: 'y proximity' }}
     >
       {items.map(cat => {
@@ -60,7 +60,7 @@ function CategoryRail({ categories, active, onSelect, locale }) {
             style={{ scrollSnapAlign: 'start' }}
             className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl py-3 px-1.5 transition-all duration-150 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100 ${
               isActive
-                ? 'bg-accent-400 text-white shadow-md'
+                ? 'bg-accent-50 text-accent-600 ring-2 ring-accent-400 shadow-sm'
                 : 'bg-white text-brand-600 border border-brand-50 shadow-sm hover:bg-brand-50'
             }`}
           >
@@ -72,6 +72,50 @@ function CategoryRail({ categories, active, onSelect, locale }) {
               </span>
             )}
             <span className="text-[10px] font-bold leading-tight text-center">
+              {isAll ? t('browse.all', locale) : categoryName(cat.name, locale)}
+            </span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+// Mobile (< sm) only: horizontal swipeable row at the top of the product
+// area. Sits in normal document flow (no fixed/absolute positioning) so
+// the grid below gets the full width back. Native momentum scroll +
+// scroll-snap — user-driven only, nothing here can auto-advance. Uses the
+// ambient `dir` on the page root, so under RTL the flex row's own start
+// edge is the right side (matches how the desktop rail already relies on
+// flexbox following the writing direction, not a hardcoded side).
+function MobileCategoryRail({ categories, active, onSelect, locale }) {
+  const items = [{ id: '__all__', name: null }, ...categories]
+
+  return (
+    <div
+      className="sm:hidden -mx-4 px-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide"
+      style={{ scrollSnapType: 'x proximity' }}
+    >
+      {items.map(cat => {
+        const isAll    = cat.id === '__all__'
+        const isActive = isAll ? !active : active === cat.name
+        return (
+          <button
+            key={cat.id}
+            onClick={() => onSelect(isAll ? '' : cat.name)}
+            style={{ scrollSnapAlign: 'start' }}
+            className="flex flex-col items-center gap-1.5 shrink-0 w-16 active:scale-95 transition-transform duration-150 motion-reduce:transition-none motion-reduce:active:scale-100"
+          >
+            <span className={`w-14 h-14 rounded-full bg-[#FBF6EF] flex items-center justify-center overflow-hidden shrink-0 transition-all duration-150 ${
+              isActive ? 'ring-2 ring-accent-400 ring-offset-2 ring-offset-[#FBF6EF]' : ''
+            }`}>
+              {isAll ? (
+                <AllIcon className="w-6 h-6 text-brand-600" />
+              ) : (
+                <CategoryIcon slug={cat.icon} name={cat.name} locale={locale} className="w-11 h-11" />
+              )}
+            </span>
+            <span className={`text-[10px] font-bold leading-tight text-center line-clamp-2 ${isActive ? 'text-accent-600' : 'text-brand-600'}`}>
               {isAll ? t('browse.all', locale) : categoryName(cat.name, locale)}
             </span>
           </button>
@@ -263,7 +307,11 @@ function ProductsBrowser() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 pb-10">
-        <div className="flex gap-4 sm:gap-6 items-start pt-2">
+        {categories.length > 0 && (
+          <MobileCategoryRail categories={categories} active={category} onSelect={setCategory} locale={locale} />
+        )}
+
+        <div className="flex gap-4 sm:gap-6 items-start pt-3 sm:pt-2">
 
           {categories.length > 0 && (
             <CategoryRail categories={categories} active={category} onSelect={setCategory} locale={locale} />
