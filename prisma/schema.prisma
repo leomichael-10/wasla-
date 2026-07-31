@@ -37,9 +37,15 @@ model CustomerProfile {
   user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+enum SellerType {
+  SHOP
+  RESTAURANT
+}
+
 model SellerProfile {
   id                   Int                @id @default(autoincrement())
   userId               Int                @unique
+  sellerType           SellerType         @default(SHOP)
   businessName         String
   whatsappNumber       String?
   whatsappVerified     Boolean            @default(false)
