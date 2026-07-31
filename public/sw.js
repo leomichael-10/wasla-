@@ -3,7 +3,11 @@
 // fallback for everything else (pages, API) so the app shell still loads
 // offline-ish and stale data beats a blank screen on a flaky connection.
 
-const CACHE_NAME = 'wasla-v1'
+// Bumped to v2 to force-evict any previously cached error responses for
+// static assets (see the `res.ok` check below) — a stale 404 cached from
+// before an asset existed would otherwise be replayed forever under the
+// cache-first strategy, even after the real file starts serving fine.
+const CACHE_NAME = 'wasla-v2'
 const APP_SHELL = [
   '/',
   '/manifest.webmanifest',
@@ -43,8 +47,14 @@ self.addEventListener('fetch', event => {
   if (isStaticAsset(url)) {
     event.respondWith(
       caches.match(request).then(cached => cached ?? fetch(request).then(res => {
-        const clone = res.clone()
-        caches.open(CACHE_NAME).then(cache => cache.put(request, clone))
+        // Only cache successful responses — caching a 404 (e.g. an asset
+        // requested before it existed) would otherwise permanently poison
+        // this cache-first path for that URL, surviving even after the
+        // real file starts serving fine.
+        if (res.ok) {
+          const clone = res.clone()
+          caches.open(CACHE_NAME).then(cache => cache.put(request, clone))
+        }
         return res
       }))
     )
