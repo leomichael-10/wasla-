@@ -680,3 +680,71 @@ confirms all 5 tabs — house (Home), grid (Categories), cart (Cart,
 count badge still rendering over it), receipt (Orders), person
 (Account) — with the active tab (Home) in terracotta and the rest
 muted brown, correct RTL tab order.
+
+## Simplify seller "Add Product" to a quick-commerce style add (Talabat/Breadfast)
+
+### What was found before changing anything
+The existing "Add Product" form (`app/dashboard/products/add/page.js`)
+posted to `POST /api/products` — which had been disabled outright:
+```
+// POST removed — retailers select from catalog instead of creating products
+return NextResponse.json({ error: 'Direct product creation is disabled.
+Use the catalog selection flow.' }, { status: 410 })
+```
+The "catalog selection flow" is a separate `MasterProduct`/
+`RetailerProduct` system (admin pre-creates a shared `MasterProduct`;
+sellers just pick one and set their own price) — flagged as empty on
+this DB in an earlier task. Critically, that system doesn't give
+sellers their own Name/Brand/Description/Images at all (those live on
+the admin-owned `MasterProduct`), which doesn't match a "seller adds a
+simple product" form no matter how it's simplified. Presented this
+conflict to the user directly rather than guessing; confirmed: revive
+direct `Product` creation, retire the disconnected catalog path as the
+default seller flow.
+
+### Data model — no migration needed
+Order/cart/checkout code addresses everything by `productVariantId`
+(`lib/cart.js`, `POST /api/orders`, `BrowseProductTile`, `ProductTile`)
+— there was no way to remove `ProductVariant` from the picture without
+a much larger refactor, and the task's own proposed mitigation matched
+this exactly. `POST /api/products` now creates the `Product` row plus
+exactly **one** `ProductVariant` behind the scenes (`label: null`,
+the entered price, `stockQty: 999` — a `DEFAULT_STOCK_QTY` constant,
+never shown to the seller) to carry the price. No new column, no
+migration; `migrate diff --exit-code` confirmed clean.
+
+### Form (`app/dashboard/products/add/page.js`)
+Now: Name* / Category* (+ optional Sub-category) / Price* (EGP, single
+field) / Brand (optional) / Description (optional) / Images (up to 5,
+unchanged upload). Removed entirely: the Variants section, Label,
+SKU Code, per-variant Stock Qty, "+ Add Variant" / "+ Add another
+variant" rows. Bilingual via new `seller.*` keys in `lib/i18n.js` (both
+locales) and `dir` set on the page's own content — the surrounding
+dashboard shell (sidebar nav labels, etc.) was already 100% hardcoded
+English before this task and stays that way; bringing the whole seller
+dashboard through i18n wasn't part of this ask.
+
+### The other half: GET /api/products was reading from the dead catalog too
+Rewrote the public listing endpoint (what the Browse page and
+`BrowseProductTile` actually call) to query `Product`/`ProductVariant`
+directly — the same model `GET/PATCH/DELETE /api/products/[id]` and the
+homepage rails already used. This was required for the gate to mean
+anything ("a created product shows correctly in the catalog and can be
+checked out") — without it, a seller could create a product that would
+never appear anywhere a customer shops. Side effect: this also fixes
+the previously-empty Browse listing flagged in an earlier task — all 27
+seeded products now show up — and wires up the `brand`/`city` query
+params, which the old RetailerProduct-based handler accepted from the
+UI but silently never filtered on.
+
+### Verified end-to-end (test data cleaned up after)
+Created a product via the simplified API (name + category + price +
+brand only, exactly what the new form sends), confirmed it appeared in
+`GET /api/products`, then logged in as a real test customer and placed
+an order against its auto-created variant: **total came back as 247 =
+123.5 × 2**, and `priceAtPurchase` matched the entered price exactly —
+the price genuinely flows from the simplified form through cart and
+checkout unchanged.
+
+Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no
+difference ✅ (no schema change, as anticipated).
