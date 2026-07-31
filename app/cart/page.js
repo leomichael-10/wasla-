@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 import AddressForm from '../../components/AddressForm'
 import AddressCard from '../../components/AddressCard'
+import { toast } from 'sonner'
 import { getCart, removeFromCart, updateQuantity, clearCart } from '../../lib/cart'
 import { getLocaleCookie, t } from '../../lib/i18n'
 
@@ -158,6 +159,7 @@ export default function CartPage() {
 
       localStorage.setItem('wasla_last_orders', JSON.stringify(placedOrders))
       clearCart(userId)
+      toast.success(t('cart.orderPlaced', locale))
       router.push('/orders/confirmation')
     } catch (err) {
       setError(err.message || 'Failed to place order. Please try again.')
@@ -224,15 +226,15 @@ export default function CartPage() {
                     <div className="flex items-center border border-brand-100 rounded-2xl overflow-hidden">
                       <button
                         onClick={() => updateQuantity(item.productVariantId, item.quantity - 1, userId)}
-                        className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-brand-50 transition-colors font-bold text-lg"
+                        className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-brand-50 active:scale-95 transition-[background-color,transform] duration-120 font-bold text-lg"
                       >
                         −
                       </button>
-                      <span className="w-10 text-center text-sm font-black text-gray-900">{item.quantity}</span>
+                      <span className="w-10 text-center text-sm font-black text-gray-900 tabular-nums">{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(item.productVariantId, item.quantity + 1, userId)}
                         disabled={item.quantity >= 10}
-                        className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-brand-50 disabled:opacity-30 transition-colors font-bold text-lg"
+                        className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-brand-50 active:scale-95 disabled:opacity-30 disabled:active:scale-100 transition-[background-color,transform] duration-120 font-bold text-lg"
                       >
                         +
                       </button>
