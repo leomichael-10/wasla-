@@ -15,7 +15,9 @@ const CATEGORIES_TAB = { hrefKey: '/products', labelKey: 'tab.categories' }
 const HIDDEN_PREFIXES = ['/dashboard', '/admin', '/login', '/register', '/onboarding']
 
 function TabIcon({ name, active }) {
-  const cls = `w-6 h-6 ${active ? 'text-accent-500' : 'text-brand-400'}`
+  // 100+/day interaction (bottom-nav taps) — only a near-imperceptible color
+  // fade, never a transform/scale, per the frequency gate.
+  const cls = `w-6 h-6 transition-colors duration-120 ${active ? 'text-accent-500' : 'text-brand-400'}`
   const icons = {
     home: <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.5 1.5 0 0 1 2.122 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" />,
     categories: <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" />,
@@ -185,7 +187,7 @@ export default function MobileTabBar() {
                     </span>
                   )}
                 </span>
-                <span className={`text-[10px] font-bold ${active ? 'text-accent-500' : 'text-brand-400'}`}>
+                <span className={`text-[10px] font-bold transition-colors duration-120 ${active ? 'text-accent-500' : 'text-brand-400'}`}>
                   {t(tab.labelKey, locale)}
                 </span>
               </Link>
@@ -198,7 +200,7 @@ export default function MobileTabBar() {
             aria-label={t('tab.account', locale)}
           >
             <TabIcon name="account" active={sheetOpen} />
-            <span className={`text-[10px] font-bold ${sheetOpen ? 'text-accent-500' : 'text-brand-400'}`}>
+            <span className={`text-[10px] font-bold transition-colors duration-120 ${sheetOpen ? 'text-accent-500' : 'text-brand-400'}`}>
               {t('tab.account', locale)}
             </span>
           </button>
