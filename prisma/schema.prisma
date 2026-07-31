@@ -157,21 +157,28 @@ model ProductVariant {
 }
 
 model Address {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  governorate String
-  district    String?
-  street      String?
-  building    String?
-  floor       String?
-  apartment   String?
-  landmark    String?
-  phone       String?
-  latitude    Decimal?
-  longitude   Decimal?
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders      Order[]
+  id           Int           @id @default(autoincrement())
+  userId       Int
+  label        String?
+  governorate  String
+  district     String?
+  zoneId       Int?
+  area         String?
+  street       String?
+  building     String?
+  floor        String?
+  apartment    String?
+  landmark     String?
+  phone        String?
+  contactPhone String?
+  notes        String?
+  isDefault    Boolean       @default(false)
+  latitude     Decimal?
+  longitude    Decimal?
+  createdAt    DateTime      @default(now())
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  zone         DeliveryZone? @relation(fields: [zoneId], references: [id])
+  orders       Order[]
 }
 
 model DeliveryZone {
@@ -185,6 +192,7 @@ model DeliveryZone {
   createdAt    DateTime           @default(now())
   shopCoverage ShopZoneCoverage[]
   orders       Order[]
+  addresses    Address[]
 }
 
 model ShopZoneCoverage {
@@ -228,30 +236,37 @@ model VerificationCode {
 }
 
 model Order {
-  id              Int           @id @default(autoincrement())
-  customerId      Int
-  sellerId        Int
-  status          String        @default("PLACED")
-  orderGroupId    String?
-  total           Decimal
-  currency        String        @default("EGP")
-  commission      Decimal       @default(0)
-  commissionRate  Decimal       @default(0.10)
-  deliveryAddress String
-  addressId       Int?
-  zoneId          Int?
-  deliveryFee     Decimal       @default(0)
-  promisedEta     DateTime?
-  deliveryNotes   String?
-  paymentMethod   String?
-  paymentStatus   String        @default("unpaid")
-  receiptUrl      String?
-  createdAt       DateTime      @default(now())
-  customer        User          @relation(fields: [customerId], references: [id])
-  seller          SellerProfile @relation(fields: [sellerId], references: [id])
-  address         Address?      @relation(fields: [addressId], references: [id])
-  zone            DeliveryZone? @relation(fields: [zoneId], references: [id])
-  items           OrderItem[]
+  id                  Int           @id @default(autoincrement())
+  customerId          Int
+  sellerId            Int
+  status              String        @default("PLACED")
+  orderGroupId        String?
+  total               Decimal
+  currency            String        @default("EGP")
+  commission          Decimal       @default(0)
+  commissionRate      Decimal       @default(0.10)
+  deliveryAddress     String
+  addressId           Int?
+  addressLabel        String?
+  addressArea         String?
+  addressBuilding     String?
+  addressFloor        String?
+  addressApartment    String?
+  addressLandmark     String?
+  addressContactPhone String?
+  zoneId              Int?
+  deliveryFee         Decimal       @default(0)
+  promisedEta         DateTime?
+  deliveryNotes       String?
+  paymentMethod       String?
+  paymentStatus       String        @default("unpaid")
+  receiptUrl          String?
+  createdAt           DateTime      @default(now())
+  customer            User          @relation(fields: [customerId], references: [id])
+  seller              SellerProfile @relation(fields: [sellerId], references: [id])
+  address             Address?      @relation(fields: [addressId], references: [id])
+  zone                DeliveryZone? @relation(fields: [zoneId], references: [id])
+  items               OrderItem[]
 }
 
 model OrderItem {
