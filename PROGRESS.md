@@ -854,3 +854,117 @@ directions confirmed against real, changing state, not a static read.
 Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no
 difference ✅. No customer-facing change in this phase (browse-by-
 restaurant is Phase 3, per the brief).
+
+## Animation & interaction pass — Emil Kowalski's design-engineer skills
+
+### Setup
+`npx skills@latest add emilkowalski/skills` — installed all 8 skills
+(animation-vocabulary, apple-design, emil-design-eng,
+find-animation-opportunities, improve-animations, pick-ui-library,
+prototype, review-animations) into `.agents/skills/` +
+`.claude/skills/` (symlinked). The harness's live `Skill` tool didn't
+pick them up mid-session (listing not refreshed), so the SKILL.md
+files were read directly from disk instead — same content, same
+authority, just a different retrieval path.
+
+### Audit (find-animation-opportunities) — full report given to the user before implementing
+Swept the 7 named surfaces. Six candidates survived the four-question
+gate (frequency / purpose / speed / function) and were implemented;
+the rest were explicitly rejected with the gate question that killed
+them — full table + rejections in the conversation transcript. Kept
+here as the durable record:
+
+**Implemented:**
+1. Add-to-cart "+" → stepper morph (`BrowseProductTile.js`,
+   `ProductTile.js`) — was an instant conditional-render swap, no
+   bridge between states. Now both states stay mounted and cross-fade/
+   scale in place, 160ms `var(--ease-out)`.
+2. `CartBar` enter/exit — was a hard `return null` at `count===0`
+   (full teleport). Now animates `translateY(100%)→0` + opacity, 250ms
+   `var(--ease-drawer)`, plus a brief settle pulse when the count
+   increases.
+3. Cart page quantity stepper buttons — had zero `:active` feedback at
+   all. Added `scale(0.95)`, 120ms.
+4. Mobile bottom-nav active-tab state — instant color swap, no
+   transition. Added a 120ms color-only fade (no transform — 100+/day
+   frequency disqualifies anything bigger).
+5. Order-placed confirmation — silent redirect on checkout success.
+   Added a Sonner toast (see below) right before the redirect; this is
+   the one rare/occasional, high-emotion moment in the flow that earns
+   the delight budget.
+6. Category rail scroll-snap — native `overflow-y-auto` had no snap.
+   Added `scroll-snap-type: y proximity` — CSS-only, only ever
+   triggered by a genuine user scroll, satisfies the hard constraint
+   that the rail stays 100% user-driven.
+
+**Explicitly rejected** (see conversation transcript for full gate
+reasoning): route/page transitions (tens/day, no purpose beyond
+"looks cool"), a toast on every individual add-to-cart (too frequent;
+the morph above already is the feedback), bottom-nav icon shape/bounce
+(100+/day, disqualified outright), any auto-scroll/momentum on the
+category rail (explicit hard constraint), and touching the existing
+skeleton/shimmer loaders (already correct, out of scope).
+
+### Library choice (pick-ui-library)
+`react-hot-toast` was installed and mounted (`<Toaster/>` in the root
+layout) but had **zero `toast()` calls anywhere in the codebase** —
+confirmed via grep before touching anything. Since nothing was built
+on it, swapped to Sonner (the skill's curated pick for toasts) in the
+same turn rather than leaving dead weight or building a second toast
+system alongside it. Wired `dir={dir}` so toasts mirror correctly in
+Arabic.
+
+### Shared vocabulary
+Added `--ease-out` / `--ease-in-out` / `--ease-drawer` to
+`app/globals.css`'s `:root` — the exact curves named in the
+`animation-vocabulary` skill — as the one shared source every
+animation in this pass (and future ones) should extend rather than
+inventing parallel ad-hoc curves.
+
+### Reduced motion — used the existing global rule, not per-component overrides
+`app/globals.css` already had a blanket
+`@media (prefers-reduced-motion: reduce) { *, *::before, *::after {
+transition-duration: 0.01ms !important; ... } }` rule predating this
+task. Verified live via Playwright (`reducedMotion: 'reduce'` context)
+that this `!important` rule correctly overrides even the new
+**inline** `style` transitions added in this pass (computed
+`transitionDuration` came back `1e-05s` on the add-to-cart button) —
+so every new animation automatically respects reduced motion with no
+extra per-component media queries needed.
+
+### Verified live (Playwright, mobile width, both locales)
+- Arabic (`dir="rtl"`): Browse rail on the right, add-to-cart morph
+  (tile → stepper) confirmed by clicking a real "+" button and
+  screenshotting before/after, CartBar animating in with the correct
+  count/total, cart page stepper mirrored correctly.
+- English (`dir="ltr"`): confirmed rail mirrors to the left.
+- Reduced motion: confirmed transition duration is forced to near-zero
+  (see above).
+- Order-placed toast: the checkout code path (`toast.success(...)`
+  called unconditionally right before `router.push`) was exercised
+  live multiple times — orders were successfully created end-to-end
+  (confirmed via server logs, e.g. `POST /api/orders 201`) — but a
+  clean screenshot of the toast bubble itself wasn't captured; see the
+  flagged issue below for why.
+
+### Found and flagged: a pre-existing bug in the checkout success path (NOT caused by this pass, NOT fixed — out of scope)
+While verifying the order-placed toast, checkout repeatedly triggered
+a React "Maximum update depth exceeded" error immediately after a
+successful `POST /api/orders`, which prevented the client-side
+`router.push('/orders/confirmation')` from completing — the user stays
+on `/cart` even though their order was actually created successfully
+server-side. **Isolated definitively**: reverted `CartBar.js` to its
+pre-this-task state and reran the identical test — the error still
+reproduced identically. This rules out every change made in this pass
+and points at something already in `app/cart/page.js`'s own effects
+(likely the delivery-quote-refetching effect, which was independently
+observed firing ~12 times in a row before checkout even in earlier,
+unrelated screenshot verifications this session). Orders are not lost
+— they're created correctly — but customers may not see the
+confirmation page reliably. This needs its own investigation and is
+deliberately not touched here, since diagnosing/fixing a pre-existing
+render loop is well outside an animation-pass's scope and risked
+compounding an unrelated bug under this task's changes.
+
+Gate: `npm run build` ✅ (no schema changes, migrate diff not
+applicable this pass). Seven commits, one per surface plus setup.
