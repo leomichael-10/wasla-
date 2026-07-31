@@ -8,35 +8,6 @@ import BuyAgainRail from '../components/BuyAgainRail'
 import CategoryIcon from '../components/CategoryIcon'
 import { DEFAULT_LOCALE, LOCALE_COOKIE, t } from '../lib/i18n'
 
-async function getShops() {
-  try {
-    const sellers = await prisma.sellerProfile.findMany({
-      where:   { approvedByAdmin: true },
-      orderBy: { businessName: 'asc' },
-      take:    8,
-      include: {
-        reviews:  { select: { rating: true } },
-        products: { where: { isActive: true }, select: { id: true } },
-      },
-    })
-    return sellers.map(s => {
-      const avg = s.reviews.length
-        ? s.reviews.reduce((a, r) => a + r.rating, 0) / s.reviews.length
-        : 0
-      return {
-        id:                s.id,
-        businessName:      s.businessName,
-        city:              s.city,
-        area:              s.area,
-        deliveryAvailable: s.deliveryAvailable,
-        productCount:      s.products.length,
-        reviewCount:       s.reviews.length,
-        averageRating:     Math.round(avg * 10) / 10,
-      }
-    })
-  } catch { return [] }
-}
-
 async function getCategories() {
   try {
     const cats = await prisma.category.findMany({
@@ -157,8 +128,7 @@ export default async function HomePage() {
     if (raw) zoneId = JSON.parse(decodeURIComponent(raw))?.id ?? null
   } catch { /* ignore malformed cookie */ }
 
-  const [shops, categories, popular, originRails] = await Promise.all([
-    getShops(),
+  const [categories, popular, originRails] = await Promise.all([
     getCategories(),
     getPopularProducts(zoneId),
     getOriginRails(zoneId),
@@ -214,32 +184,6 @@ export default async function HomePage() {
         />
       ))}
 
-      {/* Shops — secondary to category-first browsing, kept lower on the page */}
-      {shops.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-black text-gray-900">{t('home.shopsNearYou', locale)}</h2>
-            <Link href="/shops" className="text-brand-600 font-semibold text-xs hover:text-brand-800 transition-colors">
-              {t('home.viewAll', locale)}
-            </Link>
-          </div>
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-            {shops.map(shop => (
-              <Link
-                key={shop.id}
-                href={`/shops/${shop.id}`}
-                className="w-40 shrink-0 bg-white rounded-2xl border border-brand-50 shadow-sm hover:shadow-md transition-all duration-200 p-3 flex flex-col gap-1"
-              >
-                <div className="w-10 h-10 rounded-xl bg-brand-700 text-white font-black flex items-center justify-center text-sm">
-                  {shop.businessName[0].toUpperCase()}
-                </div>
-                <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 mt-1">{shop.businessName}</p>
-                {shop.city && <p className="text-[10px] text-gray-400">{shop.city}</p>}
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   )
 }

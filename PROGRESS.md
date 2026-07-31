@@ -275,3 +275,24 @@ No Twilio Verify credentials (`TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN`/`TWILIO_V
 Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅.
 
 ---
+
+## Hide retailer/seller entry points from customer UI
+
+Retailers are invited privately via a direct link — customers should never see any "become a seller" surface. This was a UI-visibility sweep, not a page deletion: retailer signup and dashboard still work fully via direct link + auth.
+
+### Removed from customer-facing UI
+- `components/Navbar.js` — dropped `/shops` from both the logged-in customer nav (`navLinksFor`) and `guestLinks()`.
+- `components/MobileMenu.js` — same removal in the mobile drawer's `navLinksFor` (guest + customer branches). `MobileTabBar.js` was checked and was already clean.
+- `app/page.js` — removed the entire "Shops Near You" homepage rail (card grid linking to `/shops` and `/shops/[id]`) along with its now-dead `getShops()` data loader and its `Promise.all()` entry.
+- `app/register/page.js` — the public page had a visible "I am a… Customer / Retailer" role picker, directly advertising retailer signup to every visitor. Replaced with a `?mode=retailer` query-param gate (`useSearchParams`, wrapped in `Suspense` per Next.js requirement): landing on `/register` normally only ever registers a customer; the retailer flow only activates via the private link `/register?mode=retailer`, which stays open but unadvertised.
+- `app/onboarding/page.js` — the post-Google-OAuth onboarding form had an "I want to sell on Wasla" checkbox + business-name field, letting any customer self-select into the retailer role. Removed both from the UI and from the client's submit payload.
+
+### The real hole (found via the security check, not just a UI issue)
+`app/api/onboarding/route.js` accepted `becomeSeller`/`businessName` straight from the request body and used it to set `role: 'retailer'` and create a `SellerProfile` — meaning any authenticated customer could self-escalate to retailer with a raw `POST /api/onboarding` call, regardless of what the UI showed. Removing the checkbox alone would **not** have closed this. Fixed by stripping `becomeSeller`/`businessName` handling from the route entirely — onboarding now always sets `role: 'customer'` server-side; there is no seller-selection path through this endpoint anymore.
+
+### Verified already-protected (no changes needed)
+- `middleware.js` — `/api/seller/*` and `/api/admin/*` are gated server-side via JWT verification + role check (`ROLE_RESTRICTED`), independent of any UI link. Wrong role → 403, missing/invalid token → 401.
+- `app/dashboard/layout.js` — client-side role gate never renders `children` (only a spinner) until `user.role` is confirmed `retailer`/`wholesaler`; unauthenticated/wrong-role users are redirected before any dashboard content shows.
+- Left intact: retailer signup (`/register?mode=retailer`), retailer login, retailer dashboard, and `shops/[id]` → breadcrumb/error-state links back to `/shops` (these are internal navigation for a page still reached via legitimate "sold by [shop]" product links, not a recruitment CTA).
+
+Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema changes — UI/API-logic only).

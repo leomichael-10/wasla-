@@ -17,53 +17,31 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const { fullName, phone, city, becomeSeller, businessName } = body
+  const { fullName, phone, city } = body
 
   if (!fullName?.trim()) {
     return NextResponse.json({ error: 'Full name is required.' }, { status: 400 })
   }
 
-  if (becomeSeller && !businessName?.trim()) {
-    return NextResponse.json({ error: 'Business name is required for sellers.' }, { status: 400 })
-  }
-
   try {
-    const newRole = becomeSeller ? 'retailer' : 'customer'
-
-    await prisma.$transaction(async (tx) => {
-      await tx.user.update({
-        where: { email: session.user.email },
-        data: {
-          phone:       phone?.trim()    || null,
-          city:        city?.trim()     || null,
-          role:        newRole,
-          isOnboarded: true,
-        },
-      })
-
-      await tx.customerProfile.updateMany({
-        where: { user: { email: session.user.email } },
-        data:  { fullName: fullName.trim() },
-      })
-
-      if (becomeSeller) {
-        const user = await tx.user.findUnique({
-          where:  { email: session.user.email },
-          select: { id: true, sellerProfile: { select: { id: true } } },
-        })
-
-        if (!user.sellerProfile) {
-          await tx.sellerProfile.create({
-            data: {
-              userId:       user.id,
-              businessName: businessName.trim(),
-            },
-          })
-        }
-      }
+    // Onboarding never grants the retailer role — shops are provisioned
+    // separately via the private retailer signup link. Keeps this from
+    // being a self-service role-escalation path for a logged-in customer.
+    await prisma.user.update({
+      where: { email: session.user.email },
+      data: {
+        phone:       phone?.trim()    || null,
+        city:        city?.trim()     || null,
+        isOnboarded: true,
+      },
     })
 
-    return NextResponse.json({ role: newRole })
+    await prisma.customerProfile.updateMany({
+      where: { user: { email: session.user.email } },
+      data:  { fullName: fullName.trim() },
+    })
+
+    return NextResponse.json({ role: 'customer' })
   } catch (err) {
     console.error('[/api/onboarding]', err)
     return NextResponse.json({ error: 'Server error. Please try again.' }, { status: 500 })

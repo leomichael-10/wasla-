@@ -1,6 +1,6 @@
 ﻿'use client'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { isEgyptianPhone, normalizeDigits } from '../../lib/phone'
@@ -24,13 +24,18 @@ const PAYMENT_METHODS = [
 
 const SUBSCRIPTIONS_ENABLED = process.env.NEXT_PUBLIC_SUBSCRIPTIONS_ENABLED === 'true'
 
-export default function RegisterPage() {
+// Retailer signup is invite-only — reached via a private link
+// (/register?mode=retailer) that's never advertised in the app's UI.
+// Landing on /register normally only ever registers a customer.
+function RegisterForm() {
   const router = useRouter()
+  const params = useSearchParams()
+  const retailerMode = params.get('mode') === 'retailer'
 
   const [form, setForm] = useState({
     email:        '',
     password:     '',
-    role:         'customer',
+    role:         retailerMode ? 'retailer' : 'customer',
     phone:        '',
     city:         '',
     businessName: '',
@@ -194,8 +199,14 @@ export default function RegisterPage() {
           {step === 1 && (
             <>
               <div className="mb-8 text-center">
-                <h1 className="text-2xl font-black text-gray-900">Create an account</h1>
-                <p className="text-gray-500 text-sm mt-1">Join Wasla — Sudanese products, delivered in Cairo</p>
+                <h1 className="text-2xl font-black text-gray-900">
+                  {retailerMode ? 'Register Your Shop' : 'Create an account'}
+                </h1>
+                <p className="text-gray-500 text-sm mt-1">
+                  {retailerMode
+                    ? 'Join Wasla as a Sudanese shop in Cairo'
+                    : 'Join Wasla — Sudanese products, delivered in Cairo'}
+                </p>
               </div>
 
               <form onSubmit={handleStep1} className="space-y-4">
@@ -205,29 +216,6 @@ export default function RegisterPage() {
                     {step1Error}
                   </div>
                 )}
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">I am a…</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { value: 'customer', label: 'Customer' },
-                      { value: 'retailer', label: 'Retailer' },
-                    ].map(opt => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => setForm(p => ({ ...p, role: opt.value }))}
-                        className={`py-2.5 rounded-2xl text-sm font-semibold border transition-all active:scale-95 ${
-                          form.role === opt.value
-                            ? 'bg-brand-700 border-brand-700 text-white'
-                            : 'bg-white border-gray-200 text-gray-600 hover:border-brand-300'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
                 <div>
                   <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">Email address</label>
@@ -430,5 +418,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterForm />
+    </Suspense>
   )
 }

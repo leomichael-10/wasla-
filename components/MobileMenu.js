@@ -4,7 +4,6 @@ import Link from 'next/link'
 function navLinksFor(user) {
   if (!user) return [
     { href: '/',         label: 'Home'     },
-    { href: '/shops',    label: 'Shops'    },
     { href: '/products', label: 'Products' },
   ]
   if (user.role === 'admin') return [
@@ -12,7 +11,6 @@ function navLinksFor(user) {
   ]
   if (user.role === 'customer') return [
     { href: '/',          label: 'Home'      },
-    { href: '/shops',     label: 'Shops'     },
     { href: '/products',  label: 'Products'  },
     { href: '/orders',    label: 'My Orders' },
     { href: '/profile',   label: 'My Profile'},

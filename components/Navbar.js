@@ -14,7 +14,6 @@ function navLinksFor(user) {
   ]
   if (user.role === 'customer') return [
     { href: '/',         label: 'Home'      },
-    { href: '/shops',    label: 'Shops'     },
     { href: '/products', label: 'Products'  },
     { href: '/orders',   label: 'My Orders' },
   ]
@@ -29,7 +28,6 @@ function navLinksFor(user) {
 function guestLinks() {
   return [
     { href: '/',         label: 'Home'     },
-    { href: '/shops',    label: 'Shops'    },
     { href: '/products', label: 'Products' },
   ]
 }

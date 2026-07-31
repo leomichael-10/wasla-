@@ -19,8 +19,6 @@ export default function OnboardingPage() {
   const [fullName,     setFullName]     = useState('')
   const [phone,        setPhone]        = useState('')
   const [city,         setCity]         = useState('')
-  const [becomeSeller, setBecomeSeller] = useState(false)
-  const [businessName, setBusinessName] = useState('')
 
   useEffect(() => {
     getSession().then(session => {
@@ -40,10 +38,6 @@ export default function OnboardingPage() {
       setError('Full name is required.')
       return
     }
-    if (becomeSeller && !businessName.trim()) {
-      setError('Business name is required for sellers.')
-      return
-    }
     if (phone && !isEgyptianPhone(phone)) {
       setError('Please enter a valid Egyptian mobile number (e.g. 01012345678).')
       return
@@ -54,7 +48,7 @@ export default function OnboardingPage() {
       const res  = await fetch('/api/onboarding', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ fullName, phone: phone ? normalizeDigits(phone) : phone, city, becomeSeller, businessName }),
+        body:    JSON.stringify({ fullName, phone: phone ? normalizeDigits(phone) : phone, city }),
       })
       const data = await res.json()
 
@@ -157,49 +151,6 @@ export default function OnboardingPage() {
                 {EGYPT_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-
-            {/* Become a seller */}
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <div className="relative shrink-0 mt-0.5">
-                <input
-                  type="checkbox"
-                  checked={becomeSeller}
-                  onChange={e => setBecomeSeller(e.target.checked)}
-                  className="sr-only"
-                />
-                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                  becomeSeller
-                    ? 'bg-brand-700 border-brand-600'
-                    : 'border-gray-300 group-hover:border-brand-600'
-                }`}>
-                  {becomeSeller && (
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-white">
-                      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </div>
-              </div>
-              <span className="text-sm text-gray-600 leading-snug select-none">
-                I want to <span className="font-semibold">sell on Wasla</span>
-              </span>
-            </label>
-
-            {/* Business name — seller only */}
-            {becomeSeller && (
-              <div>
-                <label htmlFor="businessName" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Business name <span className="text-red-400">*</span>
-                </label>
-                <input
-                  id="businessName"
-                  type="text"
-                  value={businessName}
-                  onChange={e => setBusinessName(e.target.value)}
-                  placeholder="e.g. Kassala Coffee House"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
-                />
-              </div>
-            )}
 
             <button
               type="submit"
