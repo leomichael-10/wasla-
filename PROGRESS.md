@@ -296,3 +296,94 @@ Retailers are invited privately via a direct link — customers should never see
 - Left intact: retailer signup (`/register?mode=retailer`), retailer login, retailer dashboard, and `shops/[id]` → breadcrumb/error-state links back to `/shops` (these are internal navigation for a page still reached via legitimate "sold by [shop]" product links, not a recruitment CTA).
 
 Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no difference ✅ (no schema changes — UI/API-logic only).
+
+## Customer address book + delivery-address-on-order + full Account page
+
+### Step 0 audit findings
+An `Address` model already existed in the schema (governorate, district,
+street, building, floor, apartment, landmark, phone, lat/lng) but was
+completely unused by app code — no `prisma.address` calls anywhere. It
+was clearly scaffolded for this exact feature and never wired up.
+`DeliveryZone` was already seeded with the exact 8 zones this task
+lists. `Order` had `deliveryAddress` (freeform string), an unused
+`addressId` FK, and `deliveryNotes` (unused) — no structured snapshot
+columns existed yet.
+
+### Schema (additive only)
+Migration `20260731004522_address_book_and_order_snapshot`:
+- `Address` gains `label`, `zoneId` (FK → `DeliveryZone`, `SET NULL`),
+  `area`, `contactPhone`, `notes`, `isDefault`. Existing columns
+  (governorate, district, street, phone, lat/lng) untouched — `governorate`
+  is auto-populated from the chosen zone's English name on save so it
+  stays meaningful without becoming a second source of truth.
+- `Order` gains `addressLabel/Area/Building/Floor/Apartment/Landmark/
+  ContactPhone` snapshot columns. Reused the already-unused
+  `deliveryNotes` column for the address notes snapshot rather than
+  adding a redundant one.
+No drops, no renames.
+
+### Address book (`/api/addresses`, `/api/addresses/[id]`)
+Full CRUD, scoped to the caller (`getUser(request).userId`) on every
+route. `zoneId` must reference a real, active `DeliveryZone` — no free
+text. `building`/`floor`/`apartment`/`landmark`/`contactPhone` required
+server-side. `contactPhone` normalized to E.164 (`+201XXXXXXXX`) via a
+new `toE164Egypt()` in `lib/phone.js`, tolerant of `01…`, `+20…`,
+`0020…`, and Arabic-Indic digits. Exactly one default enforced via
+transaction (unset-others-then-set); deleting the default promotes the
+most recently created remaining address so there's never a gap.
+
+### Checkout — real snapshot, not just a foreign key
+`app/cart/page.js` replaced the old freeform textarea with a saved-
+address picker (`AddressCard`/`AddressForm`, shared with the Account
+page) defaulting to the customer's default address, with inline
+add-new. `POST /api/orders` now takes `addressId` instead of a raw
+`deliveryAddress` string; the server loads the address, validates its
+zone is real/active, resolves shop coverage + fee itself (client input
+for zone/fee is no longer trusted at all), and copies every address
+field onto the new `Order` row. **Verified live**: placed a test order,
+then edited the source address's building/landmark — the placed
+order's snapshot fields were unchanged on re-fetch, deleting/editing an
+address never touches history.
+
+### Seller order view
+`app/dashboard/orders/page.js` now renders the full delivery block per
+order: customer name, tap-to-call (`tel:`) + `wa.me` contact phone
+(made prominent per the task), building/floor/apartment, area/zone,
+landmark, and any notes. **Access scoping confirmed, not just
+assumed**: `GET /api/orders` was already filtered by `sellerId` for
+seller-role callers and `customerId` for customer-role callers before
+this task — verified live that a customer's own `/api/orders` call
+only ever returns their own orders, and that an unauthenticated hit on
+the seller-only `PATCH /api/orders/:id` status route returns 401. No
+cross-shop or customer-directory leak found; nothing needed fixing
+here, this was a verification pass.
+
+### Account page (`/profile` rebuilt into a hub)
+Sections: Profile (name/phone/whatsapp/city, email shown read-only
+with a verified/unverified badge from `emailVerified`), Addresses
+(list/add/edit/delete/set-default), Orders (link into `/orders`),
+Preferences (language toggle), Account Actions (logout via
+`UserContext`'s `logout()` so the `wasla_user_info` cookie is cleared
+too, not just localStorage). Fully driven by new `account.*`/
+`address.*`/`checkout.*` keys in `lib/i18n.js` (ar default, en
+secondary) — no hardcoded UI strings on this page or in
+`AddressForm`/`AddressCard`. `dir={locale === 'ar' ? 'rtl' : 'ltr'}` on
+the page root. The old `CustomerProfile.deliveryAddress` freeform field
+is left in the schema untouched (no migration) but is no longer read
+or written by any UI — the address book is now the single source of
+truth for delivery addresses.
+
+### Verified end-to-end against the dev DB (cleaned up after)
+Created a temporary verified test customer, added a real address
+through the actual UI (Playwright, mobile viewport), confirmed via
+direct DB query it saved correctly (E.164 phone, correct zoneId,
+auto-defaulted as the first address), placed a real order against it
+through the live API, edited the address afterward, and confirmed the
+already-placed order's snapshot was untouched. Test user/address/order
+and the stock decrement from the test order were all removed afterward;
+Playwright was installed temporarily and uninstalled after use, per
+established practice in this repo.
+
+Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no
+difference ✅. Screenshots (mobile width, 390px): Account page and the
+address-add form, both fully in Arabic/RTL by default.
