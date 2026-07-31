@@ -796,3 +796,61 @@ directions. Test product cleaned up after.
 
 Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no
 difference ✅ (no schema change).
+
+## Phase 1 — seller type (Shop vs Restaurant) foundation
+
+### Step 0 audit
+`SellerProfile` (1:1 with `User` via `userId`) is the seller model; a
+seller is identified by `User.role` (`'retailer'`/`'wholesaler'`, plain
+`String`, not an enum) plus a linked `SellerProfile` row. `Product` already
+relates via `sellerId → SellerProfile.id`, so a product's seller type
+is always derivable through that relation — confirmed before migrating,
+no need to duplicate the field onto `Product`.
+
+### Schema (additive only)
+Migration `20260731164327_seller_type`: new `SellerType` enum
+(`SHOP | RESTAURANT`), new `SellerProfile.sellerType` column,
+`NOT NULL DEFAULT 'SHOP'` — every existing seller (all shops today)
+keeps working unchanged, no drops, no renames. `migrate diff --exit-code`
+confirmed clean both before and after applying.
+
+### Onboarding / Settings
+- `app/register/page.js` (the invite-only seller signup): required
+  Shop/Restaurant toggle, sent as `sellerType` on
+  `POST /api/auth/register` (defaults to `SHOP` server-side if a caller
+  omits it).
+- `app/dashboard/settings/page.js`: new "Business type" card, editable
+  any time — `PATCH /api/seller/profile` now accepts `sellerType`
+  alongside the existing `isOpen`/`whatsappNumber` fields.
+
+### Add Product form — wording branch + seams for later phases
+`app/dashboard/products/add/page.js` now fetches the seller's own
+`sellerType` (`GET /api/seller/profile`) on load. SHOP sellers see
+*exactly* the same form as before this phase ("Add Product"/"Product
+Name"/"Create Product"); RESTAURANT sellers see "Add Dish"/"Dish
+Name"/"Create Dish" — via new bilingual `seller.*` keys in
+`lib/i18n.js` (both locales). No new fields were added for either type.
+
+Two clearly marked seams left in the form for the next phases:
+- **SHOP-SPECIFIC FIELDS SEAM** (Phase 2 plugs in here): real stock-
+  management fields (quantity on hand, low-stock threshold, etc.) for
+  SHOP sellers. Today stock still defaults to `DEFAULT_STOCK_QTY` in
+  `app/api/products/route.js`, invisible to the seller, unchanged from
+  the prior phase.
+- **RESTAURANT-SPECIFIC FIELDS SEAM** (Phase 3 plugs in here): dish
+  fields (spice level, prep time, dietary tags, etc.) and the
+  customer-facing browse-by-restaurant experience — explicitly not
+  built yet, per this phase's "foundation only" scope.
+
+### Verified live (not just read from source)
+Confirmed via the running dev server: an existing seller's profile
+defaults to `SHOP`; `PATCH /api/seller/profile` with
+`{ sellerType: 'RESTAURANT' }` persists and is reflected on the next
+`GET`; the Add Product page then renders "إضافة طبق" / "اسم الطبق"
+(Dish wording); switching back to `SHOP` via the settings page
+re-renders "إضافة منتج" / "اسم المنتج" (Product wording) — both
+directions confirmed against real, changing state, not a static read.
+
+Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no
+difference ✅. No customer-facing change in this phase (browse-by-
+restaurant is Phase 3, per the brief).
