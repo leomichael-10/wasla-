@@ -28,7 +28,7 @@ export async function GET(request) {
       },
       include: {
         masterProduct: {
-          include: { category: { select: { id: true, name: true } } },
+          include: { category: { select: { id: true, name: true, icon: true } } },
         },
         retailer: {
           select: { id: true, businessName: true, city: true, area: true, deliveryAvailable: true },

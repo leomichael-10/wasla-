@@ -70,9 +70,7 @@ export default function BrowseProductTile({ product, locale }) {
           {mainImage ? (
             <img src={mainImage} alt={product.name} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-brand-200">
-              <CategoryIcon name={product.category?.name} className="w-12 h-12" />
-            </span>
+            <CategoryIcon slug={product.category?.icon} name={product.category?.name} locale={locale} className="w-14 h-14" />
           )}
         </div>
       </Link>

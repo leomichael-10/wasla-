@@ -6,7 +6,7 @@ import ZoneBar from '../components/ZoneBar'
 import ProductTile from '../components/ProductTile'
 import BuyAgainRail from '../components/BuyAgainRail'
 import CategoryIcon from '../components/CategoryIcon'
-import { DEFAULT_LOCALE, LOCALE_COOKIE, t } from '../lib/i18n'
+import { DEFAULT_LOCALE, LOCALE_COOKIE, t, categoryName } from '../lib/i18n'
 
 async function getCategories() {
   try {
@@ -76,17 +76,17 @@ async function getOriginRails(zoneId) {
   } catch { return [] }
 }
 
-function CategoryTile({ category }) {
+function CategoryTile({ category, locale }) {
   return (
     <Link
       href={`/products?category=${encodeURIComponent(category.name)}`}
       className="group flex flex-col items-center gap-2 bg-white rounded-2xl border border-brand-100 shadow-sm hover:shadow-md hover:border-accent-300 hover:bg-accent-50 transition-all duration-200 py-4 px-2"
     >
-      <span className="w-11 h-11 rounded-full bg-brand-50 group-hover:bg-accent-100 flex items-center justify-center text-brand-600 group-hover:text-accent-500 transition-colors">
-        <CategoryIcon name={category.name} />
+      <span className="w-11 h-11 rounded-full bg-[#FBF6EF] flex items-center justify-center overflow-hidden">
+        <CategoryIcon slug={category.icon} name={category.name} locale={locale} className="w-9 h-9" />
       </span>
       <span className="text-xs font-bold text-brand-800 text-center leading-tight group-hover:text-accent-500 transition-colors">
-        {category.name}
+        {categoryName(category.name, locale)}
       </span>
       {category._count?.products > 0 && (
         <span className="text-[10px] text-gray-400">{category._count.products}</span>
@@ -165,7 +165,7 @@ export default async function HomePage() {
           <h2 className="text-lg font-black text-gray-900 mb-3">{t('home.categories', locale)}</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
             {categories.map(cat => (
-              <CategoryTile key={cat.id} category={cat} />
+              <CategoryTile key={cat.id} category={cat} locale={locale} />
             ))}
           </div>
         </section>
