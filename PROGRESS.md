@@ -968,3 +968,57 @@ compounding an unrelated bug under this task's changes.
 
 Gate: `npm run build` ✅ (no schema changes, migrate diff not
 applicable this pass). Seven commits, one per surface plus setup.
+
+## Mobile layout fix: horizontal category rail + bottom-nav verification
+
+### Problem 1 — category rail was a vertical side strip on mobile (confirmed and fixed)
+`app/products/page.js`'s `CategoryRail` rendered as a `w-20 sm:w-24`
+vertical column at **every** width, including mobile — eating a fifth
+of a 390px viewport's horizontal space for a filter control. Split it
+into two components:
+- **`MobileCategoryRail`** (new, `sm:hidden`): a horizontal row at the
+  top of the product area, in normal document flow (no fixed/absolute
+  positioning), native momentum scroll + `scrollSnapType: 'x
+  proximity'`. User-driven only — nothing here can auto-advance.
+- **`CategoryRail`** (existing, now explicitly `hidden sm:flex`): kept
+  as the vertical side rail for desktop, where the horizontal space
+  cost doesn't apply the same way.
+
+Both rely on the page's ambient `dir` attribute for which edge the row
+starts from, rather than a hardcoded side — the same pattern already
+used for the desktop rail. **Verified live**, not just by inspection:
+in Arabic the rail's `scrollLeft` starts negative (Chromium's RTL
+convention for "at the start/right edge"); in English it starts
+positive near zero (left edge) — confirmed via direct DOM query, and
+visually via screenshot (rail visibly starts at the right in Arabic,
+left in English, in both cases with the product grid below at full
+width).
+
+Also fixed the selected-category styling on **both** rail variants:
+was `bg-accent-400` (a solid terracotta flood), which reads wrong now
+that the tiles hold real illustrated photos rather than flat
+single-color line art. Both now use `ring-2 ring-accent-400` + a
+subtle tinted background instead of a flood.
+
+### Problems 2 & 3 — bottom nav / cart reachability: verified already correct, not touched
+Read `components/MobileTabBar.js` before assuming anything was broken.
+It was already a proper fixed-bottom, full-width, 5-tab nav (Home /
+Categories / Cart with live badge / Orders / Account-sheet), with
+`pb-[env(safe-area-inset-bottom)]`, terracotta active-state color, and
+a `dir` attribute for RTL. Nothing here needed restoring — it was
+never merged into the side rail; the two components are independent
+and the rail fix above didn't touch it.
+
+**Verified live** rather than taken on faith: added a product to cart,
+confirmed the bottom nav's Cart tab badge showed the live count ("1"),
+confirmed `CartBar` (the persistent bottom summary bar, animated in a
+previous task) rendered above the nav showing the right price, tapped
+the Cart tab, confirmed it navigated to `/cart`, and confirmed the
+cart page actually listed the added item — the full reachability path
+end to end.
+
+Gate: `npm run build` ✅ (no schema changes). Screenshots (390px
+mobile, both locales) confirm: horizontal rail at top (right-start in
+Arabic, left-start in English), ring-not-flood selected state, real
+icons intact, full-width 2-column grid, fixed 5-tab bottom nav with
+live badge in both locales.
