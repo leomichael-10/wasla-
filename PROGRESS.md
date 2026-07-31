@@ -557,3 +557,45 @@ icon fail together) and the `" (2)"` filename mismatch (made all 11
 404 together) — both made every icon fail *simultaneously*, which
 reads the same as a cascade but isn't one. No code change was made;
 `CategoryIcon.js` and `lib/categoryIcons.js` are untouched.
+
+## Category icon 404 report — investigated, no proxy/middleware bug found
+
+Investigated a report that all 11 `/categories/*.png` assets were
+404ing after `middleware.ts` was supposedly renamed to `proxy.ts`.
+Findings:
+
+1. **Files**: all 11 PNGs present and correctly named in
+   `public/categories/` (confirmed via directory listing).
+2. **No `proxy.ts` exists** in this repo — only the original
+   `middleware.js` (unchanged since 2026-07-28, well before this
+   investigation). No rename occurred.
+3. **`middleware.js`'s `config.matcher` was already correctly scoped**:
+   `matcher: ['/api/:path*']` — this only ever runs on `/api/*` routes
+   and structurally cannot intercept `/categories/*` or any other
+   public static asset. Nothing to exclude that wasn't already excluded.
+4. Likely source of the confusion: Next.js 16's dev server labels the
+   middleware execution phase **"proxy.ts" in its own request-timing
+   log line** (e.g. `POST /api/track/global 204 in 859ms (next.js:
+   701ms, proxy.ts: 126ms, ...)`) regardless of the actual on-disk
+   filename — this is just Next 16's internal phase-naming as part of
+   its middleware→proxy terminology migration (see the separate
+   deprecation warning below), not evidence that a file was renamed.
+5. Verified live end-to-end on a **fully fresh dev server** (`.next`
+   cache cleared, process restarted from scratch, well after
+   `middleware.js`'s last edit): all 11 `/categories/*.png` URLs return
+   200, and the Browse category rail renders all 11 real illustrated
+   images with **zero** `[CategoryIcon]` fallback warnings logged.
+
+**Separate, pre-existing issue flagged (not fixed, unrelated to the
+above)**: `next.config.mjs` has had `turbopack: false` since the
+project's initial commit — Next.js's `turbopack` config key expects an
+object, not a boolean, hence the "Invalid next.config.mjs options
+detected... Expected object, received boolean at 'turbopack'" warning
+on every server start. This predates any middleware/proxy work and
+does not affect routing or asset serving (build/dev both succeed) —
+flagging per the request rather than fixing, since it's out of scope
+for this investigation and changing it risks altering intentional
+Turbopack-disabling behavior without knowing why it was set.
+
+No code changes were made — `middleware.js`, `next.config.mjs`, and
+`public/categories/` are all untouched.
