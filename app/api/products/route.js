@@ -1,69 +1,69 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../lib/prisma'
 import { getUser } from '../../../lib/auth'
+import { sanitizeString } from '../../../lib/sanitize'
 
-// GET /api/products — public listing from RetailerProduct + MasterProduct
+const PRODUCT_SELECT = {
+  variants: {
+    select: { id: true, label: true, price: true, stockQty: true, image: true },
+    orderBy: { price: 'asc' },
+  },
+  seller:   { select: { id: true, businessName: true, city: true, area: true, isOpen: true, deliveryAvailable: true } },
+  category: { select: { id: true, name: true, icon: true } },
+}
+
+// GET /api/products — public listing.
+// Reads Product + ProductVariant directly — the same model
+// GET/PATCH/DELETE /api/products/[id] and the homepage rails already use.
+// (Previously read from a separate MasterProduct/RetailerProduct catalog
+// that sellers could never actually populate via a working create flow;
+// see PROGRESS.md.)
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const category = searchParams.get('category')
   const search   = searchParams.get('search')
+  const brand    = searchParams.get('brand')
+  const city     = searchParams.get('city')
   const sort     = searchParams.get('sort') ?? 'az'
   const zoneId   = parseInt(searchParams.get('zoneId'), 10) || null
 
-  const masterWhere = { isActive: true }
-  if (category) masterWhere.category = { name: { contains: category, mode: 'insensitive' } }
+  const where = { isActive: true, seller: { isOpen: true } }
+  if (category) where.category = { name: { contains: category, mode: 'insensitive' } }
+  if (brand)     where.brand = { contains: brand, mode: 'insensitive' }
+  if (city)      where.seller = { ...where.seller, city: { contains: city, mode: 'insensitive' } }
   if (search) {
-    masterWhere.OR = [
+    where.OR = [
       { name:        { contains: search, mode: 'insensitive' } },
       { description: { contains: search, mode: 'insensitive' } },
     ]
   }
 
   try {
-    const retailerProducts = await prisma.retailerProduct.findMany({
-      where: {
-        status:  'APPROVED',
-        retailer: { subscriptionStatus: 'ACTIVE', approvedByAdmin: true, isOpen: true },
-        masterProduct: masterWhere,
-      },
-      include: {
-        masterProduct: {
-          include: { category: { select: { id: true, name: true, icon: true } } },
-        },
-        retailer: {
-          select: { id: true, businessName: true, city: true, area: true, deliveryAvailable: true },
-        },
-      },
+    const raw = await prisma.product.findMany({
+      where,
+      include: PRODUCT_SELECT,
     })
 
     // If the visitor has a selected delivery zone, annotate each product
     // with whether its shop actually covers that zone — the listing shows
-    // it either way (per the brief: "hidden or greyed"; we grey, since a
-    // hard hide would make an otherwise-relevant search result vanish).
+    // it either way (grey, not hide, so a relevant search result doesn't
+    // just vanish).
     let coverageMap = {}
     if (zoneId) {
-      const sellerIds = [...new Set(retailerProducts.map(rp => rp.retailer.id))]
+      const sellerIds = [...new Set(raw.map(p => p.sellerId))]
       const coverage = await prisma.shopZoneCoverage.findMany({
         where: { zoneId, sellerId: { in: sellerIds }, isActive: true },
       })
       coverageMap = Object.fromEntries(coverage.map(c => [c.sellerId, true]))
     }
 
-    let products = retailerProducts.map(rp => ({
-      id:          rp.id,
-      name:        rp.masterProduct.name,
-      description: rp.masterProduct.description,
-      images:      rp.masterProduct.images,
-      category:    rp.masterProduct.category,
-      seller:      { ...rp.retailer, deliversToZone: zoneId ? Boolean(coverageMap[rp.retailer.id]) : undefined },
-      variants: [{
-        id:       rp.id,
-        price: rp.price,
-        label:    null,
-        inStock:  rp.stockQty > 0,
-      }],
-      _retailerProductId: rp.id,
-    }))
+    let products = raw
+      .filter(p => p.variants.length > 0)
+      .map(p => ({
+        ...p,
+        variants: p.variants.map(v => ({ ...v, inStock: v.stockQty > 0 })),
+        seller:   { ...p.seller, deliversToZone: zoneId ? Boolean(coverageMap[p.sellerId]) : undefined },
+      }))
 
     if (sort === 'az') products.sort((a, b) => a.name.localeCompare(b.name))
     else if (sort === 'za') products.sort((a, b) => b.name.localeCompare(a.name))
@@ -77,13 +77,78 @@ export async function GET(request) {
   }
 }
 
-// POST removed — retailers select from catalog instead of creating products
+// Not exposed to the seller — products are assumed available until a
+// seller explicitly marks otherwise via the edit page's per-variant stock.
+// High enough that "in stock" holds without the seller managing a quantity.
+const DEFAULT_STOCK_QTY = 999
+
+// POST /api/products — seller only. Simplified single-price creation:
+// name, category, price (all required), brand/subCategory/description/
+// images optional. No variant/SKU/stock UI — internally this still
+// creates exactly one ProductVariant to carry the price, since cart/
+// checkout/order code addresses products by productVariantId throughout
+// the app; that variant is never shown to the seller as a concept.
 export async function POST(request) {
   const auth = getUser(request)
-  if (!auth || (auth.role !== 'retailer' && auth.role !== 'wholesaler'))
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  return NextResponse.json(
-    { error: 'Direct product creation is disabled. Use the catalog selection flow.' },
-    { status: 410 }
-  )
+  if (!auth) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+  }
+  if (auth.role !== 'retailer' && auth.role !== 'wholesaler') {
+    return NextResponse.json({ error: 'Only sellers can create products' }, { status: 403 })
+  }
+
+  try {
+    const sellerProfile = await prisma.sellerProfile.findUnique({ where: { userId: auth.userId } })
+    if (!sellerProfile) {
+      return NextResponse.json({ error: 'Seller profile not found' }, { status: 404 })
+    }
+
+    const body = await request.json()
+    const { name, categoryId, subCategoryId, brand, description, images, price } = body
+
+    if (!name?.trim()) {
+      return NextResponse.json({ error: 'Product name is required.' }, { status: 400 })
+    }
+    if (!categoryId) {
+      return NextResponse.json({ error: 'Category is required.' }, { status: 400 })
+    }
+    const numericPrice = parseFloat(price)
+    if (!price || isNaN(numericPrice) || numericPrice <= 0) {
+      return NextResponse.json({ error: 'A valid price is required.' }, { status: 400 })
+    }
+
+    const category = await prisma.category.findUnique({ where: { id: parseInt(categoryId, 10) } })
+    if (!category) {
+      return NextResponse.json({ error: 'Category not found' }, { status: 404 })
+    }
+
+    const product = await prisma.product.create({
+      data: {
+        sellerId:      sellerProfile.id,
+        categoryId:    category.id,
+        subCategoryId: subCategoryId ? parseInt(subCategoryId, 10) : null,
+        name:          sanitizeString(name, 200),
+        brand:         brand?.trim()       ? sanitizeString(brand, 100)       : null,
+        description:   description?.trim() ? sanitizeString(description, 2000) : null,
+        images:        Array.isArray(images) ? images.slice(0, 5) : [],
+        isActive:      true,
+        variants: {
+          create: [{
+            label:    null,
+            price:    numericPrice,
+            stockQty: DEFAULT_STOCK_QTY,
+          }],
+        },
+      },
+      include: {
+        category: { select: { id: true, name: true } },
+        variants: true,
+      },
+    })
+
+    return NextResponse.json({ product: JSON.parse(JSON.stringify(product)) }, { status: 201 })
+  } catch (error) {
+    console.error('POST /api/products error:', error)
+    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
+  }
 }

@@ -1,48 +1,16 @@
-﻿'use client'
+'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
+import { getLocaleCookie, t } from '../../../../lib/i18n'
 
-const EMPTY_VARIANT = {
-  label: '', price: '', stockQty: '', skuCode: '',
-}
-
-function VariantRow({ index, variant, onChange, onRemove, canRemove }) {
-  function field(name) { return e => onChange(index, name, e.target.value) }
-  const inputCls = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition'
-  const labelCls = 'block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1'
-  return (
-    <div className="bg-[#FBF6EF] rounded-2xl border border-gray-200 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-black text-gray-700">Variant {index + 1}</span>
-        {canRemove && (
-          <button type="button" onClick={() => onRemove(index)}
-            className="text-xs font-semibold text-red-400 hover:text-red-600 transition-colors">
-            Remove
-          </button>
-        )}
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        <div><label className={labelCls}>Label</label>
-          <input type="text" value={variant.label} onChange={field('label')} placeholder="500g" className={inputCls} /></div>
-        <div><label className={labelCls}>Price EGP <span className="text-red-400 normal-case font-bold">*</span></label>
-          <input type="number" value={variant.price} onChange={field('price')} placeholder="25" min={0} step="0.01" required className={inputCls} /></div>
-        <div><label className={labelCls}>Stock Qty</label>
-          <input type="number" value={variant.stockQty} onChange={field('stockQty')} placeholder="50" min={0} className={inputCls} /></div>
-        <div className="col-span-2 sm:col-span-1"><label className={labelCls}>SKU Code</label>
-          <input type="text" value={variant.skuCode} onChange={field('skuCode')} placeholder="ELF-BC5K-WM" className={inputCls} /></div>
-      </div>
-    </div>
-  )
-}
-
-function ImageUploader({ images, setImages }) {
+function ImageUploader({ images, setImages, locale }) {
   const [uploading, setUploading] = useState(false)
   const [uploadErr, setUploadErr] = useState('')
 
   const onDrop = useCallback(async (acceptedFiles) => {
     if (images.length + acceptedFiles.length > 5) {
-      setUploadErr('Maximum 5 images allowed.')
+      setUploadErr(t('seller.maxImages', locale))
       return
     }
     setUploadErr('')
@@ -71,7 +39,7 @@ function ImageUploader({ images, setImages }) {
       setUploadErr(`${failed.length} image(s) failed: ${reasons}`)
     }
     setUploading(false)
-  }, [images.length, setImages])
+  }, [images.length, setImages, locale])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -121,13 +89,13 @@ function ImageUploader({ images, setImages }) {
         >
           <input {...getInputProps()} />
           {uploading ? (
-            <p className="text-sm text-gray-500 font-medium">Uploading…</p>
+            <p className="text-sm text-gray-500 font-medium">{t('seller.uploading', locale)}</p>
           ) : (
             <>
               <p className="text-sm text-gray-500 font-medium">
-                {isDragActive ? 'Drop images here' : 'Drag & drop images, or click to select'}
+                {isDragActive ? t('seller.dropHere', locale) : t('seller.dragDrop', locale)}
               </p>
-              <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP · Max 5 MB · Up to {5 - images.length} more</p>
+              <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP · Max 5 MB · {5 - images.length}</p>
             </>
           )}
         </div>
@@ -146,7 +114,7 @@ export default function AddProductPage() {
   const [categoryId,    setCategoryId]    = useState('')
   const [subCategoryId, setSubCategoryId] = useState('')
   const [description,   setDescription]   = useState('')
-  const [variants,      setVariants]      = useState([{ ...EMPTY_VARIANT }])
+  const [price,         setPrice]         = useState('')
   const [images,        setImages]        = useState([])
 
   const [categories,    setCategories]    = useState([])
@@ -156,6 +124,9 @@ export default function AddProductPage() {
   const [catLoading,  setCatLoading]  = useState(true)
   const [error,       setError]       = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
+  const [locale,      setLocale]      = useState('ar')
+
+  useEffect(() => { setLocale(getLocaleCookie()) }, [])
 
   useEffect(() => {
     fetch('/api/categories')
@@ -171,20 +142,11 @@ export default function AddProductPage() {
     setSubCategoryId('')
   }, [categoryId, categories])
 
-  function updateVariant(index, field, value) {
-    setVariants(prev => { const next = [...prev]; next[index] = { ...next[index], [field]: value }; return next })
-  }
-  function addVariant()        { setVariants(prev => [...prev, { ...EMPTY_VARIANT }]) }
-  function removeVariant(i)    { setVariants(prev => prev.filter((_, idx) => idx !== i)) }
-
   function validate() {
     const errs = {}
-    if (!name.trim()) errs.name       = 'Product name is required.'
-    if (!categoryId)  errs.categoryId = 'Please select a category.'
-    variants.forEach((v, i) => {
-      if (!v.price || Number(v.price) <= 0)
-        errs[`variant_${i}_price`] = `Variant ${i + 1}: price is required.`
-    })
+    if (!name.trim()) errs.name       = t('seller.errorName', locale)
+    if (!categoryId)  errs.categoryId = t('seller.errorCategory', locale)
+    if (!price || Number(price) <= 0) errs.price = t('seller.errorPrice', locale)
     setFieldErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -202,12 +164,7 @@ export default function AddProductPage() {
       subCategoryId: subCategoryId      ? parseInt(subCategoryId, 10) : undefined,
       description:   description.trim() || undefined,
       images,
-      variants: variants.map(v => ({
-        label:         v.label.trim()         || undefined,
-        price:      parseFloat(v.price),
-        stockQty:      v.stockQty             ? parseInt(v.stockQty, 10)   : 0,
-        skuCode:       v.skuCode.trim()       || undefined,
-      })),
+      price:         parseFloat(price),
     }
     try {
       const res  = await fetch('/api/products', {
@@ -218,7 +175,7 @@ export default function AddProductPage() {
       if (!res.ok) throw new Error(data.error)
       router.push('/dashboard/products')
     } catch (err) {
-      setError(err.message || 'Failed to create product. Please try again.')
+      setError(err.message || t('seller.errorGeneric', locale))
     } finally {
       setLoading(false)
     }
@@ -226,10 +183,11 @@ export default function AddProductPage() {
 
   const inputCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition bg-white'
   const labelCls = 'block text-sm font-semibold text-gray-700 mb-1.5'
+  const dir = locale === 'ar' ? 'rtl' : 'ltr'
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <h1 className="text-2xl font-black text-gray-900">Add Product</h1>
+    <div className="max-w-3xl space-y-6" dir={dir}>
+      <h1 className="text-2xl font-black text-gray-900">{t('seller.addProduct', locale)}</h1>
 
       {error && (
         <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-4 py-3">{error}</div>
@@ -239,90 +197,70 @@ export default function AddProductPage() {
 
         {/* Product details */}
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-          <h2 className="font-black text-gray-900">Product Details</h2>
+          <h2 className="font-black text-gray-900">{t('seller.productDetails', locale)}</h2>
           <div>
-            <label className={labelCls}>Product Name <span className="text-red-400">*</span></label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Bun Kassala 500g"
+            <label className={labelCls}>{t('seller.productName', locale)} <span className="text-red-400">*</span></label>
+            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('seller.productNamePlaceholder', locale)}
               className={`${inputCls} ${fieldErrors.name ? 'border-red-300 ring-red-200' : ''}`} />
             {fieldErrors.name && <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>}
           </div>
           <div>
-            <label className={labelCls}>Brand</label>
+            <label className={labelCls}>{t('seller.brand', locale)}</label>
             <input type="text" value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. Kassala" className={inputCls} />
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Category <span className="text-red-400">*</span></label>
+              <label className={labelCls}>{t('seller.category', locale)} <span className="text-red-400">*</span></label>
               {catLoading ? (
                 <div className="h-11 bg-gray-100 rounded-xl animate-pulse" />
               ) : (
                 <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
                   className={`${inputCls} ${fieldErrors.categoryId ? 'border-red-300' : ''}`}>
-                  <option value="">Select category…</option>
+                  <option value="">{t('seller.selectCategory', locale)}</option>
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               )}
               {fieldErrors.categoryId && <p className="text-xs text-red-500 mt-1">{fieldErrors.categoryId}</p>}
             </div>
             <div>
-              <label className={labelCls}>Sub-category</label>
+              <label className={labelCls}>{t('seller.subCategory', locale)}</label>
               <select value={subCategoryId} onChange={e => setSubCategoryId(e.target.value)}
                 disabled={subCategories.length === 0}
                 className={`${inputCls} disabled:opacity-50 disabled:cursor-not-allowed`}>
-                <option value="">{subCategories.length === 0 ? 'No sub-categories' : 'Select sub-category…'}</option>
+                <option value="">{subCategories.length === 0 ? t('seller.noSubCategories', locale) : t('seller.selectSubCategory', locale)}</option>
                 {subCategories.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className={labelCls}>Description</label>
+            <label className={labelCls}>{t('seller.price', locale)} <span className="text-red-400">*</span></label>
+            <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="180" min={0} step="0.01"
+              className={`${inputCls} ${fieldErrors.price ? 'border-red-300 ring-red-200' : ''}`} />
+            {fieldErrors.price && <p className="text-xs text-red-500 mt-1">{fieldErrors.price}</p>}
+          </div>
+          <div>
+            <label className={labelCls}>{t('seller.description', locale)}</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)}
-              placeholder="Describe the product…" rows={3} className={`${inputCls} resize-none`} />
+              placeholder={t('seller.descriptionPlaceholder', locale)} rows={3} className={`${inputCls} resize-none`} />
           </div>
         </section>
 
         {/* Images */}
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-3">
           <div>
-            <h2 className="font-black text-gray-900">Product Images</h2>
-            <p className="text-xs text-gray-400 mt-0.5">Upload up to 5 images. First image is the main display image.</p>
+            <h2 className="font-black text-gray-900">{t('seller.productImages', locale)}</h2>
+            <p className="text-xs text-gray-400 mt-0.5">{t('seller.imagesHint', locale)}</p>
           </div>
-          <ImageUploader images={images} setImages={setImages} />
-        </section>
-
-        {/* Variants */}
-        <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-black text-gray-900">Variants</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Add one row per option (e.g. size, pack). Price is required.</p>
-            </div>
-            <button type="button" onClick={addVariant}
-              className="text-sm font-bold text-brand-700 hover:text-brand-800 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors">
-              + Add Variant
-            </button>
-          </div>
-          {Object.entries(fieldErrors).filter(([k]) => k.startsWith('variant_')).map(([k, msg]) => (
-            <p key={k} className="text-xs text-red-500">{msg}</p>
-          ))}
-          <div className="space-y-3">
-            {variants.map((v, i) => (
-              <VariantRow key={i} index={i} variant={v} onChange={updateVariant} onRemove={removeVariant} canRemove={variants.length > 1} />
-            ))}
-          </div>
-          <button type="button" onClick={addVariant}
-            className="w-full border-2 border-dashed border-gray-200 hover:border-brand-600 text-gray-400 hover:text-brand-700 font-semibold text-sm py-3 rounded-2xl transition-colors">
-            + Add another variant
-          </button>
+          <ImageUploader images={images} setImages={setImages} locale={locale} />
         </section>
 
         {/* Submit */}
         <div className="flex items-center gap-4 pb-6">
           <button type="submit" disabled={loading}
             className="bg-brand-700 hover:bg-brand-800 active:bg-brand-900 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black px-8 py-3 rounded-xl transition-colors">
-            {loading ? 'Creating product…' : 'Create Product'}
+            {loading ? t('seller.creating', locale) : t('seller.createProduct', locale)}
           </button>
-          <a href="/dashboard/products" className="text-sm font-semibold text-gray-500 hover:text-gray-700">Cancel</a>
+          <a href="/dashboard/products" className="text-sm font-semibold text-gray-500 hover:text-gray-700">{t('seller.cancel', locale)}</a>
         </div>
 
       </form>
