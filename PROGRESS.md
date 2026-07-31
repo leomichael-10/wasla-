@@ -1022,3 +1022,68 @@ mobile, both locales) confirm: horizontal rail at top (right-start in
 Arabic, left-start in English), ring-not-flood selected state, real
 icons intact, full-width 2-column grid, fixed 5-tab bottom nav with
 live badge in both locales.
+
+## Cart/Checkout visual polish (layout + styling only, per the brief)
+
+### Root cause of "narrow column, dead gutter"
+`app/cart/page.js` had **no `dir` attribute anywhere** — it always
+rendered LTR-structured regardless of locale, which is why the layout
+felt off specifically for Arabic-primary users. Added `dir={dir}` on
+the page root. Cart items (first in DOM) now sit at the inline-start
+edge of the row and the Order Summary becomes a `lg:sticky` side card
+at inline-end — right-to-left in Arabic, mirrored automatically in
+English via the same markup (the established pattern from earlier
+RTL work in this app: flexbox's main axis follows the ambient writing
+direction, no hardcoded left/right). Confirmed via screenshot at
+mobile (390px) and desktop (1440px) in both locales.
+
+### A real bug found while verifying (fixed, layout-only)
+The page had no bottom padding to clear the fixed `MobileTabBar` —
+content near the bottom of a tall page (a second saved address card)
+was rendered directly underneath the fixed nav and was unclickable.
+Added `pb-20 lg:pb-0`, matching the convention already used on other
+pages (`app/page.js`). Confirmed by reproducing the click failure
+first, then confirming the fix restored clickability.
+
+### Out-of-zone state — elevated from fine print to a real alert
+Was one line of small red text folded into a per-shop breakdown card.
+Now a proper banner (warning icon + bold title + explanatory body)
+using the `hibiscus-*` (karkade red) tokens — defined in the palette
+pass months ago specifically "reserved for alerts" but never actually
+used on a screen until now. The per-shop card still calls out which
+shop is affected. **Confirmed server-side enforcement already exists**
+(`POST /api/orders` rejects with 400 if the address's zone isn't in
+the shop's `ShopZoneCoverage`) — not modified, just confirmed. The
+Place Order button is now genuinely `disabled` (not just blocked
+inside the click handler) whenever the cart is uncovered or no address
+is selected yet, with a hint shown proactively rather than only after
+a failed click attempt.
+
+**Verified live**: seeded a test address in a zone genuinely outside
+the shop's coverage (first attempt accidentally picked a zone the
+demo shop *does* cover — re-checked `ShopZoneCoverage` directly and
+picked a real gap), selected it, and confirmed the banner renders, the
+delivery fee recalculates to 0, the total drops accordingly, and the
+checkout button visibly disables — all from the live app, not just
+code inspection.
+
+### Visual rhythm
+Consistent card spacing and section-heading weight throughout; Total
+promoted to `text-xl font-black` (clearly heavier than Subtotal/
+Delivery, per the brief); address cards, the "Add a new address"
+action, and payment method options now share one rounded-2xl,
+bordered-selectable-card visual language; the primary CTA switched
+from `bg-brand-700` (the app's general coffee-brown chrome color) to
+`bg-accent-500` (terracotta) — correcting a mismatch against the
+palette's own stated token purpose (`accent` = "CTAs, prices,
+quick-add").
+
+### Bilingual
+Every string on the page — including the `setError()` messages inside
+`handleCheckout`, where only the text changed and none of the
+conditions/logic did — now goes through new `cart.*`/`checkout.*` keys
+in `lib/i18n.js`, both locales. No hardcoded English left on the page.
+
+Gate: `npm run build` ✅ (no schema changes, no cart/pricing logic
+touched). Screenshots confirm mobile + desktop, both locales, the
+out-of-zone alert state, and the disabled-checkout state.
