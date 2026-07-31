@@ -599,3 +599,56 @@ Turbopack-disabling behavior without knowing why it was set.
 
 No code changes were made — `middleware.js`, `next.config.mjs`, and
 `public/categories/` are all untouched.
+
+## Home-page category icons stuck on fallback — found and fixed (service worker, not CategoryIcon)
+
+### 1–2. Located the component, confirmed it's not hardcoded
+`app/page.js`'s `CategoryTile` (the "Shop by Category" grid) already
+used the same `CategoryIcon` + `lib/categoryIcons.js` map as the
+Browse rail — wired in two tasks ago, not a hardcoded bag icon. So
+this was the "already uses CategoryIcon, investigate the load failure"
+branch, not a missing wire-in.
+
+### 3. Root cause: the service worker, not the component or the map
+`public/sw.js` does cache-first for static assets (`isStaticAsset()`
+matches `*.png`, among others) but its fetch handler cached **every**
+response it got back, including failed ones — no `response.ok` check.
+During the earlier broken window (misnamed/missing category PNGs), any
+browser that requested a category image got that 404 written into the
+`wasla-v1` cache. Under cache-first, that cached 404 is replayed
+forever afterward, completely independent of the real file starting to
+serve 200 — which explains the asymmetry: whichever page a given
+browser happened to load first during the broken window got its icon
+requests poisoned; a browser/tab that only loaded the other page later
+(after the fix) got fresh, correct cache entries. This has nothing to
+do with which page renders the icon, since both pages request the
+identical `/categories/<slug>.png` URLs through the identical
+`CategoryIcon` component.
+
+**Reproduced directly** (not just theorized): seeded the running SW's
+cache with a synthetic 404 for `coffee-jabana.png`, reloaded the home
+page, and confirmed it kept serving the stale 404 (10/11 real images,
+`coffee-jabana` missing) even though the live server returns 200 for
+that exact URL.
+
+### Fix
+`public/sw.js`: only `cache.put()` a response when `res.ok`, so a
+failed fetch is never written to the cache in the first place. Bumped
+`CACHE_NAME` from `wasla-v1` to `wasla-v2` so the SW's existing
+(unchanged) `activate` handler — which already deletes any cache whose
+name doesn't match `CACHE_NAME` — evicts a real user's already-poisoned
+`wasla-v1` cache the next time their browser's normal SW update check
+picks up this file (automatic, no user action required, though a hard
+refresh / unregister-and-reload gets it instantly for anyone who wants
+that now).
+
+### middleware.js / next.config.mjs — unrelated, unchanged (see the earlier investigation entry above)
+Re-confirmed no `proxy.ts` exists and `middleware.js`'s matcher
+(`['/api/:path*']`) never touched `/categories/*`; `turbopack: false`
+in `next.config.mjs` remains a separate, pre-existing, unrelated
+warning. Neither was touched again.
+
+Gate: `npm run build` ✅ (no schema changes, migrate diff not
+applicable this pass). Verified home page renders all 11 real
+illustrated icons with zero `[CategoryIcon]` fallback warnings,
+matching the Browse rail exactly.
