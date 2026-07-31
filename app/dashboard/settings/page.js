@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
+import { getLocaleCookie, t } from '../../../lib/i18n'
 
 function ZoneRow({ entry, onSave }) {
   const { zone, coverage } = entry
@@ -74,7 +75,11 @@ export default function DashboardSettingsPage() {
   const [zones,    setZones]    = useState([])
   const [loading,  setLoading]  = useState(true)
   const [toggling, setToggling] = useState(false)
+  const [typeSaving, setTypeSaving] = useState(false)
   const [error,    setError]    = useState('')
+  const [locale,   setLocale]   = useState('ar')
+
+  useEffect(() => { setLocale(getLocaleCookie()) }, [])
   const [whatsapp,   setWhatsapp]   = useState('')
   const [codeStep,   setCodeStep]   = useState(false)
   const [code,       setCode]       = useState('')
@@ -122,6 +127,26 @@ export default function DashboardSettingsPage() {
       setError(err.message || 'Failed to update shop status.')
     } finally {
       setToggling(false)
+    }
+  }
+
+  async function handleChangeType(sellerType) {
+    if (sellerType === profile?.sellerType) return
+    setTypeSaving(true)
+    const token = localStorage.getItem('wasla_token')
+    try {
+      const res  = await fetch('/api/seller/profile', {
+        method:  'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ sellerType }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setProfile(data.profile)
+    } catch (err) {
+      setError(err.message || 'Failed to update business type.')
+    } finally {
+      setTypeSaving(false)
     }
   }
 
@@ -197,6 +222,28 @@ export default function DashboardSettingsPage() {
       {error && (
         <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl px-4 py-3">{error}</div>
       )}
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <p className="font-black text-gray-900">{t('seller.businessType', locale)}</p>
+        <p className="text-sm text-gray-500 mt-0.5 mb-3">{t('seller.businessTypeHint', locale)}</p>
+        <div className="grid grid-cols-2 gap-3 max-w-sm">
+          {['SHOP', 'RESTAURANT'].map(opt => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => handleChangeType(opt)}
+              disabled={typeSaving}
+              className={`flex items-center justify-center gap-2 border-2 rounded-2xl py-2.5 text-sm font-bold transition-all disabled:opacity-50 ${
+                profile?.sellerType === opt
+                  ? 'border-brand-600 bg-brand-50 text-brand-700'
+                  : 'border-gray-200 text-gray-500 hover:border-brand-200'
+              }`}
+            >
+              {opt === 'SHOP' ? t('seller.typeShop', locale) : t('seller.typeRestaurant', locale)}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center justify-between">
         <div>

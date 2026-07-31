@@ -19,10 +19,11 @@ export async function GET(request) {
   }
 }
 
-// PATCH /api/seller/profile — the open/closed toggle and/or the WhatsApp
-// number orders get sent to. Closing a shop hides its products from
-// checkout without deleting anything.
-// Body: { isOpen?: boolean, whatsappNumber?: string }
+// PATCH /api/seller/profile — the open/closed toggle, business type
+// (shop vs restaurant), and/or the WhatsApp number orders get sent to.
+// Closing a shop hides its products from checkout without deleting
+// anything.
+// Body: { isOpen?: boolean, sellerType?: 'SHOP' | 'RESTAURANT', whatsappNumber?: string }
 export async function PATCH(request) {
   const auth = getUser(request)
   if (!auth || (auth.role !== 'retailer' && auth.role !== 'wholesaler')) {
@@ -37,6 +38,13 @@ export async function PATCH(request) {
         return NextResponse.json({ error: 'isOpen must be a boolean' }, { status: 400 })
       }
       data.isOpen = body.isOpen
+    }
+
+    if (body.sellerType !== undefined) {
+      if (!['SHOP', 'RESTAURANT'].includes(body.sellerType)) {
+        return NextResponse.json({ error: 'sellerType must be SHOP or RESTAURANT' }, { status: 400 })
+      }
+      data.sellerType = body.sellerType
     }
 
     if (body.whatsappNumber !== undefined) {

@@ -49,6 +49,10 @@ export async function POST(request) {
       )
     }
 
+    // Business type (shop vs restaurant) — Phase 1 foundation only; SHOP
+    // is the safe default for any caller that doesn't send it yet.
+    const sellerType = body.sellerType === 'RESTAURANT' ? 'RESTAURANT' : 'SHOP'
+
     // Check if email already exists
     const existingUser = await prisma.user.findUnique({
       where: { email }
@@ -95,6 +99,7 @@ export async function POST(request) {
           userId: user.id,
           businessName: businessName || 'My Shop',
           whatsappNumber,
+          sellerType,
           approvedByAdmin: false,
           subscriptionStatus: subscriptionsEnabled ? 'PENDING' : 'ACTIVE',
         }

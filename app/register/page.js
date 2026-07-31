@@ -1,9 +1,10 @@
 ﻿'use client'
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { isEgyptianPhone, normalizeDigits } from '../../lib/phone'
+import { getLocaleCookie, t } from '../../lib/i18n'
 
 const EGYPT_CITIES = [
   'Cairo', 'Giza', '6th of October', 'Alexandria',
@@ -40,9 +41,13 @@ function RegisterForm() {
     city:         '',
     businessName: '',
     whatsappNumber: '',
+    sellerType:   'SHOP',
   })
   const [step1Error,     setStep1Error]     = useState('')
   const [step1Loading,   setStep1Loading]   = useState(false)
+  const [locale,         setLocale]         = useState('ar')
+
+  useEffect(() => { setLocale(getLocaleCookie()) }, [])
 
   const [step,            setStep]          = useState(1)
   const [paymentMethod,   setPaymentMethod] = useState('bank_transfer')
@@ -83,6 +88,7 @@ function RegisterForm() {
     if (isSeller) {
       body.businessName   = form.businessName
       body.whatsappNumber = normalizeDigits(form.whatsappNumber)
+      body.sellerType      = form.sellerType
     }
 
     try {
@@ -240,6 +246,30 @@ function RegisterForm() {
                       <input id="businessName" type="text" required value={form.businessName} onChange={set('businessName')}
                         placeholder="e.g. Kassala Coffee House"
                         className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        {t('seller.businessType', locale)} <span className="text-red-400">*</span>
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {['SHOP', 'RESTAURANT'].map(opt => (
+                          <label
+                            key={opt}
+                            className={`flex items-center justify-center gap-2 cursor-pointer border-2 rounded-2xl py-3 text-sm font-bold transition-all ${
+                              form.sellerType === opt
+                                ? 'border-brand-600 bg-brand-50 text-brand-700'
+                                : 'border-gray-200 text-gray-500 hover:border-brand-200'
+                            }`}
+                          >
+                            <input
+                              type="radio" name="sellerType" value={opt} className="sr-only"
+                              checked={form.sellerType === opt}
+                              onChange={() => setForm(prev => ({ ...prev, sellerType: opt }))}
+                            />
+                            {opt === 'SHOP' ? t('seller.typeShop', locale) : t('seller.typeRestaurant', locale)}
+                          </label>
+                        ))}
+                      </div>
                     </div>
                     <div>
                       <label htmlFor="whatsappNumber" className="block text-sm font-semibold text-gray-700 mb-1.5">

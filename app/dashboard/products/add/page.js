@@ -125,8 +125,23 @@ export default function AddProductPage() {
   const [error,       setError]       = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const [locale,      setLocale]      = useState('ar')
+  const [sellerType,  setSellerType]  = useState('SHOP')
+
+  // Phase 1 foundation: only the wording branches on sellerType for now.
+  // Phase 2 (shop stock fields) and Phase 3 (dish fields) plug into the
+  // SHOP-SPECIFIC FIELDS SEAM / RESTAURANT-SPECIFIC FIELDS SEAM below —
+  // do not add real fields here yet.
+  const isRestaurant = sellerType === 'RESTAURANT'
 
   useEffect(() => { setLocale(getLocaleCookie()) }, [])
+
+  useEffect(() => {
+    const token = localStorage.getItem('wasla_token')
+    fetch('/api/seller/profile', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(data => setSellerType(data.profile?.sellerType ?? 'SHOP'))
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     fetch('/api/categories')
@@ -187,7 +202,9 @@ export default function AddProductPage() {
 
   return (
     <div className="max-w-3xl space-y-6" dir={dir}>
-      <h1 className="text-2xl font-black text-gray-900">{t('seller.addProduct', locale)}</h1>
+      <h1 className="text-2xl font-black text-gray-900">
+        {t(isRestaurant ? 'seller.addDish' : 'seller.addProduct', locale)}
+      </h1>
 
       {error && (
         <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-4 py-3">{error}</div>
@@ -195,12 +212,17 @@ export default function AddProductPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
-        {/* Product details */}
+        {/* Product/dish details */}
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-          <h2 className="font-black text-gray-900">{t('seller.productDetails', locale)}</h2>
+          <h2 className="font-black text-gray-900">
+            {t(isRestaurant ? 'seller.dishDetails' : 'seller.productDetails', locale)}
+          </h2>
           <div>
-            <label className={labelCls}>{t('seller.productName', locale)} <span className="text-red-400">*</span></label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('seller.productNamePlaceholder', locale)}
+            <label className={labelCls}>
+              {t(isRestaurant ? 'seller.dishName' : 'seller.productName', locale)} <span className="text-red-400">*</span>
+            </label>
+            <input type="text" value={name} onChange={e => setName(e.target.value)}
+              placeholder={t(isRestaurant ? 'seller.dishNamePlaceholder' : 'seller.productNamePlaceholder', locale)}
               className={`${inputCls} ${fieldErrors.name ? 'border-red-300 ring-red-200' : ''}`} />
             {fieldErrors.name && <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>}
           </div>
@@ -243,6 +265,25 @@ export default function AddProductPage() {
             <textarea value={description} onChange={e => setDescription(e.target.value)}
               placeholder={t('seller.descriptionPlaceholder', locale)} rows={3} className={`${inputCls} resize-none`} />
           </div>
+
+          {/*
+            === SHOP-SPECIFIC FIELDS SEAM (Phase 2) ===
+            When sellerType === 'SHOP', Phase 2 adds real stock-management
+            fields here (e.g. quantity on hand, low-stock threshold).
+            Today SHOP sellers get no extra fields — price above already
+            covers Phase 1, and stock defaults server-side (DEFAULT_STOCK_QTY
+            in app/api/products/route.js), never shown in this UI.
+          */}
+          {!isRestaurant && null}
+
+          {/*
+            === RESTAURANT-SPECIFIC FIELDS SEAM (Phase 3) ===
+            When sellerType === 'RESTAURANT', Phase 3 adds dish-specific
+            fields here (e.g. spice level, prep time, dietary tags) and
+            the browse-by-restaurant customer experience. Today RESTAURANT
+            sellers get no extra fields beyond the branched wording above.
+          */}
+          {isRestaurant && null}
         </section>
 
         {/* Images */}
@@ -258,7 +299,9 @@ export default function AddProductPage() {
         <div className="flex items-center gap-4 pb-6">
           <button type="submit" disabled={loading}
             className="bg-brand-700 hover:bg-brand-800 active:bg-brand-900 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black px-8 py-3 rounded-xl transition-colors">
-            {loading ? t('seller.creating', locale) : t('seller.createProduct', locale)}
+            {loading
+              ? t('seller.creating', locale)
+              : t(isRestaurant ? 'seller.createDish' : 'seller.createProduct', locale)}
           </button>
           <a href="/dashboard/products" className="text-sm font-semibold text-gray-500 hover:text-gray-700">{t('seller.cancel', locale)}</a>
         </div>
