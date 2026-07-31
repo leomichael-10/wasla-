@@ -535,3 +535,25 @@ home category grid and Browse rail both show the (fallback, pending
 real assets) icon consistently sized in a cream badge that blends into
 each tile — confirmed unified/seamless per the gate, ready to become
 the real illustrated set the instant the 11 files are added.
+
+## Category icon fallback isolation — verified, no fix needed
+
+Investigated a report that one missing icon asset (`bakhour-perfumes.png`)
+was cascading the fallback to all 11 category icons. Live-tested against
+the running dev server with `bakhour-perfumes.png` genuinely absent (the
+other 10 present, per the prior filename fix): only the `bakhour` tile
+rendered the fallback SVG, with exactly one `[CategoryIcon] failed to
+load...` warning logged; the other 10 categories rendered their real
+illustrated PNGs.
+
+`CategoryIcon.js` already uses fully local, per-instance `useState`
+(`const [failed, setFailed] = useState(false)`), with the load check
+keyed to `[slug, src]` in its effect — there is no shared/module-level
+or parent-hoisted failure flag, so a genuine cross-instance cascade
+was never structurally possible with this code. The earlier appearance
+of "all icons falling back together" was fully explained by the two
+bugs already fixed before this: the onError/hydration race (made every
+icon fail together) and the `" (2)"` filename mismatch (made all 11
+404 together) — both made every icon fail *simultaneously*, which
+reads the same as a cascade but isn't one. No code change was made;
+`CategoryIcon.js` and `lib/categoryIcons.js` are untouched.
