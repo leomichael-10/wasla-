@@ -46,7 +46,10 @@ function CategoryRail({ categories, active, onSelect, locale }) {
   const items = [{ id: '__all__', name: null }, ...categories]
 
   return (
-    <div className="w-20 sm:w-24 shrink-0 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto flex flex-col gap-2 pe-0.5">
+    <div
+      className="w-20 sm:w-24 shrink-0 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto flex flex-col gap-2 pe-0.5"
+      style={{ scrollSnapType: 'y proximity' }}
+    >
       {items.map(cat => {
         const isAll    = cat.id === '__all__'
         const isActive = isAll ? !active : active === cat.name
@@ -54,6 +57,7 @@ function CategoryRail({ categories, active, onSelect, locale }) {
           <button
             key={cat.id}
             onClick={() => onSelect(isAll ? '' : cat.name)}
+            style={{ scrollSnapAlign: 'start' }}
             className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl py-3 px-1.5 transition-all duration-150 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100 ${
               isActive
                 ? 'bg-accent-400 text-white shadow-md'
