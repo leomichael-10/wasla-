@@ -387,3 +387,83 @@ established practice in this repo.
 Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no
 difference ✅. Screenshots (mobile width, 390px): Account page and the
 address-add form, both fully in Arabic/RTL by default.
+
+## Browse page category rail rebuild (kill rotated text)
+
+### The bug
+`app/products/page.js`'s `CategoryRail` used `writingMode: 'vertical-rl'`
++ `rotate(180deg)` for category labels, fixed-positioned with a
+hardcoded `left: 0` regardless of `dir` — always on the left even in
+Arabic, where the rail should sit on the right. Long names like "Tea &
+Drinks" or "Dakwa & Peanut Products" had no room to not look cramped
+sideways. Desktop had a second, separate plain-text category list
+duplicated in the Filters aside.
+
+### The fix
+Replaced it with a column of upright icon tiles: `CategoryIcon` art (no
+emoji) on top, a short label underneath that wraps instead of
+truncating, an "All" tile pinned first, and an obvious
+terracotta-filled (`accent-400`) selected state vs. soft white
+unselected tiles. The rail is the first flex child inside a plain
+`flex` row on a `dir`-aware wrapper — no manual left/right classes at
+all. Flexbox's main axis follows the ambient writing direction, so the
+same markup mirrors correctly in both locales: rail on the right in
+Arabic, left in English (verified via Playwright screenshots in both
+locales at mobile width — see below). Removed the duplicate desktop
+category text list since the rail now covers all breakpoints.
+
+New `components/BrowseProductTile.js`: image or `CategoryIcon`
+placeholder on the cream tint, name, price, and a round terracotta "+"
+pinned to the tile's bottom inline-end corner (`bottom-2 end-2` —
+logical properties, not `right-2`), which becomes a −/qty/+ stepper
+once the item is in cart, matching the quick-commerce pattern already
+used elsewhere (`ProductTile.js` on the homepage). Sort select, search
+input, and the Filters panel (brand/city only now) were restyled from
+flat grey borders to warm rounded `brand-100`/`accent-300` tones.
+
+### i18n
+Added a `categoryName()` lookup to `lib/i18n.js` — `Category.name` has
+no `nameAr` column in the schema (unlike `DeliveryZone`, which does), so
+rather than a migration for 11 static rows, Arabic category display
+names live in a small dictionary keyed by the English name, same
+pattern as everything else in this file. Added a full `browse.*` key
+set (title, sort options, filters, search, empty states, add-to-cart)
+in both `ar`/`en` — no hardcoded strings in the page or
+`BrowseProductTile`.
+
+### Data gaps found and flagged (not fixed — out of scope for a frontend redesign)
+While verifying the grid actually renders products, found **two
+pre-existing data/architecture issues** on this DB, unrelated to this
+redesign:
+1. `/api/products` (what Browse actually reads) queries
+   `RetailerProduct`/`MasterProduct`, which had **zero rows** on this
+   DB — a completely separate catalog system from the `Product` model
+   used by the homepage rails (27 active rows there). Browse has
+   likely been rendering empty for real traffic regardless of any UI
+   work.
+2. No seller satisfies all three of `/api/products`'s eligibility
+   conditions at once (`approvedByAdmin: true` AND `isOpen: true` AND
+   `subscriptionStatus: 'ACTIVE'`) — the 3 legit demo shops are stuck
+   on `subscriptionStatus: 'PENDING'`, so even a fully-stocked
+   `RetailerProduct` catalog could never surface there today.
+
+Neither was touched — flagging per the task's explicit instruction
+("if the whole catalog is empty, that's a data problem, not a design
+one"). The new empty state (friendly icon + "لسه مفيش منتجات في القسم
+ده" / category-specific messaging) renders correctly for this real
+state; it was verified as visually correct in that state before being
+temporarily worked around for the populated screenshot below.
+
+### Verified (temporary test data, cleaned up after)
+Flipped one seller's `subscriptionStatus` to `ACTIVE` and seeded 4
+temporary `MasterProduct`/`RetailerProduct` rows (including one
+zero-stock item) purely to render a populated grid for screenshot
+verification, then deleted the test rows and reverted the seller's
+subscription status back to `PENDING` immediately after.
+
+Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no
+difference ✅ (no schema changes — UI only). Screenshots (390px mobile
+width, both locales): rail on the right with terracotta "All" selected
+in Arabic; rail on the left in English; 2-up grid with working round
+add / stepper button and correct out-of-stock state; no rotated text
+anywhere.
