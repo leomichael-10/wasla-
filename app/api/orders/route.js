@@ -19,7 +19,9 @@ const ORDER_INCLUDE = {
       },
     },
   },
-  seller: { select: { id: true, businessName: true, city: true, whatsappNumber: true } },
+  seller:   { select: { id: true, businessName: true, city: true, whatsappNumber: true } },
+  customer: { select: { customerProfile: { select: { fullName: true } } } },
+  zone:     { select: { id: true, nameEn: true, nameAr: true } },
 }
 
 // GET /api/orders
@@ -85,14 +87,36 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    const { sellerId, deliveryAddress, paymentMethod, items, zoneId, orderGroupId } = body
+    const { sellerId, addressId, paymentMethod, items, orderGroupId } = body
 
-    if (!sellerId || !deliveryAddress || !Array.isArray(items) || items.length === 0) {
+    if (!sellerId || !addressId || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
-        { error: 'sellerId, deliveryAddress, and at least one item are required' },
+        { error: 'sellerId, addressId, and at least one item are required' },
         { status: 400 }
       )
     }
+
+    const address = await prisma.address.findUnique({
+      where:   { id: addressId },
+      include: { zone: true },
+    })
+    if (!address || address.userId !== auth.userId) {
+      return NextResponse.json({ error: 'Address not found' }, { status: 404 })
+    }
+    if (!address.zoneId || !address.zone?.isActive) {
+      return NextResponse.json({ error: 'This address is outside our delivery area.' }, { status: 400 })
+    }
+
+    // Server-resolved from the chosen address — never trusted from the client.
+    const zoneId = address.zoneId
+    const deliveryAddress = [
+      address.building && `Bldg ${address.building}`,
+      address.floor && `Floor ${address.floor}`,
+      address.apartment && `Apt ${address.apartment}`,
+      address.area,
+      address.zone?.nameEn,
+      address.landmark && `(near ${address.landmark})`,
+    ].filter(Boolean).join(', ')
 
     const sellerProfile = await prisma.sellerProfile.findUnique({
       where: { id: sellerId },
@@ -167,9 +191,8 @@ export async function POST(request) {
     const commissionRate = 0.10
     const commission  = parseFloat((total * commissionRate).toFixed(2))
 
-    // Zone/delivery is optional (older clients or admin-created orders may omit it),
-    // but if a zoneId is supplied we validate coverage and recompute the fee
-    // server-side rather than trusting whatever the client sent.
+    // Zone comes from the chosen address, never the client — validate the
+    // shop actually covers it and recompute the fee server-side.
     let resolvedZoneId    = null
     let resolvedFee       = 0
     let resolvedPromised  = null
@@ -214,6 +237,15 @@ export async function POST(request) {
           commission,
           commissionRate,
           deliveryAddress,
+          addressId:            address.id,
+          addressLabel:         address.label,
+          addressArea:          address.area,
+          addressBuilding:      address.building,
+          addressFloor:         address.floor,
+          addressApartment:     address.apartment,
+          addressLandmark:      address.landmark,
+          addressContactPhone:  address.contactPhone,
+          deliveryNotes:        address.notes,
           zoneId:         resolvedZoneId,
           deliveryFee:    resolvedFee,
           promisedEta:    resolvedPromised,

@@ -3,8 +3,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
+import AddressForm from '../../components/AddressForm'
+import AddressCard from '../../components/AddressCard'
 import { getCart, removeFromCart, updateQuantity, clearCart } from '../../lib/cart'
-import { getZoneCookie } from '../../lib/zone'
 import { getLocaleCookie, t } from '../../lib/i18n'
 
 export default function CartPage() {
@@ -13,15 +14,34 @@ export default function CartPage() {
   const [cartItems,   setCartItems]   = useState([])
   const [user,        setUser]        = useState(null)
   const [userId,      setUserId]      = useState('guest')
-  const [address,     setAddress]     = useState('')
+  const [addresses,   setAddresses]   = useState([])
+  const [zones,       setZones]       = useState([])
+  const [addressId,   setAddressId]   = useState(null)
+  const [showAddForm, setShowAddForm] = useState(false)
   const [placing,     setPlacing]     = useState(false)
   const [error,       setError]       = useState('')
-  const [zone,        setZone]        = useState(null)
   const [quotes,      setQuotes]      = useState({})
   const [paymentMethod, setPaymentMethod] = useState('cod')
   const [locale,      setLocale]      = useState('ar')
 
   useEffect(() => { setLocale(getLocaleCookie()) }, [])
+
+  const selectedAddress = addresses.find(a => a.id === addressId) ?? null
+  const zone = selectedAddress?.zone
+    ? { id: selectedAddress.zoneId, nameEn: selectedAddress.zone.nameEn, nameAr: selectedAddress.zone.nameAr }
+    : null
+
+  const loadAddresses = useCallback((token) => {
+    fetch('/api/addresses', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(data => {
+        const list = data.addresses ?? []
+        setAddresses(list)
+        const def = list.find(a => a.isDefault) ?? list[0]
+        if (def) setAddressId(def.id)
+      })
+      .catch(() => {})
+  }, [])
 
   const reload = useCallback((uid) => {
     const sorted = [...getCart(uid ?? 'guest')].sort((a, b) => a.productName.localeCompare(b.productName))
@@ -39,13 +59,7 @@ export default function CartPage() {
         setUserId(uid)
         const token = localStorage.getItem('wasla_token')
         if (u.role === 'customer' && token) {
-          fetch('/api/profile', { headers: { Authorization: `Bearer ${token}` } })
-            .then(r => r.json())
-            .then(data => {
-              const saved = data.user?.customerProfile?.deliveryAddress
-              if (saved) setAddress(saved)
-            })
-            .catch(() => {})
+          loadAddresses(token)
         }
       }
     } catch { /* ignore */ }
@@ -53,10 +67,10 @@ export default function CartPage() {
     function onCartUpdated() { reload(uid) }
     window.addEventListener('cartUpdated', onCartUpdated)
     return () => window.removeEventListener('cartUpdated', onCartUpdated)
-  }, [reload])
+  }, [reload, loadAddresses])
 
   useEffect(() => {
-    setZone(getZoneCookie())
+    fetch('/api/zones').then(r => r.json()).then(data => setZones(data.zones ?? [])).catch(() => {})
   }, [])
 
   const sellerIds = [...new Set(cartItems.map(i => i.sellerId).filter(Boolean))]
@@ -83,8 +97,8 @@ export default function CartPage() {
       router.push('/login?redirect=/cart')
       return
     }
-    if (!address.trim()) {
-      setError('Please enter a delivery address.')
+    if (!addressId) {
+      setError('Please select a delivery address.')
       return
     }
     if (cartItems.length === 0) {
@@ -92,7 +106,7 @@ export default function CartPage() {
       return
     }
     if (!zone) {
-      setError('Please select your delivery area first.')
+      setError(t('checkout.outOfArea', locale))
       return
     }
     if (anyUncovered) {
@@ -122,11 +136,9 @@ export default function CartPage() {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body:    JSON.stringify({
             sellerId,
-            deliveryAddress: address.trim(),
+            addressId,
             paymentMethod,
-            zoneId:          zone.id,
             orderGroupId:    Object.keys(grouped).length > 1 ? orderGroupId : null,
-            deliveryFee:     quote?.fee ?? 0,
             items:           items.map(i => ({
               productVariantId: i.productVariantId,
               quantity:         i.quantity,
@@ -143,13 +155,6 @@ export default function CartPage() {
         }
         placedOrders.push(data.order)
       }
-
-      const token2 = localStorage.getItem('wasla_token')
-      fetch('/api/profile', {
-        method:  'PATCH',
-        headers: { Authorization: `Bearer ${token2}`, 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ deliveryAddress: address.trim() }),
-      }).catch(() => {})
 
       localStorage.setItem('wasla_last_orders', JSON.stringify(placedOrders))
       clearCart(userId)
@@ -291,15 +296,44 @@ export default function CartPage() {
                   <>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                        Delivery Address <span className="text-red-400">*</span>
+                        {t('checkout.selectAddress', locale)} <span className="text-red-400">*</span>
                       </label>
-                      <textarea
-                        value={address}
-                        onChange={e => setAddress(e.target.value)}
-                        placeholder="Enter your full delivery address…"
-                        rows={3}
-                        className="w-full border border-gray-200 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none transition"
-                      />
+
+                      {showAddForm ? (
+                        <AddressForm
+                          zones={zones}
+                          locale={locale}
+                          onSaved={(saved) => {
+                            setShowAddForm(false)
+                            setAddresses(prev => [saved, ...prev])
+                            setAddressId(saved.id)
+                          }}
+                          onCancel={() => setShowAddForm(false)}
+                        />
+                      ) : (
+                        <div className="space-y-2">
+                          {addresses.length === 0 && (
+                            <p className="text-xs text-gray-400">{t('checkout.noAddresses', locale)}</p>
+                          )}
+                          {addresses.map(a => (
+                            <AddressCard
+                              key={a.id}
+                              address={a}
+                              locale={locale}
+                              selectable
+                              selected={a.id === addressId}
+                              onSelect={(addr) => setAddressId(addr.id)}
+                            />
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => setShowAddForm(true)}
+                            className="text-sm font-bold text-brand-600 hover:text-brand-800 transition-colors"
+                          >
+                            + {t('checkout.addNewAddress', locale)}
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     <div>

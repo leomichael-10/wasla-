@@ -225,11 +225,52 @@ export default function DashboardOrdersPage() {
                   {/* Delivery info */}
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Delivery</p>
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {order.deliveryAddress}
+
+                    <p className="text-sm font-bold text-gray-900">
+                      {order.customer?.customerProfile?.fullName || 'Customer'}
                     </p>
+
+                    {order.addressContactPhone && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <a
+                          href={`tel:${order.addressContactPhone}`}
+                          className="text-sm font-black text-brand-700 hover:text-brand-900 transition-colors"
+                        >
+                          {order.addressContactPhone}
+                        </a>
+                        <a
+                          href={`https://wa.me/${order.addressContactPhone.replace('+', '')}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="text-xs font-bold bg-green-50 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-100 transition-colors"
+                        >
+                          WhatsApp
+                        </a>
+                      </div>
+                    )}
+
+                    <p className="text-sm text-gray-700 leading-relaxed mt-2">
+                      {[
+                        order.addressBuilding && `Bldg ${order.addressBuilding}`,
+                        order.addressFloor && `Floor ${order.addressFloor}`,
+                        order.addressApartment && `Apt ${order.addressApartment}`,
+                      ].filter(Boolean).join(' · ') || order.deliveryAddress}
+                    </p>
+                    {(order.addressArea || order.zone) && (
+                      <p className="text-sm text-gray-500">
+                        {[order.addressArea, order.zone?.nameEn].filter(Boolean).join(' — ')}
+                      </p>
+                    )}
+
+                    {order.addressLandmark && (
+                      <p className="text-sm font-bold text-accent-600 mt-1">📍 {order.addressLandmark}</p>
+                    )}
+
+                    {order.deliveryNotes && (
+                      <p className="text-xs text-gray-500 italic mt-1">"{order.deliveryNotes}"</p>
+                    )}
+
                     {order.paymentMethod && (
-                      <p className="text-xs text-gray-400 mt-1 capitalize">
+                      <p className="text-xs text-gray-400 mt-2 capitalize">
                         Payment: {order.paymentMethod}
                       </p>
                     )}
