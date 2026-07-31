@@ -748,3 +748,51 @@ checkout unchanged.
 
 Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no
 difference ✅ (no schema change, as anticipated).
+
+## Seller "My Products" not showing newly-created products — found and fixed
+
+### 1–3. Not an ownership/sellerId mismatch
+Checked both sides explicitly: `POST /api/products` stamps
+`Product.sellerId: sellerProfile.id` correctly (confirmed live — two
+products the user had already created, "cups" and "dsd", both had
+`sellerId: 1` in the DB), and `Product.sellerId` is a required,
+non-nullable column in the schema — a null owner was never possible at
+the DB level in the first place. `GET /api/seller/products` already
+filtered `where: { sellerId: sellerProfile.id }`, the same field.
+Both sides of the intended fix already agreed.
+
+### The real bug
+`app/dashboard/products/page.js` (the "My Products" page itself) was
+never updated when the create/browse endpoints were switched back to
+direct `Product` creation in the previous task — it still called the
+now-retired `GET /api/seller/retailer-products` (the old
+`MasterProduct`/`RetailerProduct` catalog). A seller's real,
+correctly-owned products simply weren't the model that page was asking
+about, so they never appeared there, while showing up fine in the
+public catalog (which reads `Product` directly, fixed last task).
+
+### Fix
+- `app/dashboard/products/page.js` now calls `GET /api/seller/products`
+  and renders the `Product`/`ProductVariant` shape: name/images live
+  directly on the product, price/stock come from its single variant,
+  `isActive` replaces the old PENDING/APPROVED/REJECTED status concept
+  (which belonged to `RetailerProduct`, not `Product`), and "Remove"
+  now calls `DELETE /api/products/[id]` (soft-delete/deactivate) instead
+  of hard-deleting a `RetailerProduct` row. The header/empty-state
+  button now points at the working `/dashboard/products/add` instead of
+  the retired `/dashboard/catalog`.
+- `GET /api/seller/products` previously only selected `_count.variants`
+  — added the actual `variants` (`id`/`label`/`price`/`stockQty`) so the
+  dashboard has something to render.
+
+### Verified live (no backfill needed — nothing was ever mis-owned)
+Confirmed the user's pre-existing "cups" and "dsd" products (created
+before this fix, invisible in their dashboard until now) appear
+correctly with price/stock. Created a fresh product and confirmed, in
+one pass: it shows in that seller's own My Products immediately, shows
+in the public catalog, and does **not** appear in a different seller's
+(`seller2@wasla.com`) My Products — ownership isolation intact in both
+directions. Test product cleaned up after.
+
+Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no
+difference ✅ (no schema change).
