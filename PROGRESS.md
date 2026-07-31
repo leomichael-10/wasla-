@@ -467,3 +467,71 @@ width, both locales): rail on the right with terracotta "All" selected
 in Arabic; rail on the left in English; 2-up grid with working round
 add / stepper button and correct out-of-stock state; no rotated text
 anywhere.
+
+## Illustrated category icons — wire-in (assets pending)
+
+### Mapping (confirmed against the DB, not assumed)
+`Category.icon` is the real seeded slug (`scripts/seed.js`) — printed
+and confirmed with the user before wiring anything:
+
+| DB slug    | Category (ar / en)                          | Asset path                              |
+|------------|----------------------------------------------|------------------------------------------|
+| `coffee`   | بن وجبنة / Coffee & Jabana                    | `public/categories/coffee-jabana.png`     |
+| `tea`      | شاي ومشروبات / Tea & Drinks                   | `public/categories/tea-drinks.png`        |
+| `spices`   | بهارات وتوابل / Spices & Seasonings           | `public/categories/spices.png`            |
+| `dakwa`    | دكوة وفول سوداني / Dakwa & Peanut Products    | `public/categories/dakwa-peanut.png`      |
+| `dried`    | ويكة ومجففات / Weika & Dried Goods            | `public/categories/weika-dried.png`       |
+| `grains`   | حبوب وطحين / Grains & Flour                   | `public/categories/grains-flour.png`      |
+| `oils`     | زيوت وسمن / Oils & Ghee                       | `public/categories/oils-ghee.png`         |
+| `sweets`   | حلويات ومقرمشات / Sweets & Snacks             | `public/categories/sweets-snacks.png`     |
+| `bakhour`  | بخور وعطور / Bakhour & Perfumes               | `public/categories/bakhour-perfumes.png`  |
+| `clothing` | ملابس تراثية / Heritage Clothing              | `public/categories/heritage-clothing.png` |
+| `homeware` | أدوات ومشغولات / Homeware & Handicrafts       | `public/categories/homeware-handicrafts.png` |
+
+No image files exist yet — none were supplied this pass and there's no
+image-generation tool in this environment. Per the user's choice, the
+full wiring (map, component, all call sites, fallback, alt text) was
+built now against this exact convention so it lights up the moment the
+11 PNGs land at those paths — no code change needed then.
+
+### Wire-in
+`lib/categoryIcons.js` — the single slug→path map (`categoryImageSrc()`).
+`components/CategoryIcon.js` rewritten: renders the illustrated PNG
+(`object-contain`, crisp regardless of source resolution) when mapped,
+falls back to a neutral line-art placeholder — never a broken-image
+icon — both when a slug has no map entry and when the file 404s;
+`console.warn`s which slug is missing either way. Bilingual `alt` via
+the existing `categoryName()` lookup (added in the Browse-rail task).
+
+Replaced every call site that rendered the old English-name-keyed
+line-art icon: the Browse rail tiles and its empty state
+(`app/products/page.js`), the home category grid (`app/page.js`,
+which also now runs category labels through `categoryName()` — they
+were silently English-only there before), the Browse product-tile
+image placeholder (`components/BrowseProductTile.js`), and the unused
+but still-exported `components/CategoryCard.js`. `/api/products` now
+selects `icon` on the joined category (previously only `id`/`name`) so
+`BrowseProductTile` has a slug to map from.
+
+### A real bug found and fixed during verification
+Screenshotting to confirm the fallback path (files intentionally
+absent) showed the browser's native broken-image glyph instead of the
+placeholder SVG. Root cause: a plain `<img onError={...}>` races
+hydration — the DOM `error` event on img/media elements does not
+bubble, so React can only catch it via a listener attached directly to
+that exact node during commit. On a fast same-host 404, the image can
+fail before hydration finishes attaching that listener, and the
+failure is silently lost forever (no bubbling means no second chance
+via delegation). Confirmed via direct DOM assertions
+(`naturalWidth: 0` + `complete: true`, but the `<img>` tag still
+present with no `console.warn` ever firing) before fixing. Replaced
+the JSX `onError` with an effect-driven `new Image()` probe that runs
+strictly after hydration; re-verified all 11 categories correctly
+swap to the fallback with the corresponding warning logged.
+
+Gate: `npm run build` ✅, `prisma migrate diff --exit-code` reports no
+difference ✅ (no schema changes). Screenshots (390px mobile, Arabic):
+home category grid and Browse rail both show the (fallback, pending
+real assets) icon consistently sized in a cream badge that blends into
+each tile — confirmed unified/seamless per the gate, ready to become
+the real illustrated set the instant the 11 files are added.
