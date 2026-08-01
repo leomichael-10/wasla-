@@ -9,23 +9,24 @@ datasource db {
 }
 
 model User {
-  id              Int              @id @default(autoincrement())
-  email           String           @unique
-  passwordHash    String?
-  role            String
-  phone           String?
-  whatsapp        String?
-  city            String?
-  isBanned        Boolean          @default(false)
-  isOnboarded     Boolean          @default(false)
-  emailVerified   Boolean          @default(false)
-  gender          String?
-  createdAt       DateTime         @default(now())
-  customerProfile CustomerProfile?
-  sellerProfile   SellerProfile?
-  orders          Order[]
-  reviews         Review[]
-  addresses       Address[]
+  id                        Int                 @id @default(autoincrement())
+  email                     String              @unique
+  passwordHash              String?
+  role                      String
+  phone                     String?
+  whatsapp                  String?
+  city                      String?
+  isBanned                  Boolean             @default(false)
+  isOnboarded               Boolean             @default(false)
+  emailVerified             Boolean             @default(false)
+  gender                    String?
+  createdAt                 DateTime            @default(now())
+  customerProfile           CustomerProfile?
+  sellerProfile             SellerProfile?
+  orders                    Order[]
+  reviews                   Review[]
+  addresses                 Address[]
+  walletTransactionsCreated WalletTransaction[] @relation("WalletTransactionCreatedBy")
 }
 
 model CustomerProfile {
@@ -43,12 +44,12 @@ enum SellerType {
 }
 
 model SellerProfile {
-  id                   Int                @id @default(autoincrement())
-  userId               Int                @unique
-  sellerType           SellerType         @default(SHOP)
+  id                   Int                 @id @default(autoincrement())
+  userId               Int                 @unique
+  sellerType           SellerType          @default(SHOP)
   businessName         String
   whatsappNumber       String?
-  whatsappVerified     Boolean            @default(false)
+  whatsappVerified     Boolean             @default(false)
   tradeLicense         String?
   city                 String?
   area                 String?
@@ -56,15 +57,16 @@ model SellerProfile {
   longitude            Decimal?
   workingDays          String?
   workingHours         String?
-  deliveryAvailable    Boolean            @default(false)
-  warrantyAvailable    Boolean            @default(false)
+  deliveryAvailable    Boolean             @default(false)
+  warrantyAvailable    Boolean             @default(false)
   warrantyDuration     String?
-  maintenanceAvailable Boolean            @default(false)
-  isOpen               Boolean            @default(true)
-  approvedByAdmin      Boolean            @default(false)
-  subscriptionStatus   String             @default("PENDING")
-  createdAt            DateTime           @default(now())
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  maintenanceAvailable Boolean             @default(false)
+  isOpen               Boolean             @default(true)
+  approvedByAdmin      Boolean             @default(false)
+  subscriptionStatus   String              @default("PENDING")
+  walletBalance        Decimal             @default(0)
+  createdAt            DateTime            @default(now())
+  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   products             Product[]
   orders               Order[]
   reviews              Review[]
@@ -75,6 +77,39 @@ model SellerProfile {
   retailerProducts     RetailerProduct[]
   productRequests      ProductRequest[]
   zoneCoverage         ShopZoneCoverage[]
+  walletTransactions   WalletTransaction[]
+}
+
+// Append-only ledger — the source of truth for a shop's wallet history.
+// SellerProfile.walletBalance is the running total, always mutated in the
+// same DB transaction as the ledger row that explains the change (see
+// lib/wallet.js). amount is signed: positive for TOPUP, negative for
+// COMMISSION, either sign for ADJUSTMENT.
+enum WalletTransactionType {
+  TOPUP
+  COMMISSION
+  ADJUSTMENT
+}
+
+model WalletTransaction {
+  id           Int                   @id @default(autoincrement())
+  shopId       Int
+  amount       Decimal
+  type         WalletTransactionType
+  balanceAfter Decimal
+  orderId      Int?
+  note         String?
+  createdBy    Int?
+  createdAt    DateTime              @default(now())
+  shop         SellerProfile         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  order        Order?                @relation(fields: [orderId], references: [id])
+  admin        User?                 @relation("WalletTransactionCreatedBy", fields: [createdBy], references: [id])
+
+  // Idempotency guard: at most one COMMISSION row per (orderId, shopId).
+  // Postgres treats NULLs as distinct, so this never restricts TOPUP/
+  // ADJUSTMENT rows (orderId is always null for those).
+  @@unique([orderId, shopId, type])
+  @@index([shopId, createdAt])
 }
 
 model Subscription {
@@ -242,15 +277,15 @@ model VerificationCode {
 }
 
 model Order {
-  id                  Int           @id @default(autoincrement())
+  id                  Int                 @id @default(autoincrement())
   customerId          Int
   sellerId            Int
-  status              String        @default("PLACED")
+  status              String              @default("PLACED")
   orderGroupId        String?
   total               Decimal
-  currency            String        @default("EGP")
-  commission          Decimal       @default(0)
-  commissionRate      Decimal       @default(0.10)
+  currency            String              @default("EGP")
+  commission          Decimal             @default(0)
+  commissionRate      Decimal             @default(0.10)
   deliveryAddress     String
   addressId           Int?
   addressLabel        String?
@@ -261,18 +296,19 @@ model Order {
   addressLandmark     String?
   addressContactPhone String?
   zoneId              Int?
-  deliveryFee         Decimal       @default(0)
+  deliveryFee         Decimal             @default(0)
   promisedEta         DateTime?
   deliveryNotes       String?
   paymentMethod       String?
-  paymentStatus       String        @default("unpaid")
+  paymentStatus       String              @default("unpaid")
   receiptUrl          String?
-  createdAt           DateTime      @default(now())
-  customer            User          @relation(fields: [customerId], references: [id])
-  seller              SellerProfile @relation(fields: [sellerId], references: [id])
-  address             Address?      @relation(fields: [addressId], references: [id])
-  zone                DeliveryZone? @relation(fields: [zoneId], references: [id])
+  createdAt           DateTime            @default(now())
+  customer            User                @relation(fields: [customerId], references: [id])
+  seller              SellerProfile       @relation(fields: [sellerId], references: [id])
+  address             Address?            @relation(fields: [addressId], references: [id])
+  zone                DeliveryZone?       @relation(fields: [zoneId], references: [id])
   items               OrderItem[]
+  walletTransactions  WalletTransaction[]
 }
 
 model OrderItem {
