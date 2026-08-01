@@ -4,6 +4,7 @@ import { getUser } from '../../../../lib/auth'
 import { sendWhatsApp } from '../../../../lib/whatsapp'
 import { sendEmail } from '../../../../lib/email'
 import { orderAccepted, orderDelivered } from '../../../../lib/emailTemplates'
+import { deductCommission } from '../../../../lib/wallet'
 
 // Valid status transitions a seller may make
 const VALID_TRANSITIONS = {
@@ -110,6 +111,20 @@ export async function PATCH(request, { params }) {
     }
 
     if (newStatus === 'DELIVERED') {
+      // Commission (5% of goods only — order.total already excludes
+      // deliveryFee, which is stored separately) is deducted here, at
+      // completion, never at placement. Idempotent on (orderId, shopId) —
+      // safe if this status update is re-fired.
+      try {
+        await deductCommission({
+          sellerId:      order.sellerId,
+          orderId:       order.id,
+          goodsSubtotal: order.total,
+        })
+      } catch (walletErr) {
+        console.error('[PATCH /api/orders/[id]] commission deduction failed:', walletErr)
+      }
+
       if (customerEmail) {
         sendEmail(
           customerEmail,

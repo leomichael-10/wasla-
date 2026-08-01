@@ -6,6 +6,7 @@ import { sendEmail } from '../../../lib/email'
 import { orderConfirmation, newOrderAlert } from '../../../lib/emailTemplates'
 import { resolvePromise, resolveFee } from '../../../lib/delivery'
 import { getPaymentProvider } from '../../../lib/payments'
+import { isBlocked } from '../../../lib/wallet'
 
 const ORDER_INCLUDE = {
   items: {
@@ -120,7 +121,7 @@ export async function POST(request) {
 
     const sellerProfile = await prisma.sellerProfile.findUnique({
       where: { id: sellerId },
-      select: { whatsappVerified: true },
+      select: { whatsappVerified: true, walletBalance: true },
     })
     if (!sellerProfile) {
       return NextResponse.json({ error: 'Shop not found' }, { status: 404 })
@@ -128,6 +129,16 @@ export async function POST(request) {
     if (!sellerProfile.whatsappVerified) {
       return NextResponse.json(
         { error: 'This shop has not completed WhatsApp verification yet and cannot receive orders.', code: 'SHOP_NOT_VERIFIED' },
+        { status: 403 }
+      )
+    }
+    // Prepaid commission wallet gate — checked against the shop's current
+    // balance at placement time (deduction itself happens at completion).
+    // Once blocked, only a top-up that brings the balance back above the
+    // credit limit unblocks new orders.
+    if (isBlocked(sellerProfile.walletBalance)) {
+      return NextResponse.json(
+        { error: 'This shop cannot receive new orders right now. Please try again later.', code: 'SHOP_WALLET_BLOCKED' },
         { status: 403 }
       )
     }

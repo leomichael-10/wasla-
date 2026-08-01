@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 import MasterProductForm from '../../components/MasterProductForm'
+import WalletsTab from '../../components/admin/WalletsTab'
 
 const SUB_STATUS = {
   pending:  'bg-yellow-100 text-yellow-700',
@@ -12,7 +13,7 @@ const SUB_STATUS = {
   rejected: 'bg-red-100    text-red-600',
 }
 
-const TABS = ['Overview', 'Sellers', 'Users', 'Products', 'Categories', 'Commission', 'Traffic', 'Catalog', 'Approvals']
+const TABS = ['Overview', 'Sellers', 'Users', 'Products', 'Categories', 'Commission', 'Wallets', 'Traffic', 'Catalog', 'Approvals']
 
 export default function AdminPage() {
   const router = useRouter()
@@ -1519,6 +1520,9 @@ export default function AdminPage() {
             </section>
           </div>
         )}
+
+        {/* ── WALLETS TAB ── */}
+        {activeTab === 'Wallets' && <WalletsTab />}
 
         {/* ── TRAFFIC TAB ── */}
         {activeTab === 'Traffic' && (

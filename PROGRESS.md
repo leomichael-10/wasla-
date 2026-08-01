@@ -1087,3 +1087,103 @@ in `lib/i18n.js`, both locales. No hardcoded English left on the page.
 Gate: `npm run build` ✅ (no schema changes, no cart/pricing logic
 touched). Screenshots confirm mobile + desktop, both locales, the
 out-of-zone alert state, and the disabled-checkout state.
+
+## Shop commission wallet (prepaid, 5% per completed order)
+
+**Schema** (additive migration `20260731232441_shop_wallet`, confirmed
+clean both directions via `prisma migrate diff --exit-code`):
+`SellerProfile.walletBalance` (Decimal, default 0, can go negative),
+new `WalletTransaction` model (append-only ledger: shopId, signed
+amount, type `TOPUP|COMMISSION|ADJUSTMENT`, balanceAfter, nullable
+orderId, note, createdBy, createdAt) with `@@unique([orderId, shopId,
+type])` and `@@index([shopId, createdAt])`. The ledger is the source
+of truth; `walletBalance` is a running total kept in sync in the same
+transaction as every ledger insert.
+
+**Money-safety design** (`lib/wallet.js`), because this is a real
+double-spend surface with concurrent order completions hitting the
+same shop's wallet:
+- Every mutation (`deductCommission`, `topUp`, `adjustBalance`) opens
+  a Prisma transaction and takes `SELECT ... FOR UPDATE` on the
+  `SellerProfile` row **first**, before anything else. Two concurrent
+  transactions for the same shop serialize on that lock — the second
+  can't read the balance until the first has committed.
+- `deductCommission` checks for an existing `(orderId, shopId,
+  COMMISSION)` ledger row *after* acquiring the lock, not before —
+  ordering matters here: if the existing-row check happened before the
+  lock, a second concurrent call could pass the check, then block on
+  the lock, then double-deduct once unblocked. Locking first closes
+  that window.
+- The `@@unique([orderId, shopId, type])` constraint is a second,
+  independent backstop: even if the locking discipline were ever
+  violated by a future code change, a duplicate insert fails outright
+  and rolls back the whole transaction (balance mutation included).
+- Verified live with two `deductCommission` calls fired via
+  `Promise.all` against the same order+shop: exactly one deducted,
+  one skipped, exactly one ledger row, exactly one 5% deduction
+  reflected in the final balance.
+
+**Commission basis**: 5% of `Order.total` only. Confirmed by re-reading
+the existing `POST /api/orders` handler that `Order.total` is already
+computed purely from item prices — `deliveryFee` is a separate column
+never folded into it — so no new field was needed to represent "goods
+subtotal." Deliberately did not touch the pre-existing, unrelated
+`Order.commission`/`commissionRate` fields (10%, computed at placement,
+feeding only the `/api/admin/commission` analytics dashboard) — grepped
+their only usage to confirm they're informational and structurally
+different (different rate, different timing, different basis) from
+this wallet mechanism, and left them untouched rather than risk
+altering existing analytics behavior.
+
+**Deduction timing + idempotency**: fires inside the existing
+`DELIVERED` branch of `PATCH /api/orders/[id]`, wrapped in try/catch so
+a wallet failure can never block the order status transition (mirrors
+the existing non-blocking pattern already used there for email/
+WhatsApp sends). Idempotent on `(orderId, shopId)` — re-firing the same
+status update is a no-op, verified live.
+
+**Order-placement gate**: `POST /api/orders` now selects
+`walletBalance` alongside the existing `whatsappVerified` check and
+rejects with `403 { code: 'SHOP_WALLET_BLOCKED' }` if the shop's
+*current* balance is `<= -100`. Because the cart checkout flow already
+splits a multi-shop cart into one `POST /api/orders` call per seller
+(from earlier session work), this gate naturally applies per-shop
+without extra looping. Credit limit is fixed at -100 EGP; a shop is
+only unblocked by a top-up that brings the balance back above it —
+verified live (drove a test shop to -110 via adjustment, confirmed
+`isBlocked` true, topped up, confirmed `isBlocked` false).
+
+**Admin**: `GET /api/admin/wallets` (list, sorted worst-balance-first,
+`blocked` flag included), `GET /api/admin/wallets/[sellerId]` (wallet +
+full ledger), `POST .../topup` and `POST .../adjustment` (adjustment
+requires a non-empty note) — all admin-only (`auth.role !== 'admin'` →
+403, backstopped by `middleware.js`'s existing `ROLE_RESTRICTED` map
+for `/api/admin/*`). New `WalletsTab` component
+(`components/admin/WalletsTab.js`, new directory — no prior
+`components/admin/` convention existed, so this establishes one) added
+to `app/admin/page.js` as a new `Wallets` tab: blocked shops surface in
+a dedicated hibiscus-red banner at the top, full shop table below,
+click-through to a modal with ledger + top-up/adjustment forms.
+
+**Seller**: `GET /api/seller/wallet`, scoped to the caller's own
+`sellerProfile` via `userId` (same ownership pattern as every other
+`/api/seller/*` route — a shop can't read another shop's wallet by
+guessing an id, since the id is never taken from the request). New
+`/dashboard/wallet` page: balance card ("you have EGP X" / "you owe
+EGP X"), a hibiscus-red blocked banner or an accent-colored
+near-limit warning (`<= -70`, ahead of the -100 hard block), and the
+full ledger. New `wallet.*` i18n keys in both `ar`/`en` blocks; page
+uses the standing `dir={dir}` RTL pattern.
+
+**Gate**: `npm run build` ✅. `prisma migrate diff --exit-code` → no
+difference, both before and after all app-layer wiring. Full
+end-to-end simulation run directly against the dev DB via a scratch
+script (deleted after the run, test seller/user/orders/ledger rows
+cleaned up in a `finally` block): top-up +200 → balance 200, one
+TOPUP row; complete a 1000 EGP goods + delivery order → balance drops
+exactly 50 (5% of goods only), one COMMISSION row tied to the order;
+re-fire the same completion → no second deduction, still one row;
+adjustment to -110 → blocked; top-up → unblocked; two concurrent
+completions on a second order → exactly one deduction, exactly one
+ledger row. All admin wallet routes confirmed admin-gated and the
+seller route confirmed self-scoped by code audit.
