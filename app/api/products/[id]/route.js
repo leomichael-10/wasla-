@@ -3,6 +3,7 @@ import { prisma } from '../../../../lib/prisma'
 import { getUser } from '../../../../lib/auth'
 import { invalidatePrefix } from '../../../../lib/cache'
 import { sanitizeString } from '../../../../lib/sanitize'
+import { getInternalFoodCategoryId } from '../../../../lib/internalCategory'
 
 // PATCH /api/products/:id — seller only, must own product
 export async function PATCH(request, { params }) {
@@ -27,20 +28,43 @@ export async function PATCH(request, { params }) {
     }
 
     const body = await request.json()
-    const { name, brand, description, categoryId, subCategoryId, images, variants, menuSection } = body
+    const { name, brand, description, categoryId, subCategoryId, images, variants, menuSection, available } = body
 
     const productData = {}
     if (name          !== undefined) productData.name          = sanitizeString(name, 200)
     if (brand         !== undefined) productData.brand         = sanitizeString(brand, 100)
     if (description   !== undefined) productData.description   = sanitizeString(description, 2000)
-    if (categoryId    !== undefined) productData.categoryId    = parseInt(categoryId, 10)
-    if (subCategoryId !== undefined) productData.subCategoryId = subCategoryId ? parseInt(subCategoryId, 10) : null
     if (images        !== undefined) productData.images        = Array.isArray(images) ? images : []
     if (menuSection   !== undefined && sellerProfile.sellerType === 'RESTAURANT') {
       productData.menuSection = menuSection?.trim() ? sanitizeString(menuSection, 100) : null
     }
 
+    // Restaurant dishes are ALWAYS in the internal "Food" category —
+    // categoryId/subCategoryId from the client are ignored entirely for
+    // restaurant sellers, never trusted even if present in the request.
+    if (sellerProfile.sellerType === 'RESTAURANT') {
+      productData.categoryId    = await getInternalFoodCategoryId()
+      productData.subCategoryId = null
+    } else {
+      if (categoryId    !== undefined) productData.categoryId    = parseInt(categoryId, 10)
+      if (subCategoryId !== undefined) productData.subCategoryId = subCategoryId ? parseInt(subCategoryId, 10) : null
+    }
+
     const variantOps = []
+
+    // Restaurant "available today" toggle — dishes are made to order, so
+    // sellers never see or set a stock number (see app/dashboard/products/
+    // page.js). This reuses the existing stockQty/inStock plumbing every
+    // other product listing already reads (0 = unavailable), just never
+    // exposing the number: unavailable -> 0, available -> the same
+    // DEFAULT_STOCK_QTY every dish is created with.
+    if (available !== undefined && sellerProfile.sellerType === 'RESTAURANT') {
+      const dishVariants = await prisma.productVariant.findMany({ where: { productId: id }, select: { id: true } })
+      for (const v of dishVariants) {
+        variantOps.push(prisma.productVariant.update({ where: { id: v.id }, data: { stockQty: available ? 999 : 0 } }))
+      }
+    }
+
     if (Array.isArray(variants)) {
       for (const v of variants) {
         if (v.id) {

@@ -1411,3 +1411,147 @@ confirmed the dish landed in `localStorage`'s cart with the right
 price/seller. Screenshotted the home page (Restaurants rail showing
 لقمة حلوة) and the full restaurant page (all 3 sections, all 8 dishes)
 at 390px width in Arabic.
+
+## INCIDENT: production database wiped, then recovered onto a dev branch
+
+DB endpoint (printed before any DB work, per this recovery task's
+instructions): every env file pointed at `ep-silent-frost-axbvo9ct-
+pooler.c-4.us-east-2.aws.neon.tech/neondb` before this recovery.
+
+**What happened**: while verifying the Phase 3b/FIX migration, an
+agent ran `prisma migrate diff --shadow-database-url "<production
+DATABASE_URL>"`. Prisma treats the shadow-database argument as
+disposable and fully under its control — pointing it at the real
+production database wiped every table (`User`, `SellerProfile`,
+`Product`, `Order`, everything — confirmed via raw `SELECT count(*)`
+against every table, all zero). This included لقمة حلوة (the real
+restaurant onboarded two tasks ago) and all pre-existing demo data.
+100% avoidable, 100% on the agent, disclosed immediately rather than
+attempting a silent fix.
+
+### STEP 1 — environment separation (done first, before touching data)
+
+- Added `CLAUDE.md` with a hard rule: never pass a real/production
+  `DATABASE_URL` to `--shadow-database-url` or any scratch/disposable
+  database argument; local dev must point at a Neon DEV branch, never
+  production; prefer hand-written migration SQL + `prisma migrate
+  deploy` over `prisma migrate dev` in this non-interactive shell
+  (`migrate dev`'s confirmation prompts don't work here, which is what
+  pushed the agent toward `migrate diff` in the first place).
+- Added `scripts/check-env.mjs`, wired as `predev` in `package.json` —
+  prints the DB host `npm run dev` is about to use and **hard-refuses
+  to start** if it matches the known-production host.
+- User created a Neon DEV branch (`ep-wild-cloud-ax3xihv9-pooler...`,
+  distinct compute endpoint from production); `.env` and `.env.local`
+  now point at it. `.env.vercel.local` (a Vercel env pull cache, not
+  loaded by anything in this app — confirmed via repo-wide grep) was
+  deliberately left pointed at production, since that's Vercel's actual
+  deploy-time config, not something a local dev session should silently
+  repoint.
+- The DEV branch came back from Neon already containing the full
+  post-migration schema (all 11 migration's worth of DDL) but zero
+  rows, and no `_prisma_migrations` history table — `prisma migrate
+  deploy` correctly refused (P3005, "schema is not empty") until the
+  history was baselined via `prisma migrate resolve --applied
+  <name>` for each of the 11 migrations in order. `migrate deploy`
+  now reports "No pending migrations to apply" — migrate diff clean.
+
+### STEP 2 — categories: 11 → 2 customer-facing + 1 hidden internal
+
+`Category.isInternal Boolean @default(false)` (added in the same
+migration as Phase 3b's `menuSection`/bilingual-description/`logoUrl`
+work, which predates the wipe and was preserved since the DEV branch's
+schema already included it). `GET /api/categories` and `app/page.js`'s
+`getCategories()` now both filter `isInternal: false` — the internal
+"Food" category (every restaurant dish, auto-assigned server-side via
+new `lib/internalCategory.js`, never chosen by the seller — the
+category picker is now hidden entirely for RESTAURANT sellers in
+`app/dashboard/products/add/page.js`) never appears in `/api/categories`,
+the "Shop by Category" grid, browse, or counts. `POST`/`PATCH
+/api/products` ignore any `categoryId` a RESTAURANT seller's client
+sends and force-assign the internal category id instead — not merely
+"the form doesn't show it," the server never trusts it either.
+`app/api/admin/categories` intentionally still returns all categories
+(including internal) — that's the admin view, not customer-facing.
+
+Icons: reused existing illustrated assets, no files redrawn or
+renamed. `Our Local Products` → `coffee` slug → `public/categories/
+coffee-jabana.png` (the most iconic single Wasla product, standing in
+for the whole grocery bucket). `Bakhour & Perfumes` → `bakhour` slug →
+`public/categories/bakhour-perfumes.png` (exact match, unchanged).
+`lib/categoryIcons.js`'s slug→file map is untouched; the other 9 old
+slugs simply go unused now (harmless, no code references them since
+the DB only has 3 category rows).
+
+`lib/i18n.js`'s `CATEGORY_NAMES_AR` trimmed from 11 to 2 entries:
+`'Our Local Products': 'منتجات بلدنا'`, `'Bakhour & Perfumes': 'بخور
+وعطور'`.
+
+### STEP 3 — delivery zones
+
+Replaced the old 8-zone Faisal/Haram/Ard-El-Lewa set with the 5
+requested New Cairo / Heliopolis–Nasr City zones: Heliopolis (مصر
+الجديدة), El Rehab (الرحاب), Madinaty (مدينتي), Nasr City (مدينة نصر),
+El Nozha (النزهة).
+
+### STEP 4 — demo data
+
+3 demo shops (owners for the demo products — Product.sellerId is
+required; not "fake customers/orders", just re-establishing seller
+accounts the same way the original seed.js already did), 18 demo
+products across both customer categories (jibna/cheese, dakwa, oils,
+grains, coffee, tea, spices, sweets under "Our Local Products";
+bakhour, dilka, sandalia perfume under "Bakhour & Perfumes"), zone
+coverage linking the 3 shops to the 5 new zones. No fake orders, no
+fake customer accounts, no fake لقمة حلوة — that stays a real
+onboarding the user does through the UI.
+
+### STEP 5 — repeatable
+
+`scripts/seed.js` fully rewritten for the new taxonomy, same
+idempotent check-before-create pattern the original already used
+(every section: find-or-create). Verified by running it twice — first
+run: categories/subcategories/admin/shops/products/zones/coverage all
+created; second run: 0 creates, 45 skips. `npm run seed` is the
+committed, re-runnable entry point.
+
+### Row counts after reseed (DEV branch)
+
+```
+User               4   (admin + 3 demo shop owners)
+CustomerProfile    0
+SellerProfile      3
+Category           3   (2 customer-facing + 1 internal)
+SubCategory        9
+Product           18
+ProductVariant    26
+DeliveryZone       5
+ShopZoneCoverage   6
+Order              0
+Address            0
+Review             0
+```
+
+**Gate**: `npm run build` ✅. `prisma migrate deploy` reports no
+pending migrations (diff-clean) against the DEV branch. Verified live:
+`GET /api/categories` returns exactly `['Bakhour & Perfumes', 'Our
+Local Products']`; `GET /api/products` returns 18; `GET /api/zones`
+returns the 5 new zones. Screenshotted the home page (exactly 2
+category tiles, correct icons/counts, Restaurants section correctly
+hidden since none exist yet) and `/products` browse (18 products,
+2-category filter row) at 390px width in Arabic.
+
+**Still open, deliberately not attempted in this recovery pass**
+(scope was explicitly the reseed + environment safety, and after a
+data-loss incident the priority was doing that narrowly and correctly
+rather than reaching further): FIX 2 (hide stock number from the
+restaurant dashboard table/edit page, replace with the availability
+toggle in the UI — the `PATCH .../[id]` `available` boolean API support
+already exists from before the wipe, just not wired into any UI yet),
+NEW 1 (bilingual description *editing* UI in seller settings + the
+customer-facing locale-fallback rendering on the restaurant page — the
+`descriptionAr`/`descriptionEn` schema fields exist and survived, nothing
+reads/writes them yet), NEW 2 (logo required at signup + dashboard
+nag banner + Restaurants-rail logo display — `SellerProfile.logoUrl`
+exists in the schema, nothing in the UI uses it yet). All three need a
+fresh pass — flagging clearly rather than declaring them done.

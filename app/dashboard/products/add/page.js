@@ -161,7 +161,7 @@ export default function AddProductPage() {
   function validate() {
     const errs = {}
     if (!name.trim()) errs.name       = t('seller.errorName', locale)
-    if (!categoryId)  errs.categoryId = t('seller.errorCategory', locale)
+    if (!isRestaurant && !categoryId) errs.categoryId = t('seller.errorCategory', locale)
     if (!price || Number(price) <= 0) errs.price = t('seller.errorPrice', locale)
     if (isRestaurant && !menuSection.trim()) errs.menuSection = t('seller.errorMenuSection', locale)
     setFieldErrors(errs)
@@ -177,8 +177,8 @@ export default function AddProductPage() {
     const body  = {
       name:          name.trim(),
       brand:         brand.trim()       || undefined,
-      categoryId:    parseInt(categoryId, 10),
-      subCategoryId: subCategoryId      ? parseInt(subCategoryId, 10) : undefined,
+      categoryId:    isRestaurant ? undefined : parseInt(categoryId, 10),
+      subCategoryId: isRestaurant || !subCategoryId ? undefined : parseInt(subCategoryId, 10),
       description:   description.trim() || undefined,
       images,
       price:         parseFloat(price),
@@ -233,30 +233,37 @@ export default function AddProductPage() {
             <label className={labelCls}>{t('seller.brand', locale)}</label>
             <input type="text" value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. Kassala" className={inputCls} />
           </div>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>{t('seller.category', locale)} <span className="text-red-400">*</span></label>
-              {catLoading ? (
-                <div className="h-11 bg-gray-100 rounded-xl animate-pulse" />
-              ) : (
-                <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
-                  className={`${inputCls} ${fieldErrors.categoryId ? 'border-red-300' : ''}`}>
-                  <option value="">{t('seller.selectCategory', locale)}</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          {/* Restaurant sellers never choose a category — the server
+              auto-files every dish into a single internal category (see
+              app/api/products/route.js), so the shop category picker
+              (and the 11 Sudanese shop categories in it) never renders
+              for them at all. */}
+          {!isRestaurant && (
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>{t('seller.category', locale)} <span className="text-red-400">*</span></label>
+                {catLoading ? (
+                  <div className="h-11 bg-gray-100 rounded-xl animate-pulse" />
+                ) : (
+                  <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
+                    className={`${inputCls} ${fieldErrors.categoryId ? 'border-red-300' : ''}`}>
+                    <option value="">{t('seller.selectCategory', locale)}</option>
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                )}
+                {fieldErrors.categoryId && <p className="text-xs text-red-500 mt-1">{fieldErrors.categoryId}</p>}
+              </div>
+              <div>
+                <label className={labelCls}>{t('seller.subCategory', locale)}</label>
+                <select value={subCategoryId} onChange={e => setSubCategoryId(e.target.value)}
+                  disabled={subCategories.length === 0}
+                  className={`${inputCls} disabled:opacity-50 disabled:cursor-not-allowed`}>
+                  <option value="">{subCategories.length === 0 ? t('seller.noSubCategories', locale) : t('seller.selectSubCategory', locale)}</option>
+                  {subCategories.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
-              )}
-              {fieldErrors.categoryId && <p className="text-xs text-red-500 mt-1">{fieldErrors.categoryId}</p>}
+              </div>
             </div>
-            <div>
-              <label className={labelCls}>{t('seller.subCategory', locale)}</label>
-              <select value={subCategoryId} onChange={e => setSubCategoryId(e.target.value)}
-                disabled={subCategories.length === 0}
-                className={`${inputCls} disabled:opacity-50 disabled:cursor-not-allowed`}>
-                <option value="">{subCategories.length === 0 ? t('seller.noSubCategories', locale) : t('seller.selectSubCategory', locale)}</option>
-                {subCategories.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
-            </div>
-          </div>
+          )}
           <div>
             <label className={labelCls}>{t('seller.price', locale)} <span className="text-red-400">*</span></label>
             <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="180" min={0} step="0.01"

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '../../../lib/prisma'
 import { getUser } from '../../../lib/auth'
 import { sanitizeString } from '../../../lib/sanitize'
+import { getInternalFoodCategoryId } from '../../../lib/internalCategory'
 
 const PRODUCT_SELECT = {
   variants: {
@@ -111,9 +112,6 @@ export async function POST(request) {
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Product name is required.' }, { status: 400 })
     }
-    if (!categoryId) {
-      return NextResponse.json({ error: 'Category is required.' }, { status: 400 })
-    }
     const numericPrice = parseFloat(price)
     if (!price || isNaN(numericPrice) || numericPrice <= 0) {
       return NextResponse.json({ error: 'A valid price is required.' }, { status: 400 })
@@ -124,16 +122,32 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Menu section is required.' }, { status: 400 })
     }
 
-    const category = await prisma.category.findUnique({ where: { id: parseInt(categoryId, 10) } })
-    if (!category) {
-      return NextResponse.json({ error: 'Category not found' }, { status: 404 })
+    // Restaurant dishes are ALWAYS auto-filed into the single internal
+    // "Food" category server-side — the client can't choose a category
+    // for a dish at all (see app/dashboard/products/add/page.js), and
+    // even if something in the request body claimed a categoryId, it's
+    // ignored here rather than trusted.
+    let categoryRecordId
+    if (sellerProfile.sellerType === 'RESTAURANT') {
+      categoryRecordId = await getInternalFoodCategoryId()
+    } else {
+      if (!categoryId) {
+        return NextResponse.json({ error: 'Category is required.' }, { status: 400 })
+      }
+      const category = await prisma.category.findUnique({ where: { id: parseInt(categoryId, 10) } })
+      if (!category || category.isInternal) {
+        return NextResponse.json({ error: 'Category not found' }, { status: 404 })
+      }
+      categoryRecordId = category.id
     }
 
     const product = await prisma.product.create({
       data: {
         sellerId:      sellerProfile.id,
-        categoryId:    category.id,
-        subCategoryId: subCategoryId ? parseInt(subCategoryId, 10) : null,
+        categoryId:    categoryRecordId,
+        subCategoryId: sellerProfile.sellerType === 'RESTAURANT'
+          ? null
+          : (subCategoryId ? parseInt(subCategoryId, 10) : null),
         name:          sanitizeString(name, 200),
         brand:         brand?.trim()       ? sanitizeString(brand, 100)       : null,
         description:   description?.trim() ? sanitizeString(description, 2000) : null,

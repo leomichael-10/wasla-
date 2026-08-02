@@ -11,6 +11,9 @@ import { DEFAULT_LOCALE, LOCALE_COOKIE, t, categoryName } from '../lib/i18n'
 async function getCategories() {
   try {
     const cats = await prisma.category.findMany({
+      // Internal-only categories (the "Food" bucket restaurant dishes are
+      // auto-filed under) never appear in "Shop by Category".
+      where:   { isInternal: false },
       orderBy: { name: 'asc' },
       // Restaurant dishes never count toward category totals — they live
       // only in the Restaurants section, not "Shop by Category".

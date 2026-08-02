@@ -49,8 +49,16 @@ model SellerProfile {
   sellerType           SellerType          @default(SHOP)
   businessName         String
   // Short tagline shown on the shop/restaurant page header (e.g. a
-  // restaurant's slogan). Optional everywhere — no UI requires it yet.
-  description          String?
+  // restaurant's slogan). Bilingual: Arabic required in the seller form,
+  // English optional — customer pages fall back to descriptionAr when
+  // descriptionEn is empty for the 'en' locale (see app/restaurant/[id]/
+  // page.js), never rendering an empty description either way.
+  descriptionAr        String?
+  descriptionEn        String?
+  // Required to complete seller signup (see /api/auth/register) for new
+  // sellers; nullable so existing sellers aren't locked out — the
+  // dashboard shows a persistent prompt instead (components/LogoPrompt.js).
+  logoUrl              String?
   whatsappNumber       String?
   whatsappVerified     Boolean             @default(false)
   tradeLicense         String?
@@ -132,6 +140,12 @@ model Category {
   id             Int             @id @default(autoincrement())
   name           String          @unique
   icon           String?
+  // Internal-only categories (e.g. the single "Food" bucket every
+  // restaurant dish is auto-filed under — see Product.menuSection) are
+  // never returned by GET /api/categories and never appear in the
+  // customer "Shop by Category" grid/counts. Sellers never choose one;
+  // the server assigns it. Default false covers every existing row.
+  isInternal     Boolean         @default(false)
   subCategories  SubCategory[]
   products       Product[]
   masterProducts MasterProduct[]
