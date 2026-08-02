@@ -92,7 +92,8 @@ export default function Navbar() {
             </svg>
           </button>
 
-          <Link href="/" className="shrink-0 leading-none font-(family-name:--font-reem-kufi)">
+          <Link href="/" className="shrink-0 flex items-center gap-2 leading-none font-(family-name:--font-reem-kufi)">
+            <img src="/icon-48.png" alt="" width={28} height={28} className="w-7 h-7 shrink-0" />
             <span className="text-white font-black text-xl tracking-tight">
               was<span className="text-accent-300">la</span>
             </span>
