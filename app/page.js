@@ -12,9 +12,31 @@ async function getCategories() {
   try {
     const cats = await prisma.category.findMany({
       orderBy: { name: 'asc' },
-      include: { _count: { select: { products: { where: { isActive: true } } } } },
+      // Restaurant dishes never count toward category totals — they live
+      // only in the Restaurants section, not "Shop by Category".
+      include: { _count: { select: { products: { where: { isActive: true, seller: { sellerType: 'SHOP' } } } } } },
     })
     return JSON.parse(JSON.stringify(cats))
+  } catch { return [] }
+}
+
+async function getRestaurants() {
+  try {
+    const sellers = await prisma.sellerProfile.findMany({
+      where:   { sellerType: 'RESTAURANT', approvedByAdmin: true },
+      orderBy: { businessName: 'asc' },
+      take:    12,
+      include: { products: { where: { isActive: true }, select: { images: true } } },
+    })
+    const restaurants = sellers.map(s => ({
+      id:           s.id,
+      businessName: s.businessName,
+      city:         s.city,
+      area:         s.area,
+      isOpen:       s.isOpen,
+      image:        s.products.find(p => p.images?.length)?.images?.[0] ?? null,
+    }))
+    return JSON.parse(JSON.stringify(restaurants))
   } catch { return [] }
 }
 
@@ -33,6 +55,8 @@ async function annotateWithZone(rawProducts, zoneId) {
   }))
 }
 
+// sellerType: 'SHOP' keeps restaurant dishes out of these general product
+// rails — restaurants surface only in the Restaurants section + their pages.
 const PRODUCT_SELECT = {
   variants: {
     select: { id: true, label: true, price: true, stockQty: true },
@@ -45,7 +69,7 @@ const PRODUCT_SELECT = {
 async function getPopularProducts(zoneId) {
   try {
     const raw = await prisma.product.findMany({
-      where:   { isActive: true, seller: { isOpen: true } },
+      where:   { isActive: true, seller: { isOpen: true, sellerType: 'SHOP' } },
       orderBy: { createdAt: 'desc' },
       take:    10,
       include: PRODUCT_SELECT,
@@ -57,7 +81,7 @@ async function getPopularProducts(zoneId) {
 async function getOriginRails(zoneId) {
   try {
     const regions = await prisma.product.findMany({
-      where:    { isActive: true, seller: { isOpen: true }, originRegion: { not: null } },
+      where:    { isActive: true, seller: { isOpen: true, sellerType: 'SHOP' }, originRegion: { not: null } },
       distinct: ['originRegion'],
       select:   { originRegion: true },
       take:     4,
@@ -66,7 +90,7 @@ async function getOriginRails(zoneId) {
     const rails = []
     for (const { originRegion } of regions) {
       const raw = await prisma.product.findMany({
-        where:   { isActive: true, seller: { isOpen: true }, originRegion },
+        where:   { isActive: true, seller: { isOpen: true, sellerType: 'SHOP' }, originRegion },
         take:    10,
         include: PRODUCT_SELECT,
       })
@@ -92,6 +116,45 @@ function CategoryTile({ category, locale }) {
         <span className="text-[10px] text-gray-400">{category._count.products}</span>
       )}
     </Link>
+  )
+}
+
+function RestaurantTile({ restaurant }) {
+  return (
+    <Link
+      href={`/restaurant/${restaurant.id}`}
+      className="group w-40 shrink-0 bg-white rounded-2xl border border-brand-100 shadow-sm hover:shadow-md hover:border-accent-300 transition-all duration-200 overflow-hidden flex flex-col"
+    >
+      <div className="aspect-square bg-linear-to-br from-brand-700 to-brand-500 flex items-center justify-center overflow-hidden">
+        {restaurant.image ? (
+          <img src={restaurant.image} alt={restaurant.businessName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        ) : (
+          <span className="text-3xl font-black text-white/90 select-none">
+            {restaurant.businessName[0].toUpperCase()}
+          </span>
+        )}
+      </div>
+      <div className="p-2.5">
+        <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{restaurant.businessName}</p>
+        {(restaurant.area || restaurant.city) && (
+          <p className="text-[11px] text-gray-400 truncate mt-0.5">{[restaurant.area, restaurant.city].filter(Boolean).join(', ')}</p>
+        )}
+      </div>
+    </Link>
+  )
+}
+
+function RestaurantSection({ restaurants, locale }) {
+  if (restaurants.length === 0) return null
+  return (
+    <section className="max-w-7xl mx-auto px-4 pt-6 pb-2">
+      <h2 className="text-lg font-black text-gray-900 mb-3">{t('home.restaurants', locale)}</h2>
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+        {restaurants.map(restaurant => (
+          <RestaurantTile key={restaurant.id} restaurant={restaurant} />
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -128,8 +191,9 @@ export default async function HomePage() {
     if (raw) zoneId = JSON.parse(decodeURIComponent(raw))?.id ?? null
   } catch { /* ignore malformed cookie */ }
 
-  const [categories, popular, originRails] = await Promise.all([
+  const [categories, restaurants, popular, originRails] = await Promise.all([
     getCategories(),
+    getRestaurants(),
     getPopularProducts(zoneId),
     getOriginRails(zoneId),
   ])
@@ -158,6 +222,9 @@ export default async function HomePage() {
           </div>
         </form>
       </section>
+
+      {/* Restaurants — separate from product categories; hidden until one exists */}
+      <RestaurantSection restaurants={restaurants} locale={locale} />
 
       {/* Category grid — the primary navigation surface */}
       {categories.length > 0 && (

@@ -5,7 +5,7 @@ import { prisma } from '../../../lib/prisma'
 export async function GET() {
   try {
     const sellers = await prisma.sellerProfile.findMany({
-      where:   { approvedByAdmin: true },
+      where:   { approvedByAdmin: true, sellerType: 'SHOP' },
       orderBy: { businessName: 'asc' },
       include: {
         reviews:  { select: { rating: true } },

@@ -20,6 +20,7 @@ const OPTIONAL_AUTH_PREFIXES = [
   '/api/products',
   '/api/reviews',
   '/api/shops',
+  '/api/restaurants',
   '/api/categories',
   '/api/zones',
   '/api/delivery',

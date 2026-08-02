@@ -1213,3 +1213,54 @@ server-side with no errors; this environment has no headless browser
 available to capture live console warnings interactively, so the fix
 was verified by tracing the dependency-identity chain rather than a
 captured screenshot/console log.
+
+## Phase 3a: Restaurants section on home (browse by restaurant)
+
+DB endpoint (printed before any DB work, per task instructions):
+`ep-silent-frost-axbvo9ct-pooler.c-4.us-east-2.aws.neon.tech/neondb`.
+No migration needed — `SellerProfile.sellerType` (`SHOP` | `RESTAURANT`)
+and the seller-side "dish" creation flow already existed from Phase 1/2
+(`app/dashboard/products/add/page.js`); dishes are ordinary `Product`
+rows owned by a `RESTAURANT`-type seller, same model shop products use.
+
+**New read surface**: `GET /api/restaurants` (list, approved RESTAURANT
+sellers) and `GET /api/restaurants/[id]` (one restaurant + its active
+`Product` rows as the menu, same shape `/api/products` returns so
+add-to-cart is unchanged). Both added to `middleware.js`'s
+`OPTIONAL_AUTH_PREFIXES` (public GET, same as `/api/shops`).
+
+**Keeping restaurants out of shop browsing**: every query that powers
+"Shop by Category" or general product browse now filters
+`seller: { sellerType: 'SHOP' }` — `app/api/products/route.js` (GET),
+`app/page.js`'s `getPopularProducts`/`getOriginRails`/`getCategories`
+(the category `_count` is now scoped to `seller.sellerType: 'SHOP'`
+too, so a restaurant's dish count never inflates a category tile), and
+`app/api/shops/route.js` (`sellerType: 'SHOP'` added to its `where` so
+restaurants don't show up as shop cards on `/shops`).
+
+**Home page**: `app/page.js` adds a `RestaurantSection` (horizontal
+scroll of `RestaurantTile`s, avatar-letter fallback like `ShopCard`)
+positioned above the category grid; hidden entirely when there are zero
+approved restaurants (`RestaurantSection` returns `null`).
+
+**New page**: `app/restaurant/[id]/page.js` — client component
+(fetches `/api/restaurants/[id]`, mirrors `app/shops/[id]/page.js`'s
+structure) showing the restaurant header (name, city/area, dish count)
+and its menu grid; empty menu shows a "Menu coming soon" state instead
+of a broken/empty page. Add-to-cart reuses `lib/cart.js` unchanged
+(dishes are just `Product`/`ProductVariant` rows). Fully bilingual via
+new `home.restaurants` / `restaurant.*` keys in `lib/i18n.js`
+(ar + en); RTL is automatic via the existing `dir={dir}` set on `<html>`
+in `app/layout.js` from the locale cookie, plus explicit `rtl:`/`ltr:`
+Tailwind variants on the one absolutely-positioned price badge.
+
+**Gate**: `npm run build` ✅. Verified live against the dev DB and a
+temporary Playwright-driven Chromium session: seeded a throwaway
+`RESTAURANT` seller + one dish, screenshotted the home page (Arabic,
+390px width) showing "المطاعم" above "تسوق حسب الفئة", and the
+restaurant page showing its menu with a working add-to-cart (confirmed
+the item landed in `localStorage`'s cart). Confirmed via
+`/api/products?search=...` that the dish does not appear in the general
+product browse. All test rows (user, seller profile, product/variant)
+deleted immediately after via a cleanup script — nothing seeded here
+is left in the database.

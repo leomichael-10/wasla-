@@ -27,7 +27,9 @@ export async function GET(request) {
   const sort     = searchParams.get('sort') ?? 'az'
   const zoneId   = parseInt(searchParams.get('zoneId'), 10) || null
 
-  const where = { isActive: true, seller: { isOpen: true } }
+  // Restaurant dishes live only in the Restaurants section + their own
+  // pages (see /api/restaurants), never in the shop/category product browse.
+  const where = { isActive: true, seller: { isOpen: true, sellerType: 'SHOP' } }
   if (category) where.category = { name: { contains: category, mode: 'insensitive' } }
   if (brand)     where.brand = { contains: brand, mode: 'insensitive' }
   if (city)      where.seller = { ...where.seller, city: { contains: city, mode: 'insensitive' } }
