@@ -1264,3 +1264,70 @@ the item landed in `localStorage`'s cart). Confirmed via
 product browse. All test rows (user, seller profile, product/variant)
 deleted immediately after via a cleanup script — nothing seeded here
 is left in the database.
+
+## Wasla brand assets: favicon, PWA icons, animated loader
+
+Wired in the provided brand assets (not regenerated/redrawn) —
+`favicon.ico`, `icon-16/32/48/64/96/192/512.png`,
+`icon-maskable-512.png`, `apple-touch-icon.png`, `wasla-splash.gif` —
+all placed at `public/` root per the brief.
+
+**Favicon**: `public/favicon.ico` + a full `metadata.icons.icon` array
+in `app/layout.js` (favicon.ico plus every PNG size) so the tab icon
+resolves correctly across browsers instead of falling back to the
+Next.js default.
+
+**Manifest**: `public/manifest.webmanifest` now registers `icon-192`,
+`icon-512` (purpose "any") and `icon-maskable-512` (purpose
+"maskable"), plus the full 16–512 set for broader OS icon-picker
+support. `background_color` → `#F3EDE2` (cream), `theme_color` →
+`#C1502E` (terracotta/accent-400) — replacing stale purple
+(`#7e22ce`/`#f9f7ff`) placeholder values left over from before the
+Wasla rebrand. `app/layout.js`'s `viewport.themeColor` updated to match
+(`#6F4E37` → `#C1502E`).
+
+**iOS**: `icons.apple` → `/apple-touch-icon.png` (Next's metadata API
+emits the `<link rel="apple-touch-icon">` tag from this). `apple-touch-
+icon.png` is intentionally opaque (verified via `sharp` metadata:
+`hasAlpha: false`) — iOS renders transparency as black, so this file
+must never be swapped for a transparent PNG. `appleWebApp` metadata
+covers `apple-mobile-web-app-title`/`status-bar-style`; Next 15 only
+auto-emits the standardized `mobile-web-app-capable` meta tag now, not
+the legacy Apple-prefixed one, so `metadata.other` adds
+`apple-mobile-web-app-capable: yes` explicitly — older iOS Safari still
+needs it to launch standalone (no browser chrome) from the home
+screen. No iOS static splash screen was previously configured, so
+there was nothing to fix regarding "GIF as splash" — noted here in
+case one gets added later: it must be a static PNG, never the GIF.
+
+**Loader**: new `components/Loader.js` — centered `wasla-splash.gif` on
+the cream background, swapped for a static PNG
+(`public/wasla-splash-static.png`, extracted from the GIF's first frame
+via `sharp`, not redrawn) when `prefers-reduced-motion: reduce` matches
+live via a `matchMedia` listener. Wired in as `app/loading.js`, Next's
+route-level loading UI shown while a page/segment's data is still
+being fetched.
+
+**Cleanup**: deleted `public/icons/` (the old purple-branded
+icon/maskable-icon PNGs and SVGs) — fully superseded and, after
+updating `public/sw.js`'s `APP_SHELL` precache list from `/icons/
+icon-*.png` to the new root-level paths, no longer referenced anywhere
+(confirmed via a repo-wide grep for `/icons/`). Service worker cache
+bumped `wasla-v2` → `wasla-v3` so existing installs evict the stale
+`/icons/*` cache entries instead of serving them forever under the
+cache-first strategy.
+
+**Gate**: `npm run build` ✅. Verified live via the dev server +
+Playwright/Chromium: `favicon.ico`, `manifest.webmanifest`,
+`apple-touch-icon.png`, and `wasla-splash.gif` all serve 200 with the
+expected bytes; the rendered `<head>` was inspected directly — 8 `<link
+rel="icon">` entries (favicon.ico + all 7 PNG sizes), one `<link
+rel="apple-touch-icon">`, `apple-mobile-web-app-capable` +
+`mobile-web-app-capable` + `apple-mobile-web-app-title` +
+`apple-mobile-web-app-status-bar-style` meta tags, `<link
+rel="manifest">`, and `theme-color` = `#C1502E` all present.
+`manifest.webmanifest` fetched and diffed against the expected shape.
+The `Loader` was screenshotted in two Playwright contexts — default
+(GIF playing) and `reducedMotion: 'reduce'` (confirmed
+`matchMedia('(prefers-reduced-motion: reduce)').matches === true` and
+the DOM swapped to `wasla-splash-static.png`).

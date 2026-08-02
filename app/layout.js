@@ -55,14 +55,33 @@ export const metadata = {
     statusBarStyle: 'default',
     title:        'Wasla',
   },
+  // Next's appleWebApp.capable only emits the standardized
+  // "mobile-web-app-capable" meta tag; older iOS Safari versions still
+  // require the legacy Apple-prefixed one to render standalone (no
+  // browser chrome) when added to the home screen.
+  other: {
+    'apple-mobile-web-app-capable': 'yes',
+  },
   icons: {
-    icon:  ['/icons/icon-192.png', '/icons/icon-512.png'],
-    apple: '/icons/apple-touch-icon.png',
+    icon: [
+      { url: '/favicon.ico',   sizes: 'any' },
+      { url: '/icon-16.png',   sizes: '16x16',   type: 'image/png' },
+      { url: '/icon-32.png',   sizes: '32x32',   type: 'image/png' },
+      { url: '/icon-48.png',   sizes: '48x48',   type: 'image/png' },
+      { url: '/icon-64.png',   sizes: '64x64',   type: 'image/png' },
+      { url: '/icon-96.png',   sizes: '96x96',   type: 'image/png' },
+      { url: '/icon-192.png',  sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png',  sizes: '512x512', type: 'image/png' },
+    ],
+    // apple-touch-icon.png has an opaque cream background — iOS renders
+    // transparency as black, so this must never be swapped for a
+    // transparent PNG.
+    apple: '/apple-touch-icon.png',
   },
 }
 
 export const viewport = {
-  themeColor: '#6F4E37',
+  themeColor: '#C1502E',
 }
 
 export default async function RootLayout({ children }) {

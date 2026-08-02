@@ -3,16 +3,15 @@
 // fallback for everything else (pages, API) so the app shell still loads
 // offline-ish and stale data beats a blank screen on a flaky connection.
 
-// Bumped to v2 to force-evict any previously cached error responses for
-// static assets (see the `res.ok` check below) — a stale 404 cached from
-// before an asset existed would otherwise be replayed forever under the
-// cache-first strategy, even after the real file starts serving fine.
-const CACHE_NAME = 'wasla-v2'
+// Bumped to v3: brand icons moved from /icons/* to root-level /icon-*.png
+// (see PROGRESS.md "Wasla brand assets") — old clients must evict the
+// stale /icons/* entries rather than serve them forever under cache-first.
+const CACHE_NAME = 'wasla-v3'
 const APP_SHELL = [
   '/',
   '/manifest.webmanifest',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  '/icon-192.png',
+  '/icon-512.png',
 ]
 
 self.addEventListener('install', event => {
