@@ -1187,3 +1187,29 @@ adjustment to -110 → blocked; top-up → unblocked; two concurrent
 completions on a second order → exactly one deduction, exactly one
 ledger row. All admin wallet routes confirmed admin-gated and the
 seller route confirmed self-scoped by code audit.
+
+## Fix: infinite render loop on the cart page
+
+`app/cart/page.js` had a "Maximum update depth exceeded" loop. Root
+cause: `zone` was a plain object literal rebuilt from `selectedAddress`
+on every render (`{ id, nameEn, nameAr }`), so it got a new reference
+each time. A `useEffect` fetching delivery quotes depended on `zone`
+directly (`[zone, JSON.stringify(sellerIds)]`) — new `zone` reference
+every render → effect fires → `setQuotes` → re-render → new `zone`
+reference → effect fires again, forever.
+
+Fixed by memoizing `zone` with `useMemo`, keyed on its actual primitive
+inputs (`hasZone`, `zoneId`, `zoneNameEn`, `zoneNameAr`) instead of
+being rebuilt as a fresh object every render — the effect's dependency
+is now stable across renders that don't change the selected zone. No
+effect/state was deleted here since the quotes effect is a genuine
+external fetch (not a pure derivation of existing props/state); the
+other cart totals (`subtotal`, `deliveryFee`, `total`, `anyUncovered`,
+`canCheckout`) were already computed inline during render rather than
+mirrored into state, so no changes were needed there.
+
+Gate: `npm run build` ✅. Verified the cart route renders cleanly
+server-side with no errors; this environment has no headless browser
+available to capture live console warnings interactively, so the fix
+was verified by tracing the dependency-identity chain rather than a
+captured screenshot/console log.

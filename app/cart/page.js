@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
@@ -30,9 +30,13 @@ export default function CartPage() {
   const dir = locale === 'ar' ? 'rtl' : 'ltr'
 
   const selectedAddress = addresses.find(a => a.id === addressId) ?? null
-  const zone = selectedAddress?.zone
-    ? { id: selectedAddress.zoneId, nameEn: selectedAddress.zone.nameEn, nameAr: selectedAddress.zone.nameAr }
-    : null
+  const hasZone     = Boolean(selectedAddress?.zone)
+  const zoneId      = selectedAddress?.zoneId ?? null
+  const zoneNameEn  = selectedAddress?.zone?.nameEn ?? null
+  const zoneNameAr  = selectedAddress?.zone?.nameAr ?? null
+  const zone = useMemo(() => (
+    hasZone ? { id: zoneId, nameEn: zoneNameEn, nameAr: zoneNameAr } : null
+  ), [hasZone, zoneId, zoneNameEn, zoneNameAr])
 
   const loadAddresses = useCallback((token) => {
     fetch('/api/addresses', { headers: { Authorization: `Bearer ${token}` } })
