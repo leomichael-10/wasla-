@@ -148,7 +148,7 @@ export default function RestaurantPage() {
       <Navbar />
 
       {/* Restaurant hero banner */}
-      <div className="bg-gradient-to-br from-brand-800 via-brand-600 to-brand-500">
+      <div className="bg-linear-to-br from-brand-800 via-brand-600 to-brand-500">
         <div className="max-w-6xl mx-auto px-4 py-10">
           <div className="flex items-center gap-1.5 text-brand-100 text-xs mb-5">
             <Link href="/" className="hover:text-white transition-colors">{t('tab.home', locale)}</Link>
@@ -167,6 +167,10 @@ export default function RestaurantPage() {
 
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl font-black text-white mb-1">{restaurant.businessName}</h1>
+
+              {restaurant.description && (
+                <p className="text-brand-100 text-sm mb-1">{restaurant.description}</p>
+              )}
 
               {(restaurant.city || restaurant.area) && (
                 <p className="text-brand-100 text-sm mb-2">
@@ -214,9 +218,18 @@ export default function RestaurantPage() {
               <p className="text-sm text-gray-500">{t('restaurant.menuComingSoonHint', locale)}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {restaurant.dishes.map(dish => (
-                <DishCard key={dish.id} dish={dish} locale={locale} />
+            <div className="space-y-8">
+              {restaurant.menuSections.map(({ section, dishes }) => (
+                <div key={section ?? '__other__'}>
+                  <h3 className="text-base font-black text-brand-700 mb-3">
+                    {section ?? t('restaurant.otherSection', locale)}
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {dishes.map(dish => (
+                      <DishCard key={dish.id} dish={dish} locale={locale} />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           )}

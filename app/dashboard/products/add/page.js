@@ -116,6 +116,7 @@ export default function AddProductPage() {
   const [description,   setDescription]   = useState('')
   const [price,         setPrice]         = useState('')
   const [images,        setImages]        = useState([])
+  const [menuSection,   setMenuSection]   = useState('')
 
   const [categories,    setCategories]    = useState([])
   const [subCategories, setSubCategories] = useState([])
@@ -162,6 +163,7 @@ export default function AddProductPage() {
     if (!name.trim()) errs.name       = t('seller.errorName', locale)
     if (!categoryId)  errs.categoryId = t('seller.errorCategory', locale)
     if (!price || Number(price) <= 0) errs.price = t('seller.errorPrice', locale)
+    if (isRestaurant && !menuSection.trim()) errs.menuSection = t('seller.errorMenuSection', locale)
     setFieldErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -180,6 +182,7 @@ export default function AddProductPage() {
       description:   description.trim() || undefined,
       images,
       price:         parseFloat(price),
+      menuSection:   isRestaurant ? menuSection.trim() : undefined,
     }
     try {
       const res  = await fetch('/api/products', {
@@ -277,13 +280,25 @@ export default function AddProductPage() {
           {!isRestaurant && null}
 
           {/*
-            === RESTAURANT-SPECIFIC FIELDS SEAM (Phase 3) ===
-            When sellerType === 'RESTAURANT', Phase 3 adds dish-specific
-            fields here (e.g. spice level, prep time, dietary tags) and
-            the browse-by-restaurant customer experience. Today RESTAURANT
-            sellers get no extra fields beyond the branched wording above.
+            === RESTAURANT-SPECIFIC FIELDS SEAM (Phase 3b) ===
+            Menu section groups this dish on the restaurant's public page
+            (see app/restaurant/[id]/page.js) — free text, owner-defined,
+            so a new restaurant isn't locked into another shop's taxonomy.
+            Future dish-specific fields (spice level, prep time, dietary
+            tags) can plug in alongside it.
           */}
-          {isRestaurant && null}
+          {isRestaurant && (
+            <div>
+              <label className={labelCls}>
+                {t('seller.menuSection', locale)} <span className="text-red-400">*</span>
+              </label>
+              <input type="text" value={menuSection} onChange={e => setMenuSection(e.target.value)}
+                placeholder={t('seller.menuSectionPlaceholder', locale)}
+                className={`${inputCls} ${fieldErrors.menuSection ? 'border-red-300 ring-red-200' : ''}`} />
+              <p className="text-xs text-gray-400 mt-1">{t('seller.menuSectionHint', locale)}</p>
+              {fieldErrors.menuSection && <p className="text-xs text-red-500 mt-1">{fieldErrors.menuSection}</p>}
+            </div>
+          )}
         </section>
 
         {/* Images */}

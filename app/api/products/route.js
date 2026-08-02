@@ -106,7 +106,7 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    const { name, categoryId, subCategoryId, brand, description, images, price } = body
+    const { name, categoryId, subCategoryId, brand, description, images, price, menuSection } = body
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Product name is required.' }, { status: 400 })
@@ -117,6 +117,11 @@ export async function POST(request) {
     const numericPrice = parseFloat(price)
     if (!price || isNaN(numericPrice) || numericPrice <= 0) {
       return NextResponse.json({ error: 'A valid price is required.' }, { status: 400 })
+    }
+    // Restaurant menus are grouped by section on the customer-facing page
+    // (see /api/restaurants/[id]) — a dish without one has nowhere to render.
+    if (sellerProfile.sellerType === 'RESTAURANT' && !menuSection?.trim()) {
+      return NextResponse.json({ error: 'Menu section is required.' }, { status: 400 })
     }
 
     const category = await prisma.category.findUnique({ where: { id: parseInt(categoryId, 10) } })
@@ -133,6 +138,7 @@ export async function POST(request) {
         brand:         brand?.trim()       ? sanitizeString(brand, 100)       : null,
         description:   description?.trim() ? sanitizeString(description, 2000) : null,
         images:        Array.isArray(images) ? images.slice(0, 5) : [],
+        menuSection:   sellerProfile.sellerType === 'RESTAURANT' && menuSection?.trim() ? sanitizeString(menuSection, 100) : null,
         isActive:      true,
         variants: {
           create: [{

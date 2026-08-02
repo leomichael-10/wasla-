@@ -48,6 +48,9 @@ model SellerProfile {
   userId               Int                 @unique
   sellerType           SellerType          @default(SHOP)
   businessName         String
+  // Short tagline shown on the shop/restaurant page header (e.g. a
+  // restaurant's slogan). Optional everywhere — no UI requires it yet.
+  description          String?
   whatsappNumber       String?
   whatsappVerified     Boolean             @default(false)
   tradeLicense         String?
@@ -175,6 +178,15 @@ model Product {
   shelfLifeDays  Int?
   storage        StorageType?
   isHeritageGood Boolean          @default(false)
+  // Restaurant menu grouping (e.g. "برجر", "مشويات وشاورما", "جانبية") —
+  // free text, owner-defined per restaurant. Always null for SHOP
+  // sellers' products; RESTAURANT sellers group their menu by it (see
+  // /api/restaurants/[id] and app/restaurant/[id]/page.js). categoryId
+  // above stays required by the schema but is not customer-facing for
+  // dishes — restaurant products are excluded from category browse
+  // entirely (see app/api/products/route.js), so its value here is a
+  // technical placeholder, not a real classification.
+  menuSection    String?
   createdAt      DateTime         @default(now())
   seller         SellerProfile    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
   category       Category         @relation(fields: [categoryId], references: [id])

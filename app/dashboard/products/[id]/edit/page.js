@@ -120,13 +120,16 @@ export default function EditProductPage() {
   const [loading,       setLoading]       = useState(true)
   const [saving,        setSaving]        = useState(false)
   const [error,         setError]         = useState('')
+  const [menuSection,   setMenuSection]   = useState('')
+  const [isRestaurant,  setIsRestaurant]  = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('wasla_token')
     Promise.all([
       fetch(`/api/products/${id}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
       fetch('/api/categories').then(r => r.json()),
-    ]).then(([pData, cData]) => {
+      fetch('/api/seller/profile', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+    ]).then(([pData, cData, sData]) => {
       const p = pData.product
       if (!p) { setError('Product not found'); return }
       setName(p.name ?? '')
@@ -135,6 +138,8 @@ export default function EditProductPage() {
       setCategoryId(String(p.categoryId ?? ''))
       setSubCategoryId(String(p.subCategoryId ?? ''))
       setImages(p.images ?? [])
+      setMenuSection(p.menuSection ?? '')
+      setIsRestaurant(sData.profile?.sellerType === 'RESTAURANT')
       setVariants(p.variants.map(v => ({
         id:            v.id,
         label:         v.label         ?? '',
@@ -172,6 +177,7 @@ export default function EditProductPage() {
       categoryId:    parseInt(categoryId, 10),
       subCategoryId: subCategoryId ? parseInt(subCategoryId, 10) : null,
       images,
+      menuSection:   isRestaurant ? menuSection.trim() : undefined,
       variants: [
         ...variants.map(v => ({
           id:            v.id,
@@ -239,6 +245,11 @@ export default function EditProductPage() {
           </div>
           <div><label className={labelCls}>Description</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={`${inputCls} resize-none`} /></div>
+          {isRestaurant && (
+            <div><label className={labelCls}>Menu section *</label>
+              <input type="text" value={menuSection} onChange={e => setMenuSection(e.target.value)}
+                placeholder="e.g. برجر" className={inputCls} /></div>
+          )}
         </section>
 
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-3">

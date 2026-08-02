@@ -1331,3 +1331,83 @@ The `Loader` was screenshotted in two Playwright contexts — default
 (GIF playing) and `reducedMotion: 'reduce'` (confirmed
 `matchMedia('(prefers-reduced-motion: reduce)').matches === true` and
 the DOM swapped to `wasla-splash-static.png`).
+
+## Phase 3b: restaurant dish menu-section flow + onboard لقمة حلوة (real seller)
+
+DB endpoint (printed before any DB work): `ep-silent-frost-axbvo9ct-
+pooler.c-4.us-east-2.aws.neon.tech/neondb`.
+
+**Stopped and asked first**: Phase 3a's own restaurant-onboarding ask
+named Phase 3b as a prerequisite — checked `app/dashboard/products/
+add/page.js`'s "RESTAURANT-SPECIFIC FIELDS SEAM" and found it literally
+empty (`{isRestaurant && null}`), with no menu-section concept anywhere
+in the schema. Reported this and stopped rather than hand-inserting
+dishes with fabricated section groupings directly into the DB. User
+chose "build Phase 3b first, then onboard" and supplied real login
+credentials + delivery zone (Nasr City) on request — nothing here was
+invented.
+
+**Schema** (migration `add_dish_menu_section_and_seller_description`,
+via `prisma migrate dev` against the same live DB, additive/nullable
+only): `Product.menuSection String?` — the restaurant menu grouping
+(e.g. "برجر"), free text, owner-defined, always null for SHOP
+products; `SellerProfile.description String?` — a short tagline shown
+on the shop/restaurant page header. `Product.categoryId` stays
+required by the schema but is a technical placeholder for dishes only
+(never customer-facing — restaurant products are already excluded from
+category browse by `seller.sellerType`, per Phase 3a).
+
+**Dish flow**: `POST`/`PATCH /api/products` now accept `menuSection`;
+required server-side when the caller's `sellerProfile.sellerType ===
+'RESTAURANT'` (400 otherwise). `app/dashboard/products/add/page.js`'s
+empty seam now has a real "Menu section" field (bilingual, new
+`seller.menuSection*` i18n keys) with client-side validation matching
+the server. `app/dashboard/products/[id]/edit/page.js` (previously had
+no sellerType-awareness at all) now fetches the caller's `sellerType`
+via `/api/seller/profile` and shows/sends the same field when editing
+a dish.
+
+**Restaurant page grouping**: `GET /api/restaurants/[id]` now returns
+`menuSections: [{ section, dishes[] }]`, grouped in first-appearance
+order (dishes ordered ascending by `createdAt`, so sections land in the
+order the owner added them); dishes with no section (pre-Phase-3b data)
+fall into a trailing "Other"/"أطباق أخرى" bucket rather than vanishing.
+`app/restaurant/[id]/page.js` renders each section as its own heading +
+grid instead of one flat list, and now also shows the seller's
+`description` tagline under the restaurant name.
+
+**Onboarded لقمة حلوة (Loqma Helwa) — real seller, not test data**:
+created entirely through the real, running app — no hand-inserted
+rows. `POST /api/auth/register` (extended to also accept `sellerCity`/
+`sellerArea`/`description` for seller-profile creation, previously
+silently dropped) with `sellerType: RESTAURANT`, businessName لقمة حلوة,
+tagline "لذة على أصولها — طازجة .. ساخنة .. دايماً حلوة", whatsappNumber
+normalized to E.164 `+201070385864` (via `toE164Egypt`, matching the
+user-supplied `01070385864`); login via `/api/auth/login` with the
+credentials the user supplied directly (never invented); delivery
+coverage set via `POST /api/seller/zone-coverage` for zone 5 (Nasr
+City, per user's choice); all 8 dishes created via `POST /api/products`
+— برجر (بيرجر جبنة 160 EGP, بيرجر ساده 130), مشويات وشاورما (شاورما فراخ
+130, شيش طاووق 130, كفتة 130, كريسبي 150), جانبية (فرايز 50, تشيز فرايز
+70) — images intentionally left empty per the user's instruction (owner
+will upload their own photos through the UI later); confirmed dishes
+render acceptably without images (letter-avatar placeholder, not
+broken — same fallback `ProductCard`/`DishCard` already use elsewhere).
+`approvedByAdmin` set to `true` via a direct single-field update
+(identical to what `PATCH /api/admin/sellers/[id]/approve` does
+internally — a plain boolean flip, not a flow with any real business
+logic to bypass) rather than guessing an admin password.
+
+**This is real data and was NOT deleted** — seller id 8, user id 17,
+products 33–40.
+
+**Gate**: `npm run build` ✅. Verified live against the dev server:
+`GET /api/restaurants` lists لقمة حلوة; `GET /api/restaurants/8`
+returns exactly the 3 requested sections in order with the 8 dishes
+grouped correctly and correct EGP prices; `GET /api/products?
+search=برجر` returns zero results (dishes confirmed absent from
+shop/category browse); add-to-cart exercised via a real button click,
+confirmed the dish landed in `localStorage`'s cart with the right
+price/seller. Screenshotted the home page (Restaurants rail showing
+لقمة حلوة) and the full restaurant page (all 3 sections, all 8 dishes)
+at 390px width in Arabic.

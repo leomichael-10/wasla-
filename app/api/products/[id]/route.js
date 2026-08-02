@@ -27,7 +27,7 @@ export async function PATCH(request, { params }) {
     }
 
     const body = await request.json()
-    const { name, brand, description, categoryId, subCategoryId, images, variants } = body
+    const { name, brand, description, categoryId, subCategoryId, images, variants, menuSection } = body
 
     const productData = {}
     if (name          !== undefined) productData.name          = sanitizeString(name, 200)
@@ -36,6 +36,9 @@ export async function PATCH(request, { params }) {
     if (categoryId    !== undefined) productData.categoryId    = parseInt(categoryId, 10)
     if (subCategoryId !== undefined) productData.subCategoryId = subCategoryId ? parseInt(subCategoryId, 10) : null
     if (images        !== undefined) productData.images        = Array.isArray(images) ? images : []
+    if (menuSection   !== undefined && sellerProfile.sellerType === 'RESTAURANT') {
+      productData.menuSection = menuSection?.trim() ? sanitizeString(menuSection, 100) : null
+    }
 
     const variantOps = []
     if (Array.isArray(variants)) {

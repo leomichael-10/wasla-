@@ -92,7 +92,7 @@ export async function POST(request) {
     // Subscriptions are shelved for launch (NEXT_PUBLIC_SUBSCRIPTIONS_ENABLED=false) —
     // every shop starts on the free tier instead of waiting on a subscription payment.
     if (role === 'retailer' || role === 'wholesaler') {
-      const { businessName, whatsappNumber } = body
+      const { businessName, whatsappNumber, sellerCity, sellerArea, description } = body
       const subscriptionsEnabled = process.env.NEXT_PUBLIC_SUBSCRIPTIONS_ENABLED === 'true'
       await prisma.sellerProfile.create({
         data: {
@@ -100,6 +100,9 @@ export async function POST(request) {
           businessName: businessName || 'My Shop',
           whatsappNumber,
           sellerType,
+          city: sellerCity?.trim() || null,
+          area: sellerArea?.trim() || null,
+          description: description?.trim() || null,
           approvedByAdmin: false,
           subscriptionStatus: subscriptionsEnabled ? 'PENDING' : 'ACTIVE',
         }
