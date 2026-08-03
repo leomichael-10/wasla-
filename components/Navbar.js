@@ -93,7 +93,7 @@ export default function Navbar() {
           </button>
 
           <Link href="/" className="shrink-0 flex items-center gap-2 leading-none font-(family-name:--font-reem-kufi)">
-            <img src="/icon-48.png" alt="" width={28} height={28} className="w-7 h-7 shrink-0" />
+            <img src="/icon-96.png" alt="" width={56} height={56} className="w-14 h-14 shrink-0" />
             <span className="text-white font-black text-xl tracking-tight">
               was<span className="text-accent-300">la</span>
             </span>

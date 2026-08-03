@@ -6,6 +6,7 @@ import { UserProvider } from '../lib/UserContext'
 import SessionProviderWrapper from '../components/SessionProviderWrapper'
 import AuthSync from '../components/AuthSync'
 import GlobalTracker from '../components/GlobalTracker'
+import SplashScreen from '../components/SplashScreen'
 import ZoneGate from '../components/ZoneGate'
 import PWAInstall from '../components/PWAInstall'
 import CartBar from '../components/CartBar'
@@ -100,6 +101,7 @@ export default async function RootLayout({ children }) {
       <body className={`min-h-full flex flex-col bg-sand-50 text-brand-900 ${locale === 'ar' ? 'font-(family-name:--font-cairo)' : ''}`}>
         <SessionProviderWrapper>
         <UserProvider initialUser={initialUser}>
+        <SplashScreen />
         <AuthSync />
         <GlobalTracker />
         <ZoneGate />

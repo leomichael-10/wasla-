@@ -1555,3 +1555,49 @@ reads/writes them yet), NEW 2 (logo required at signup + dashboard
 nag banner + Restaurants-rail logo display — `SellerProfile.logoUrl`
 exists in the schema, nothing in the UI uses it yet). All three need a
 fresh pass — flagging clearly rather than declaring them done.
+
+## First-open splash, logo bar, bigger navbar logo
+
+**Note on the asset**: `public/wasla-splash.gif` is actually a static
+PNG (confirmed via `sharp` + `file`: "PNG image data, 512x512", magic
+bytes `89 50 4E 47`) despite its `.gif` extension — not a real
+animation. Used as-is per "do not regenerate" instructions; flagging
+this since it means the reduced-motion branch below currently swaps
+between two static images that render identically, not animated →
+static. If a genuinely animated GIF is provided later, no code change
+is needed — same file path, same component.
+
+**`components/SplashScreen.js`** (new): full-screen first-open splash,
+mounted at the top of `app/layout.js`'s body (`z-[100]`, above every
+existing overlay — `ZoneGate`/`MobileTabBar` are `z-50`). `fixed
+inset-0` cream (`#F3EDE2`) background with `env(safe-area-inset-*)`
+padding for iOS notch/home-bar. The mark is sized via `w-[85vw]
+max-w-[500px] h-auto` — width-constrained only, no fixed box/`object-
+fit`, so it scales without stretching or cropping regardless of its
+actual aspect ratio. Below it, a logo bar: `icon-96.png` + "وصلة /
+wasla" — mark and name only, no buttons/tagline. Auto-dismisses after
+2.4s; tapping/clicking anywhere (or Enter/Space, for keyboard access)
+dismisses immediately. First-open state persisted via
+`localStorage['wasla_splash_seen_v1']` — checked in a `useEffect` (SSR
+has no `localStorage`, so the component renders nothing until the
+client-side check resolves, never flashing the splash to a returning
+user). `prefers-reduced-motion: reduce` swaps `wasla-splash.gif` for
+`wasla-splash-static.png` via the same `matchMedia` pattern
+`components/Loader.js` already uses.
+
+**Navbar logo**: `components/Navbar.js` — `icon-48.png` at 28px
+(`w-7 h-7`) → `icon-96.png` at 56px (`w-14 h-14`), exactly double,
+using the higher-resolution source so it stays crisp at the larger
+size instead of upscaling a 48px asset.
+
+**Gate**: `npm run build` ✅. Verified live via Playwright at 390px
+width in Arabic: fresh context → splash visible, cream full-bleed,
+GIF centered undistorted, logo bar showing mark + name only;
+`localStorage` flag unset before dismiss, set to `'1'` after the
+2.4s auto-dismiss; a fresh reload with the flag already set never
+shows the splash again; a separate fresh context confirmed
+click-anywhere dismisses immediately and sets the flag; a
+`reducedMotion: 'reduce'` context confirmed the `<img>` src resolves
+to `wasla-splash-static.png` instead of the GIF. Screenshotted the
+splash and the navbar header (visibly larger logo, no wrap/overflow
+at mobile width).
