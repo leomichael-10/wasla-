@@ -1601,3 +1601,65 @@ click-anywhere dismisses immediately and sets the flag; a
 to `wasla-splash-static.png` instead of the GIF. Screenshotted the
 splash and the navbar header (visibly larger logo, no wrap/overflow
 at mobile width).
+
+## Re-onboard لقمة حلوة (Loqma Helwa) after the DB wipe
+
+DB endpoint (printed before any write, confirmed via `scripts/check-
+env.mjs` — exit 0, not the known-production host): `ep-wild-cloud-
+ax3xihv9-pooler.c-4.us-east-2.aws.neon.tech/neondb` (the DEV branch).
+
+**Prerequisites checked and confirmed before writing anything**:
+`SellerProfile.sellerType` (SHOP | RESTAURANT) exists; the internal
+"Food" category (id 3, `isInternal: true`) exists and is the only
+category restaurant dishes ever get, auto-assigned server-side via
+`lib/internalCategory.js` — confirmed by re-reading the actual route
+code, not from memory. No `Instagram` field exists anywhere on the
+seller schema, so `@loqma helwa` has nowhere to go — skipped rather
+than inventing a column for one field, reported to the user. Logo is
+not yet compulsory at signup (that UI was never built, per last
+session's "still open" list) — left `logoUrl` empty as instructed.
+
+**Found and fixed a real bug while onboarding**: `POST /api/auth/
+register`'s seller-profile creation still wrote to `description`, but
+that column was renamed to `descriptionAr`/`descriptionEn` in the
+Phase 3b migration (predates the wipe, survived it since it's a code
+change, not data) — every seller registration submitting a
+description was silently 500ing (Prisma "unknown argument") after
+creating the `User` row but before creating `SellerProfile`, leaving
+an orphaned profile-less user. Hit this live on the first onboarding
+attempt (user id 6 got orphaned), fixed the route to write
+`descriptionAr` instead, deleted the orphaned row, and successfully
+re-registered. Also found and fixed the same-vintage bug in `GET /api/
+restaurants/[id]` (still read `seller.description`, always `undefined`
+now, so the tagline silently never rendered) — now returns
+`descriptionAr`/`descriptionEn`, and `app/restaurant/[id]/page.js`
+picks the locale-appropriate one with a fallback to Arabic when
+`descriptionEn` is empty, never rendering an empty tagline.
+
+**Onboarded through the real, running app** — register → login →
+zone-coverage → products, no hand-inserted rows: `sellerType:
+RESTAURANT`, businessName لقمة حلوة, tagline "لذة على أصولها — طازجة
+.. ساخنة .. دايماً حلوة" (now in `descriptionAr`), whatsappNumber
+normalized to E.164 `+201070385864` (from the user-supplied
+`01070385864`), delivery coverage on both Heliopolis (zone 1) and
+Nasr City (zone 4) per the user's choice, all 8 dishes created via
+`POST /api/products` with no `categoryId` sent — server auto-assigned
+`categoryId: 3` (the internal Food category) to every one, confirmed
+via the API response, not assumed. `approvedByAdmin` set via a direct
+single-field update (same reasoning as the previous onboarding: a
+plain boolean flip, identical to what the admin-approve endpoint does
+internally). Seller id 4, user id 7, products 19–26.
+
+**Verified live**: `GET /api/restaurants` lists لقمة حلوة (8 dishes);
+`GET /api/restaurants/4` returns the 3 requested sections in order,
+correct EGP prices, correct Arabic descriptions, and the tagline;
+`GET /api/products?search=برجر` returns zero results; `GET /api/
+categories` still returns exactly the 2 customer-facing names (no
+Food, no leak); `GET /api/shops` does not include لقمة حلوة. Add-to-
+cart exercised via a real button click, confirmed in `localStorage`.
+Screenshotted the home Restaurants rail and all 3 menu sections of the
+restaurant page at 390px width in Arabic — dishes without images
+render with the existing letter-avatar placeholder, not broken.
+
+**This is real data and was NOT deleted** — seller id 4, user id 7,
+products 19–26.

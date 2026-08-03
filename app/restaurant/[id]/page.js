@@ -168,8 +168,12 @@ export default function RestaurantPage() {
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl font-black text-white mb-1">{restaurant.businessName}</h1>
 
-              {restaurant.description && (
-                <p className="text-brand-100 text-sm mb-1">{restaurant.description}</p>
+              {/* English falls back to Arabic when descriptionEn is empty —
+                  never render an empty tagline either way. */}
+              {(locale === 'en' ? (restaurant.descriptionEn || restaurant.descriptionAr) : restaurant.descriptionAr) && (
+                <p className="text-brand-100 text-sm mb-1">
+                  {locale === 'en' ? (restaurant.descriptionEn || restaurant.descriptionAr) : restaurant.descriptionAr}
+                </p>
               )}
 
               {(restaurant.city || restaurant.area) && (

@@ -102,7 +102,12 @@ export async function POST(request) {
           sellerType,
           city: sellerCity?.trim() || null,
           area: sellerArea?.trim() || null,
-          description: description?.trim() || null,
+          // SellerProfile.description was split into descriptionAr/descriptionEn
+          // (see prisma/schema.prisma) — registration only ever collects one
+          // string today, so it goes into the Arabic field (Wasla is
+          // Arabic-first; the seller-settings form is where descriptionEn
+          // gets added later, once that UI exists).
+          descriptionAr: description?.trim() || null,
           approvedByAdmin: false,
           subscriptionStatus: subscriptionsEnabled ? 'PENDING' : 'ACTIVE',
         }
