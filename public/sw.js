@@ -3,15 +3,18 @@
 // fallback for everything else (pages, API) so the app shell still loads
 // offline-ish and stale data beats a blank screen on a flaky connection.
 
-// Bumped to v3: brand icons moved from /icons/* to root-level /icon-*.png
-// (see PROGRESS.md "Wasla brand assets") — old clients must evict the
-// stale /icons/* entries rather than serve them forever under cache-first.
-const CACHE_NAME = 'wasla-v3'
+// Bumped to v4: PWA-install icon verification pass (manifest +
+// apple-touch-icon audit — see PROGRESS.md "PWA install icon
+// verification") — forces already-installed clients to re-fetch the
+// manifest/icons instead of serving whatever was cached under v3,
+// even though the icon bytes themselves didn't change this pass.
+const CACHE_NAME = 'wasla-v4'
 const APP_SHELL = [
   '/',
   '/manifest.webmanifest',
   '/icon-192.png',
   '/icon-512.png',
+  '/icon-maskable-512.png',
 ]
 
 self.addEventListener('install', event => {

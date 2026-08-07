@@ -1703,3 +1703,86 @@ undistorted.
 **Gate**: `npm run build` ✅. Splash verified against the production
 server at 390px width in Arabic — full width, cream background, no
 distortion/cropping.
+
+## PWA install icon verification
+
+Audited whether the Wasla logo renders correctly when the app is
+installed to a device home screen, rather than assuming the earlier
+"Wire in Wasla brand assets" pass got it right. It did — this was a
+verification + cache-bump pass, not a rebuild.
+
+**Manifest** (`public/manifest.webmanifest`) already registered all
+three required icons as separate entries — confirmed by re-fetching it
+live, not from memory:
+```json
+{
+  "name": "Wasla — وصلة",
+  "short_name": "Wasla",
+  "start_url": "/", "scope": "/", "display": "standalone",
+  "background_color": "#F3EDE2", "theme_color": "#C1502E",
+  "lang": "ar", "dir": "rtl", "orientation": "portrait",
+  "icons": [
+    { "src": "/icon-16.png",  "sizes": "16x16",  "type": "image/png", "purpose": "any" },
+    { "src": "/icon-32.png",  "sizes": "32x32",  "type": "image/png", "purpose": "any" },
+    { "src": "/icon-48.png",  "sizes": "48x48",  "type": "image/png", "purpose": "any" },
+    { "src": "/icon-64.png",  "sizes": "64x64",  "type": "image/png", "purpose": "any" },
+    { "src": "/icon-96.png",  "sizes": "96x96",  "type": "image/png", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192","type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512","type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
+```
+`icon-maskable-512.png` is a genuinely distinct file from `icon-512.png`
+(confirmed via SHA-256 — different bytes, and `icon-512` has alpha
+while `icon-maskable-512` is opaque full-bleed), not the same asset
+reused with a different `purpose` string — Android's mask would clip
+a transparent-background icon's edges, which is exactly what the
+separate maskable entry avoids.
+
+**iOS**: rendered `<head>` (fetched live, not asserted) includes
+`<link rel="apple-touch-icon" href="/apple-touch-icon.png">`,
+`apple-mobile-web-app-capable`, `mobile-web-app-capable` (the
+standardized replacement Next 15 emits by default — added the legacy
+Apple-prefixed one explicitly via `metadata.other` in an earlier pass
+since older iOS Safari still needs it), `apple-mobile-web-app-title`
+= "Wasla", and `apple-mobile-web-app-status-bar-style`. Confirmed
+`apple-touch-icon.png` has no alpha channel (`sharp` metadata:
+`hasAlpha: false`) — opaque cream background, won't render black on
+iOS.
+
+**Cache invalidation**: bumped `public/sw.js`'s `CACHE_NAME`
+`wasla-v3` → `wasla-v4` so already-installed clients evict whatever
+they cached before and re-fetch the current manifest/icons on next
+activate — even though the icon bytes themselves didn't change in
+this pass (last real icon change was the "Wire in Wasla brand assets"
+commit, which already bumped v2→v3), forcing the refresh is cheap
+insurance against anything cached from before that point. Also added
+`icon-maskable-512.png` to the precached `APP_SHELL` list (it wasn't
+there before) so it's available offline for the install prompt.
+
+**Verification — actually checked, not asserted**: ran the app under
+`next build && next start` (avoids the dev server's cold-compile
+timing noise seen in the previous splash-screen task) and:
+- `curl`'d every icon URL referenced in the manifest — all return
+  `200` with the correct `Content-Type` (`icon-16/32/48/64/96/192/
+  512.png`, `icon-maskable-512.png`, `apple-touch-icon.png`,
+  `favicon.ico`, `manifest.webmanifest` itself).
+- Lighthouse's CLI `pwa` category no longer exists as of Lighthouse
+  12 (Google deprecated/removed it a few major versions back) — `npx
+  lighthouse --only-categories=pwa` runs but returns zero PWA audits,
+  so it can't produce the installability report the gate asked for.
+  Used the same underlying signal Chrome itself uses instead: drove a
+  headless Chromium via Playwright's CDP session and called
+  `Page.getInstallabilityErrors` (Chrome's actual API for deciding
+  whether to offer the install prompt) and `Page.getAppManifest` —
+  both returned zero errors.
+- Visually confirmed `icon-maskable-512.png`'s mark sits well inside
+  the safe zone (opaque full-bleed cream background, mark centered
+  and comfortably clear of the edges Android's circle/squircle mask
+  would crop).
+
+**Gate**: manifest lists all three icons with correct sizes/purposes,
+every URL returns 200, apple-touch-icon link + all apple meta tags
+present in the actual rendered head (not just the source), service
+worker cache bumped v3→v4. `npm run build` ✅.
