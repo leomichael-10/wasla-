@@ -1663,3 +1663,43 @@ render with the existing letter-avatar placeholder, not broken.
 
 **This is real data and was NOT deleted** — seller id 4, user id 7,
 products 19–26.
+
+## New splash asset: real animated rider GIF, full-width layout
+
+Replaced `public/wasla-splash.gif` with the newly provided asset — a
+genuinely animated GIF this time (14 frames, 404×370px, verified via
+PIL: `Image.open(...).n_frames == 14`), unlike the previous file of
+the same name which turned out to be a static PNG mislabeled with a
+`.gif` extension (see earlier PROGRESS entry). Regenerated
+`public/wasla-splash-static.png` (the `prefers-reduced-motion`
+fallback) from this new GIF's first frame via `sharp`, same approach
+as before — extracted, not redrawn.
+
+**`components/SplashScreen.js`**: the new asset already bakes in the
+وصلة/WASLA wordmark, English label, and tagline ("توصيل سريع.. بطعم
+البيت"), so the separate logo-bar row (icon + text) that sat below the
+animation before is now gone — keeping both would have duplicated the
+same branding twice on one screen. The mark now spans the full screen
+width (`w-full h-auto`, no `max-w`/`85vw` cap) rather than the
+previous centered-at-large-size treatment, per this round's brief;
+height still derives from the image's native aspect ratio (no
+`object-fit` needed since only width is constrained), so it's neither
+stretched nor cropped. Auto-dismiss (2.4s), tap-to-skip, first-open-
+only persistence via `localStorage`, and the `prefers-reduced-motion`
+static-frame swap are all unchanged from the previous implementation.
+
+**Verification note**: screenshotting this against the Turbopack dev
+server was unreliable — first-compile responses in this environment
+take 3–7s, which outlasts the 2.4s auto-dismiss timer, so by the time
+Playwright's navigation resolved the splash had already auto-dismissed
+(confirmed via temporary debug logging: `seen=false` on mount, `dismiss`
+fired ~2.4s later as designed — the timer itself was never wrong, only
+the dev server's cold-compile latency raced it). Verified instead
+against `next build && next start` (no compile delay), which
+screenshotted correctly on the first attempt: full-bleed cream
+background, the rider mark spanning the full viewport width,
+undistorted.
+
+**Gate**: `npm run build` ✅. Splash verified against the production
+server at 390px width in Arabic — full width, cream background, no
+distortion/cropping.
