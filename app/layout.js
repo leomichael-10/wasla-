@@ -98,6 +98,24 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang={locale} dir={dir} className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} ${reemKufi.variable} h-full antialiased`}>
+      <head>
+        {/*
+          Blocking (no async/defer) — runs before <body> is parsed/painted,
+          so `data-splash-seen` is already correct by first paint. This is
+          what lets components/SplashScreen.js avoid a flash in either
+          direction: without this, React only learns the localStorage value
+          in an effect that runs after the first paint, so the default has
+          to guess — guessing "hidden" flashes real content at a first-time
+          visitor before the splash pops in, guessing "shown" flashes the
+          splash at a returning visitor before it's hidden. See the
+          #wasla-splash rule in app/globals.css for the CSS side of this.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{document.documentElement.setAttribute('data-splash-seen',localStorage.getItem('wasla_splash_seen_v1')==='1'?'1':'0')}catch(e){document.documentElement.setAttribute('data-splash-seen','0')}`,
+          }}
+        />
+      </head>
       <body className={`min-h-full flex flex-col bg-sand-50 text-brand-900 ${locale === 'ar' ? 'font-(family-name:--font-cairo)' : ''}`}>
         <SessionProviderWrapper>
         <UserProvider initialUser={initialUser}>

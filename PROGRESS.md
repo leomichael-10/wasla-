@@ -1844,3 +1844,68 @@ whitelist line, and the screenshot script were all deleted before
 committing — nothing debug-only shipped.
 
 **Gate**: `npm run build` ✅.
+
+## Splash screen: two fixes — full-bleed cover fill, no flash on first paint
+
+**Fix 1 — full-screen fill**: the splash previously rendered the GIF
+width-constrained (`w-full h-auto`), which covered the screen's width
+but left cream gaps top/bottom on tall phones since the source is
+404×370 (near-square) against a portrait viewport. `#wasla-splash`
+(new rule in `app/globals.css`) is now `position:fixed; inset:0;
+height:100dvh; width:100vw` with the `<img>` at `width:100%;
+height:100%; object-fit:cover; object-position:center` — the browser
+scales the image up until it covers the taller dimension, then
+center-crops the excess width, so the whole viewport is cream/image
+edge to edge and the rider (roughly centered in the source) stays in
+frame. No `env(safe-area-inset-*)` padding on the container on
+purpose — that would pull the image away from the true edges and
+reintroduce the exact gaps being fixed; for a full-bleed decorative
+background with no separate foreground text/controls (the tap-to-skip
+target is the whole screen already), bleeding fully behind any notch/
+home-bar is the correct way to "respect" a safe area, the same
+approach native/PWA launch screens use. Documented this reasoning
+in `app/globals.css` since it looks at first glance like the safe-area
+requirement was dropped.
+
+**Fix 2 — flash of content before the splash appeared**: the previous
+version decided visibility from `useState(false)` + a `useEffect`
+localStorage check. Since the server can't read `localStorage`, the
+server-rendered HTML always started from that same default
+(`visible=false` → renders nothing), so on a first-time visit the real
+homepage painted first and the splash only popped in once React
+hydrated and the effect ran — a visible flash of content, which is
+exactly what was reported. There's no default that avoids a flash for
+*both* first-time and returning visitors without knowing localStorage
+before the browser paints anything, and React effects (even
+`useLayoutEffect`) only run after hydration, which is after that first
+paint. Fixed with the standard pattern for this exact class of problem
+(the same one dark-mode-flash fixes use): a blocking inline `<script>`
+in `app/layout.js`'s `<head>` (no `async`/`defer`, so it runs before
+`<body>` is parsed) reads `localStorage` synchronously and sets
+`data-splash-seen` on `<html>` *before* body content ever paints; the
+CSS rule `html[data-splash-seen="1"] #wasla-splash { display:none }`
+then makes the very first paint already correct in both directions.
+`components/SplashScreen.js` no longer gates its initial render on
+React state at all (always renders the markup) — React only owns
+what happens *after* mount now: the reduced-motion swap, the 2.4s
+auto-dismiss timer (skipped entirely if the inline script already
+marked it seen), and tap-to-skip, which flips the same
+`data-splash-seen` attribute directly via the DOM rather than through
+component state.
+
+**Verified live** (production server, `next build && next start` —
+dev server cold-compile timing raced the auto-dismiss timer in earlier
+sessions, so production avoids that noise): a fresh Playwright context
+screenshotted within 50ms of navigation commit shows the full-bleed
+splash immediately (`data-splash-seen` was already `'0'` at that
+point — set before paint, not after); the splash's and the image's
+bounding boxes both measured exactly `390×844` (the full viewport, no
+gaps); a second context pre-seeded with the `localStorage` flag showed
+the real homepage immediately with no splash flash at any point
+(`data-splash-seen` was already `'1'` right after commit). Kept: first-
+open-only persistence, ~2.4s auto-dismiss, tap-to-skip, and the
+`prefers-reduced-motion` static-frame fallback — all unchanged in
+behavior, just re-wired to not depend on React state for the initial
+visibility decision.
+
+**Gate**: `npm run build` ✅.

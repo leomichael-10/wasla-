@@ -167,3 +167,47 @@
     background-position: 200% 0;
   }
 }
+
+/*
+  First-open splash (components/SplashScreen.js). Visibility is driven
+  purely by the `data-splash-seen` attribute on <html> — set by a
+  blocking inline script in app/layout.js's <head> BEFORE <body> ever
+  paints, not by React state. React state only decides this after
+  hydration (a tick that runs after the first paint), so gating
+  visibility on it either flashes real page content at a first-time
+  visitor (state starts "hidden") or flashes the splash at a returning
+  visitor (state starts "shown") — there's no default that avoids a
+  flash for both cases without knowing localStorage before paint, which
+  only a synchronous pre-body script can do.
+*/
+/*
+  No safe-area padding here on purpose: this is a full-bleed decorative
+  background, not foreground content sitting on top of one (there's no
+  separate logo bar/text anymore — the image carries the whole mark).
+  Insetting it with env(safe-area-inset-*) padding would pull the image
+  away from the true edges and reintroduce exactly the gaps this is
+  meant to eliminate. inset:0 + 100dvh/100vw already extends the cream
+  background fully behind any notch/home-bar/dynamic island — the same
+  "bleed under the hardware cutout" approach native and PWA splash
+  screens use; safe-area insets exist for positioning readable content,
+  and there's none here to inset.
+*/
+#wasla-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  height: 100dvh;
+  width: 100vw;
+  background: #F3EDE2;
+  display: flex;
+  cursor: pointer;
+}
+#wasla-splash img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+html[data-splash-seen="1"] #wasla-splash {
+  display: none;
+}
