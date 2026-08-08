@@ -1786,3 +1786,61 @@ timing noise seen in the previous splash-screen task) and:
 every URL returns 200, apple-touch-icon link + all apple meta tags
 present in the actual rendered head (not just the source), service
 worker cache bumped v3→v4. `npm run build` ✅.
+
+## Welcome email on signup (customer + seller variants)
+
+**Trigger**: both signup paths covered — `POST /api/auth/register`
+(email/password) and the Google OAuth first-time `signIn` callback in
+`lib/authOptions.js` (an OAuth user never hits the register route, so
+needed its own hook, inside the existing `if (!existing) { ... create
+user ... }` branch — Google sign-in only ever creates customers, so
+that path always uses the customer template).
+
+**Once per account**: `User.welcomeEmailSentAt DateTime?` (new,
+additive migration `20260808163458_welcome_email_sent_at`) is stamped
+right after the send attempt in both places. Login and profile-update
+code paths never touch it.
+
+**Never blocks signup**: `lib/sendWelcomeEmail.js` wraps everything in
+try/catch and never throws; `lib/email.js`'s `sendEmail()` already
+swallowed its own provider errors before this change (pre-existing
+behavior, reused as-is) — the new work was making `sendEmail` also
+accept a plain-text fallback (`text` param, passed through to both the
+Resend and SMTP paths) alongside the existing `html` one.
+
+**Reused the existing template file** (`lib/emailTemplates.js`,
+already home to order-confirmation/subscription emails) rather than
+creating a parallel one — added `welcomeCustomerEmail()` and
+`welcomeSellerEmail({ businessName })`, and upgraded the shared
+`shell()`/`BASE` layout every template (old and new) renders through:
+cream (`#F3EDE2`) background, logo referenced by absolute URL
+(`${NEXT_PUBLIC_APP_URL}/icon-192.png`, never inlined as base64), same
+terracotta (`#C1502E`) buttons as before. Copy lives in `lib/i18n.js`'s
+new `email.*` keys (both `ar`/`en` blocks) — the template functions
+only call `t()` and compose layout, no hardcoded copy strings in the
+route or the template file itself, matching how every other piece of
+app copy already goes through i18n.
+
+**Bilingual, Arabic-first**: since the app has no persisted per-user
+language preference (only a locale cookie, which doesn't exist in an
+email-sending context), both languages go in one email — Arabic block
+first (RTL shell), horizontal divider, English block below
+(`dir="ltr"` nested div) — rather than guessing which one to send.
+Plain-text fallback mirrors both blocks separated by `---`.
+
+**Seller version doesn't say "start shopping"**: confirms the
+registration was received, shows a "قيد المراجعة"/"Pending review"
+badge, explains the account activates after admin approval, and its
+one CTA links to `/dashboard/settings` (finish setting up while
+waiting) rather than the storefront.
+
+**Verified via a temporary debug route** (`GET /api/dev-preview-email
+?which=customer|seller`, briefly whitelisted in `middleware.js`) to
+render both templates through the real code path and confirm output —
+printed both subjects and full plain-text fallbacks, screenshotted the
+customer email's rendered HTML (cream background, logo, terracotta
+CTA button, Arabic block then English block). Route, middleware
+whitelist line, and the screenshot script were all deleted before
+committing — nothing debug-only shipped.
+
+**Gate**: `npm run build` ✅.

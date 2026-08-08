@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '../../../../lib/prisma'
 import { getVerificationProvider } from '../../../../lib/verification'
+import { sendWelcomeEmail } from '../../../../lib/sendWelcomeEmail'
 
 const rateLimitMap = new Map()
 function isRateLimited(ip) {
@@ -121,6 +122,12 @@ export async function POST(request) {
     } catch (err) {
       console.error('[Register] Failed to send verification code:', err?.message ?? err)
     }
+
+    // Welcome email — once per account, never blocks signup on failure
+    // (see lib/sendWelcomeEmail.js). Customer vs seller copy branches on
+    // role; the Google OAuth first-time signup path (lib/authOptions.js)
+    // calls the same function since it never hits this route.
+    await sendWelcomeEmail(user, body.businessName)
 
     return NextResponse.json({
       message: 'User registered successfully',
