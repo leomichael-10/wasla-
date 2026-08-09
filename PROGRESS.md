@@ -2078,3 +2078,130 @@ linking to `/register?mode=retailer`. Zero console errors across all of
 the above.
 
 **Gate**: `npm run build` ✅.
+
+## Google sign-up for sellers
+
+Google OAuth (`lib/authOptions.js`) only ever created customers — the
+seller card's "Sign up with Google" button didn't exist, and there was
+no way for the `signIn` callback (which creates the user) to know the
+person intended to be a seller.
+
+**Carrying intent through the OAuth round-trip**: new `lib/googleSignupIntent.js`
+— a short-lived, ordinary (non-`httpOnly`) cookie (`wasla_signup_intent`,
+10-minute `max-age`) set client-side right before `signIn('google', ...)`,
+read server-side in the `signIn` callback via `cookies()` from
+`next/headers`. Picked this over the alternatives named in the task:
+- **`callbackUrl`**: next-auth v4's `signIn` callback signature doesn't
+  expose the client's requested callbackUrl as a parameter, and it's
+  stored in next-auth's own cookie — reading it back would mean
+  reaching into next-auth's internals rather than anything documented.
+- **A custom `state` param**: next-auth already owns `state` for its own
+  CSRF/PKCE handling; layering custom data into it risks colliding with
+  that and is tied tightly to next-auth's internal implementation.
+- **A cookie** sidesteps both: it's a plain, well-understood browser
+  mechanism that survives the redirect to Google and back untouched
+  (top-level navigations still send `SameSite=Lax` cookies), and
+  `cookies()` from `next/headers` is already used elsewhere in this
+  exact codebase for server-side cookie reads in the App Router.
+  Consumed exactly once per Google callback — read then deleted
+  immediately, success or failure — so an abandoned attempt (e.g.
+  cancelled on Google's consent screen) can never leak into a later,
+  unrelated sign-in on the same browser. Not a security boundary: it
+  only affects what role gets assigned to a *brand-new* account on
+  *this* browser, and anyone can already choose seller signup through
+  the public chooser — the actual guarantee (never reassigning an
+  *existing* account's role) lives entirely in the `!existing` branch
+  of the `signIn` callback, which the cookie can't reach.
+
+**Account creation** (`lib/authOptions.js`, `signIn` callback,
+`!existing` branch): when the cookie says `seller`, creates the user
+with `role: 'retailer'`, `isOnboarded: false`, and a nested
+`sellerProfile` — placeholder `businessName: 'My Shop'`, `sellerType:
+SHOP`, `approvedByAdmin: false`, `subscriptionStatus` resolved from
+`NEXT_PUBLIC_SUBSCRIPTIONS_ENABLED` exactly like
+`app/api/auth/register/route.js`. No `whatsappNumber` — Google never
+gives us one. `isOnboarded: false` (customers still get `true`
+immediately, unchanged) is what makes `app/auth/redirect/page.js`'s
+existing `!user.isOnboarded → /onboarding` detour apply to Google
+sellers, so they can't reach `/dashboard` with a half-built profile.
+`sendWelcomeEmail(created)` already branched on `role` for
+subject/copy (seller pending-approval vs customer) — no changes needed
+there.
+
+**Existing users never get reassigned**: the `!existing` branch is the
+only place role is ever set; the `else` branch (existing user) never
+touches it, cookie or no cookie. One real risk found while working
+through this, though: that `else` branch also auto-flips
+`isOnboarded: true` on any Google sign-in for an existing-but-not-yet-
+onboarded account — harmless for the legacy-customer case it was
+originally written for, but it would have let a seller who abandoned
+`/onboarding` skip it entirely on their next Google sign-in, reaching
+`/dashboard` still on the `'My Shop'` placeholder. Fixed by adding one
+targeted check: an email/password seller always has
+`sellerProfile.whatsappNumber` set (required at registration — see
+`app/api/auth/register/route.js`), so its absence reliably means "this
+specific seller's onboarding was never finished," not "different signup
+method." The `existing` lookup now `include`s `sellerProfile.whatsappNumber`
+(one field, same query) so this costs nothing extra. Confirmed via a
+direct Prisma script — create with the exact nested shape above, run
+the onboarding-completion update, re-fetch — that role survives
+unchanged across the whole cycle and `approvedByAdmin` is never touched
+by onboarding.
+
+**Completing the profile** (`app/onboarding/page.js` +
+`app/api/onboarding/route.js`): extended the *existing* onboarding step
+— the one `/auth/redirect` already gates Google sign-ins on — rather
+than building a new page, per the task's framing. The route now
+branches on `session.user.role` (server-verified, from the DB via the
+JWT — never trusts anything in the request body, which is exactly what
+kept this route from being a role-escalation path before). Sellers get
+required `businessName` + `whatsappNumber` (+ optional `sellerType`,
+`phone`, `city`) written to the *existing* `SellerProfile` row via
+`prisma.sellerProfile.update({ where: { userId } })`; customers keep
+the unchanged `fullName`/`phone`/`city` → `CustomerProfile` path. Either
+way `isOnboarded: true` only gets set on successful completion, so a
+seller who bails out mid-form stays gated on retry. The page branches
+its UI the same way (`getSession()` → `session.user.role`) — new
+seller-only fields (business name, the same Shop/Restaurant toggle
+`app/register/page.js` uses, WhatsApp number) via new bilingual i18n
+keys; the pre-existing customer fields stay exactly as they were,
+English-only, untouched. No logo field — checked, `SellerProfile.logoUrl`
+is nullable and never actually required anywhere in the live
+email/password flow either (the schema comment referencing a
+`components/LogoPrompt.js` describes something that was never built),
+so there's nothing to match parity with.
+
+**UI**: the "Sign up with Google" button — previously wrapped in
+`{!isSeller && (...)}`, hidden on the seller form — now renders
+unconditionally, same styling either way. Its `onClick` calls
+`setGoogleSignupIntent(isSeller)` before `signIn()`, which explicitly
+*clears* the cookie on the customer path too (not just skips setting
+it) — needed because someone could pick "Seller" from the chooser, get
+as far as clicking Google, back out, then switch to "Customer" and
+click Google again, all inside the cookie's 10-minute window; without
+an explicit clear the stale `seller` value would still be sitting there
+for the second attempt. Verified this exact sequence in a Playwright
+check. Label routed through a new `register.googleSignup` i18n key;
+RTL comes free from the root `<html dir>` already set per-locale, same
+as everything else on this page.
+
+**Verified**: what a live Google OAuth round-trip needs (Google's own
+consent screen) isn't something this environment can drive, so
+verification split three ways — (1) a direct Prisma script exercising
+the exact data shapes both `signIn` and `/api/onboarding` use
+(creation → completion → re-fetch, described above, cleaned up after);
+(2) Playwright against the real dev server for everything client-side:
+the Google button now present on the seller form with the correct i18n
+label, clicking it sets/clears `wasla_signup_intent` correctly
+(including the stale-cookie sequence above), zero console errors;
+(3) Playwright against `/onboarding` with next-auth's `/api/auth/session`
+response mocked to a seller vs. customer session — confirmed the
+correct fields render (business name/type/WhatsApp vs. full name), RTL
+renders correctly for the Arabic seller case, and the pre-existing
+customer branch is pixel-for-pixel unchanged. The `signIn`/`jwt`
+callback wiring itself (the `cookies()` read, the NextAuth plumbing)
+rests on patterns already proven elsewhere in this codebase rather than
+an end-to-end OAuth test — flagging that honestly rather than claiming
+full coverage.
+
+**Gate**: `npm run build` ✅.
