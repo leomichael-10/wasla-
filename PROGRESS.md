@@ -1909,3 +1909,72 @@ behavior, just re-wired to not depend on React state for the initial
 visibility decision.
 
 **Gate**: `npm run build` ✅.
+
+## Splash screen bug report follow-up: what was actually wrong
+
+Investigated the reported "GIF renders as a small square in one
+corner, cream beside it, header/nav visible below" before touching
+any code.
+
+**Could not reproduce the described symptom** with the committed code
+(`position:fixed`, full 390×844 box, `object-fit:cover` all measured
+correctly via Playwright `getComputedStyle`/`getBoundingClientRect`
+in a fresh browser context), and confirmed via a full DOM-ancestor
+walk that `#wasla-splash` is already a *direct child of `<body>`*
+with zero wrapping containers — no ancestor between it and `<body>`
+sets a `transform`/`filter`/`contain`/`will-change` that could break
+`position:fixed`'s containing block (which is the standard cause of
+exactly this symptom — a "fixed" element rendering constrained to some
+ancestor's box instead of the viewport). Compiled CSS output was also
+checked directly (`grep`'d the built stylesheet) and the rule was
+present with the expected cascade priority.
+
+**What this session actually found and fixed, in order:**
+
+1. **Real, confirmed gap**: body scroll was never locked while the
+   splash was up (`getComputedStyle(document.body).overflow` measured
+   `"visible"`) — the earlier "keep: ... body scroll locked" line in
+   PROGRESS.md was aspirational, not implemented. Added
+   `document.body.style.overflow = 'hidden'` in the mount effect
+   (only when not already seen — no lock, no timer, for a returning
+   visitor) and restored on `dismiss()`.
+
+2. **Defensive hardening**: moved the critical sizing/positioning
+   (`position: fixed`, `inset: 0`, `100vw`/`100dvh`, `z-index`,
+   `background`, and the image's `object-fit: cover`) from the
+   external `#wasla-splash` CSS rule to **inline styles** on the
+   element in `components/SplashScreen.js`. Inline styles are part of
+   the server-rendered HTML itself and can never be affected by
+   external-stylesheet load order or cascade timing — this removes an
+   entire class of "the stylesheet hadn't applied yet" risk for the
+   one requirement that must never be wrong (full-screen coverage),
+   regardless of whatever the original root cause turns out to be.
+
+3. **A real bug introduced by fix #2, caught before shipping**: moving
+   `display: 'flex'` into that same inline style object broke the
+   existing `html[data-splash-seen="1"] #wasla-splash { display: none
+   }` visibility toggle — inline styles always win over external
+   stylesheet rules regardless of selector specificity (short of
+   `!important`), so the CSS override could never hide the element
+   again once dismissed. Caught this via the same verification pass
+   (a returning-visitor test showed the splash rendering when it
+   shouldn't). Fixed by leaving `display` out of the inline styles
+   entirely — the bare `<div>`'s default `display: block` is the
+   uncontested base state, and the external CSS rule stays free to
+   switch it to `none` with no inline value fighting it.
+
+**Verified live** (production server; used `waitUntil: 'commit'` +
+`waitForSelector` rather than `'load'` for the timing-sensitive first-
+visit check, since this session's machine was under enough load that
+a full page `'load'` event sometimes took 8–12 real seconds — long
+enough to blow past the 2.4s auto-dismiss timer and produce a false
+"already dismissed" reading that had nothing to do with the component
+itself): a fresh context checked ~176ms after navigation commit shows
+`data-splash-seen="0"`, the splash and image both at the exact
+390×844 viewport box, `position: fixed`, `display: block`, and
+`document.body.style.overflow === "hidden"`; tapping the overlay
+correctly flips to `display: none` and restores `overflow === ""`; a
+context pre-seeded with the seen flag shows `display: none` from the
+first check with no splash-flash at any point and scroll never locked.
+
+**Gate**: `npm run build` ✅.
