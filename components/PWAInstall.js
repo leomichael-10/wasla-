@@ -65,9 +65,13 @@ export default function PWAInstall() {
   return (
     <div dir={dir} className="fixed bottom-20 lg:bottom-4 inset-x-4 z-40 max-w-sm mx-auto sm:inset-x-auto sm:inset-e-4">
       <div className="bg-white rounded-2xl shadow-2xl border border-brand-100 p-4 flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-brand-700 flex items-center justify-center shrink-0 text-white font-black">
-          W
-        </div>
+        <img
+          src="/icon-192.png"
+          alt={t('pwa.installIconAlt', locale)}
+          width={40}
+          height={40}
+          className="w-10 h-10 rounded-xl shrink-0"
+        />
         <div className="flex-1 min-w-0">
           <p className="font-bold text-gray-900 text-sm">{t('pwa.installTitle', locale)}</p>
           {showIosHint ? (

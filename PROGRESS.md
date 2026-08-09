@@ -1978,3 +1978,40 @@ context pre-seeded with the seen flag shows `display: none` from the
 first check with no splash-flash at any point and scroll never locked.
 
 **Gate**: `npm run build` ✅.
+
+## PWA install card: real logo instead of letter avatar, bilingual copy
+
+The install prompt (`components/PWAInstall.js`) showed a generic "W"
+initial in a solid `bg-brand-700` square instead of the actual Wasla
+icon. Swapped it for `<img src="/icon-192.png">` at the same `w-10
+h-10 rounded-xl` size — `icon-192.png` over `icon-96.png` since it's
+only a few KB larger and stays crisp on high-DPI screens at this
+render size. Dropped the `bg-brand-700`/flex/centering classes
+entirely: the icon PNG already has its own opaque terracotta/cream
+background baked in (confirmed non-transparent, same as
+`apple-touch-icon.png` — see the icons note earlier in this file), so
+stacking a colored square behind it would just double up.
+
+Card copy (`pwa.installTitle`, `.installBody`, etc.) turned out to
+already be routed through `t(key, locale)` from `lib/i18n.js` with
+both `ar` and `en` entries present — the English strings quoted in the
+bug report are just what renders when the locale cookie is `en`, not
+evidence of a missing translation. Added the one string that *was*
+new: `pwa.installIconAlt` (`"شعار وصلة"` / `"Wasla logo"`), since the
+image previously had no `alt` at all and the task asked for it to come
+from i18n rather than a hardcoded string like `SplashScreen.js`'s
+`alt="Wasla — وصلة"`.
+
+**Verified live** (dev server, Playwright with an iPhone Safari user
+agent to force the iOS install hint — `beforeinstallprompt` doesn't
+fire in automated Chromium): pre-seeded `wasla_zone` and
+`wasla_splash_seen_v1` so ZoneGate's modal and the splash overlay
+(both higher z-index, both would otherwise occlude the card in a
+screenshot) stay out of the way. Checked both locales: `ar` renders
+the card RTL with `شعار وصلة` alt text and the Arabic copy already in
+the dictionary; `en` renders LTR with `Wasla logo` alt text and
+"Install the Wasla app". Both show the actual icon artwork (terracotta
+badge with the Wasla mark) at `40×40`, rounded, no colored square
+behind it, and zero console errors either load.
+
+**Gate**: `npm run build` ✅.
