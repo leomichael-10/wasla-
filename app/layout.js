@@ -97,7 +97,18 @@ export default async function RootLayout({ children }) {
   const dir    = locale === 'ar' ? 'rtl' : 'ltr'
 
   return (
-    <html lang={locale} dir={dir} className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} ${reemKufi.variable} h-full antialiased`}>
+    <html
+      lang={locale}
+      dir={dir}
+      className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} ${reemKufi.variable} h-full antialiased`}
+      // The blocking inline script below sets `data-splash-seen` on this
+      // element from localStorage before hydration (see the script's own
+      // comment), which the server can never know ahead of time — the
+      // mismatch is expected, not a bug. suppressHydrationWarning only
+      // silences the diff for this element's own attributes, not its
+      // descendants.
+      suppressHydrationWarning
+    >
       <head>
         {/*
           Blocking (no async/defer) — runs before <body> is parsed/painted,
