@@ -25,9 +25,63 @@ const PAYMENT_METHODS = [
 
 const SUBSCRIPTIONS_ENABLED = process.env.NEXT_PUBLIC_SUBSCRIPTIONS_ENABLED === 'true'
 
-// Retailer signup is invite-only — reached via a private link
-// (/register?mode=retailer) that's never advertised in the app's UI.
-// Landing on /register normally only ever registers a customer.
+// Two tappable cards — customer vs seller — shown before either signup
+// form. /register?mode=retailer bypasses this entirely (see retailerMode
+// below); everyone else picks here first, and can switch without a reload.
+function RoleChooser({ locale, onChoose }) {
+  const cards = [
+    {
+      role:  'customer',
+      title: t('register.customerTitle', locale),
+      body:  t('register.customerBody', locale),
+      icon: (
+        <path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+      ),
+    },
+    {
+      role:  'retailer',
+      title: t('register.sellerTitle', locale),
+      body:  t('register.sellerBody', locale),
+      icon: (
+        <>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 10.5 12 4l9 6.5" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 10V20h14V10" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10 20v-6h4v6" />
+        </>
+      ),
+    },
+  ]
+
+  return (
+    <>
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl font-black text-gray-900">{t('register.chooserTitle', locale)}</h1>
+        <p className="text-gray-500 text-sm mt-1">{t('register.chooserSubtitle', locale)}</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {cards.map(card => (
+          <button
+            key={card.role}
+            type="button"
+            onClick={() => onChoose(card.role)}
+            className="text-start bg-white border-2 border-brand-100 hover:border-brand-400 active:scale-[0.98] rounded-3xl p-6 transition-all duration-200"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} className="w-6 h-6 text-brand-700">
+                {card.icon}
+              </svg>
+            </div>
+            <p className="font-black text-gray-900">{card.title}</p>
+            <p className="text-sm text-gray-500 mt-1">{card.body}</p>
+          </button>
+        ))}
+      </div>
+    </>
+  )
+}
+
+// /register?mode=retailer still jumps straight to the seller form for
+// existing shared links — everyone else sees RoleChooser first and picks.
 function RegisterForm() {
   const router = useRouter()
   const params = useSearchParams()
@@ -46,8 +100,14 @@ function RegisterForm() {
   const [step1Error,     setStep1Error]     = useState('')
   const [step1Loading,   setStep1Loading]   = useState(false)
   const [locale,         setLocale]         = useState('ar')
+  const [roleChosen,     setRoleChosen]     = useState(retailerMode)
 
   useEffect(() => { setLocale(getLocaleCookie()) }, [])
+
+  function chooseRole(role) {
+    setForm(prev => ({ ...prev, role }))
+    setRoleChosen(true)
+  }
 
   const [step,            setStep]          = useState(1)
   const [paymentMethod,   setPaymentMethod] = useState('bank_transfer')
@@ -200,16 +260,27 @@ function RegisterForm() {
       </div>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="bg-white rounded-3xl shadow-lg border border-brand-50 w-full max-w-md p-8">
+        <div className={roleChosen ? 'bg-white rounded-3xl shadow-lg border border-brand-50 w-full max-w-md p-8' : 'w-full max-w-2xl'}>
 
-          {step === 1 && (
+          {!roleChosen && <RoleChooser locale={locale} onChoose={chooseRole} />}
+
+          {roleChosen && step === 1 && (
             <>
+              {!retailerMode && (
+                <button
+                  type="button"
+                  onClick={() => setRoleChosen(false)}
+                  className="block text-start text-xs font-semibold text-brand-600 hover:underline mb-4"
+                >
+                  {t('register.change', locale)}
+                </button>
+              )}
               <div className="mb-8 text-center">
                 <h1 className="text-2xl font-black text-gray-900">
-                  {retailerMode ? 'Register Your Shop' : 'Create an account'}
+                  {isSeller ? 'Register Your Shop' : 'Create an account'}
                 </h1>
                 <p className="text-gray-500 text-sm mt-1">
-                  {retailerMode
+                  {isSeller
                     ? 'Join Wasla as a Sudanese shop in Cairo'
                     : 'Join Wasla — Sudanese products, delivered in Cairo'}
                 </p>

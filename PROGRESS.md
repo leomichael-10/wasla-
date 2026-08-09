@@ -2015,3 +2015,66 @@ badge with the Wasla mark) at `40×40`, rounded, no colored square
 behind it, and zero console errors either load.
 
 **Gate**: `npm run build` ✅.
+
+## Public signup chooser: customer vs seller, seller signup reachable again
+
+`/register` previously registered a customer unconditionally — the only
+way to reach the seller form was the unadvertised `/register?mode=retailer`
+link (a deliberate security-visibility change from an earlier session,
+see "Hide retailer/seller entry points from customer UI" above). This
+task explicitly reverses the *visibility* half of that: sellers are
+public again via a `RoleChooser` on plain `/register`. The actual
+security fix from that earlier session — `POST /api/onboarding`
+stripped of its `becomeSeller` self-escalation path — is untouched and
+unrelated; nothing about making the chooser public reopens it.
+`approvedByAdmin: false` and the role-branched welcome email
+(`app/api/auth/register/route.js`) already existed and needed no
+changes — every new seller still lands unapproved regardless of which
+door they came through.
+
+`app/register/page.js`: added a `RoleChooser` component (two tappable
+`<button>` cards, full card clickable, not just a small button inside
+it) shown whenever `roleChosen` is false. `roleChosen` initializes to
+`retailerMode` (`?mode=retailer`), so shared invite links still skip
+straight to the seller form exactly as before — verified no `RoleChooser`
+render and no "Change" affordance on that path. Picking a card calls
+`chooseRole(role)`, which sets `form.role` and flips `roleChosen`; a
+"Change" link (hidden when `retailerMode`, since that path has no
+chooser to go back to) flips it back without a reload. Customer icon
+reuses the exact shopping-bag path already live in this file's
+dashboard nav (`app/dashboard/layout.js`'s `products` icon) rather than
+risking a mis-transcribed icon-library path; seller icon is a small
+hand-built house/storefront glyph (roofline + walls + door, straight
+lines and one arc-free rect) for the same reason. Card copy is new
+i18n (`register.chooserTitle/customerTitle/customerBody/sellerTitle/
+sellerBody/change` in `lib/i18n.js`) — the rest of the existing form
+(labels, errors, step 2) stays English-only, unchanged; retranslating
+the whole multi-field form wasn't part of this task's scope.
+
+**Bug caught during verification, not in the original diff**: the step-1
+heading ("Register Your Shop" vs "Create an account") branched on
+`retailerMode` — true only for the `?mode=retailer` URL, never set by
+picking the seller card from the chooser. A Playwright pass through the
+actual chooser→seller path caught it showing "Create an account" for a
+seller. Fixed by branching on `isSeller` (`form.role === 'retailer' ||
+'wholesaler'`, already computed above) instead, which covers both entry
+paths.
+
+`app/layout.js` footer: added a `footer.sell` link ("سجّل متجرك" /
+"Sell on Wasla") to `/register?mode=retailer` — goes straight to the
+seller form, not the chooser, matching what a shop owner who already
+knows what they want expects. Styled `text-gray-400` (a shade more
+muted than the other footer links' `text-gray-500`) per "discreet".
+
+**Verified live** (dev server, Playwright, `wasla_zone` + splash-seen
+pre-seeded to keep ZoneGate/the splash overlay from occluding the page,
+same as the PWA-card check above): `ar` chooser renders RTL with both
+cards in the dictionary's Arabic copy; `en` renders LTR with the English
+copy; clicking the seller card lands on "Register Your Shop" with the
+business-name/type/WhatsApp fields present; "Change" returns to a
+2-card chooser; `/register?mode=retailer` shows the seller form
+directly with no chooser and no "Change" link; footer shows "سجّل متجرك"
+linking to `/register?mode=retailer`. Zero console errors across all of
+the above.
+
+**Gate**: `npm run build` ✅.
