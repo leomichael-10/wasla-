@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://wasla.app'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.wasla-249.com'
 
 export default function robots() {
   return {

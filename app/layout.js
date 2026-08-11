@@ -11,6 +11,7 @@ import ZoneGate from '../components/ZoneGate'
 import PWAInstall from '../components/PWAInstall'
 import CartBar from '../components/CartBar'
 import MobileTabBar from '../components/MobileTabBar'
+import Wordmark from '../components/Wordmark'
 import { DEFAULT_LOCALE, LOCALE_COOKIE, t } from '../lib/i18n'
 import './globals.css'
 
@@ -155,7 +156,9 @@ export default async function RootLayout({ children }) {
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-lg font-black text-brand-600 font-(family-name:--font-reem-kufi)">Wasla</span>
+                <span className="text-lg font-black text-brand-600 font-(family-name:--font-reem-kufi)">
+                  <Wordmark accentClassName="text-accent-400" />
+                </span>
                 <span className="text-gray-300">|</span>
                 <span className="text-xs text-gray-400">{t('footer.tagline', locale)}</span>
               </div>

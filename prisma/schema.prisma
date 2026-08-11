@@ -24,6 +24,11 @@ model User {
   // touched on login or profile update, so it doubles as the "already
   // sent" guard against duplicate welcome emails.
   welcomeEmailSentAt        DateTime?
+  // Set on a successful password reset (never on registration or normal
+  // login). middleware.js rejects any JWT whose `iat` predates this, so a
+  // stolen/leaked token stops working the moment the password changes —
+  // see app/api/auth/reset-password/route.js.
+  passwordChangedAt         DateTime?
   gender                    String?
   createdAt                 DateTime            @default(now())
   customerProfile           CustomerProfile?
@@ -32,6 +37,7 @@ model User {
   reviews                   Review[]
   addresses                 Address[]
   walletTransactionsCreated WalletTransaction[] @relation("WalletTransactionCreatedBy")
+  commissionRateChanges     CommissionSetting[] @relation("CommissionSettingUpdatedBy")
 }
 
 model CustomerProfile {
@@ -117,6 +123,13 @@ model WalletTransaction {
   note         String?
   createdBy    Int?
   createdAt    DateTime              @default(now())
+  // The commission rate actually applied to this specific COMMISSION row
+  // (fraction, e.g. 0.05 = 5%) — null for TOPUP/ADJUSTMENT rows, which
+  // have no rate. Set once at creation from CommissionSetting's current
+  // rate and never touched again: a shop's past ledger entries must keep
+  // showing what they were actually charged even after the platform rate
+  // changes later. See lib/wallet.js's deductCommission().
+  commissionRate Decimal?
   shop         SellerProfile         @relation(fields: [shopId], references: [id], onDelete: Cascade)
   order        Order?                @relation(fields: [orderId], references: [id])
   admin        User?                 @relation("WalletTransactionCreatedBy", fields: [createdBy], references: [id])
@@ -126,6 +139,24 @@ model WalletTransaction {
   // ADJUSTMENT rows (orderId is always null for those).
   @@unique([orderId, shopId, type])
   @@index([shopId, createdAt])
+}
+
+// Append-only: changing the commission rate INSERTS a new row rather than
+// updating one in place, so the table doubles as its own audit log (who
+// changed it and when — see app/api/admin/commission-rate/route.js). The
+// current rate is always the most recent row (highest id / createdAt).
+// lib/wallet.js's getCurrentCommissionRate() reads it; deductCommission()
+// snapshots that value onto WalletTransaction.commissionRate per charge,
+// which is what actually protects historical ledger entries — this table
+// changing never rewrites anything already charged.
+model CommissionSetting {
+  id        Int      @id @default(autoincrement())
+  rate      Decimal // fraction, e.g. 0.05 = 5%
+  createdAt DateTime @default(now())
+  updatedBy Int?
+  updatedByUser User? @relation("CommissionSettingUpdatedBy", fields: [updatedBy], references: [id])
+
+  @@index([createdAt])
 }
 
 model Subscription {

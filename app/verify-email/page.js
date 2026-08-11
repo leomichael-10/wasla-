@@ -2,6 +2,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Wordmark from '../../components/Wordmark'
 
 const RESEND_COOLDOWN_SEC = 30
 
@@ -69,7 +70,7 @@ function VerifyEmailForm() {
     <div className="min-h-screen bg-[#FBF6EF] flex flex-col">
       <div className="bg-brand-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
-          was<span className="text-accent-300">la</span>
+          <Wordmark />
         </Link>
       </div>
 

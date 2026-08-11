@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://wasla.app'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.wasla-249.com'
 
 export default async function sitemap() {
   const staticRoutes = ['', '/products', '/shops', '/browse', '/terms', '/privacy'].map(path => ({

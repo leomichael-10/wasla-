@@ -6,6 +6,7 @@ import { getCartCount } from '../lib/cart'
 import { useUser } from '../lib/UserContext'
 import { getLocaleCookie, setLocaleCookie, t } from '../lib/i18n'
 import MobileMenu from './MobileMenu'
+import Wordmark from './Wordmark'
 
 function navLinksFor(user) {
   if (!user) return []
@@ -95,7 +96,7 @@ export default function Navbar() {
           <Link href="/" className="shrink-0 flex items-center gap-2 leading-none font-(family-name:--font-reem-kufi)">
             <img src="/icon-96.png" alt="" width={56} height={56} className="w-14 h-14 shrink-0" />
             <span className="text-white font-black text-xl tracking-tight">
-              was<span className="text-accent-300">la</span>
+              <Wordmark />
             </span>
           </Link>
 

@@ -1,5 +1,16 @@
 import { NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
+import { prisma } from './lib/prisma'
+
+// Password-reset session invalidation (see prisma/schema.prisma's
+// User.passwordChangedAt and app/api/auth/reset-password/route.js) needs
+// a real DB read per authenticated request, which Edge middleware can't
+// do without extra infrastructure this project doesn't have (no
+// edge/Neon-HTTP Prisma driver adapter configured). Node.js middleware
+// (stable since Next 15.5) is the deliberate tradeoff: one indexed
+// point-lookup added to every authenticated API request, in exchange for
+// a stolen token actually dying the moment its owner resets their
+// password, instead of surviving up to its full 7-day expiry.
 
 // Routes that never require a token
 const PUBLIC_ROUTES = [
@@ -36,6 +47,8 @@ const ROLE_RESTRICTED = {
 function getSecret() {
   return new TextEncoder().encode(process.env.JWT_SECRET)
 }
+
+export const runtime = 'nodejs'
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl
@@ -79,6 +92,21 @@ export async function middleware(request) {
     const { payload: verified } = await jwtVerify(token, getSecret())
     payload = verified
   } catch {
+    return NextResponse.json(
+      { error: 'Invalid or expired token' },
+      { status: 401 }
+    )
+  }
+
+  // Reject tokens issued before the account's last password reset — same
+  // "Invalid or expired token" response as a bad signature, so a stolen
+  // token doesn't get a distinguishable error telling an attacker *why*
+  // it stopped working.
+  const dbUser = await prisma.user.findUnique({
+    where:  { id: payload.userId },
+    select: { passwordChangedAt: true },
+  })
+  if (dbUser?.passwordChangedAt && payload.iat * 1000 < dbUser.passwordChangedAt.getTime()) {
     return NextResponse.json(
       { error: 'Invalid or expired token' },
       { status: 401 }

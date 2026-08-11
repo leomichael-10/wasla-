@@ -2205,3 +2205,213 @@ an end-to-end OAuth test — flagging that honestly rather than claiming
 full coverage.
 
 **Gate**: `npm run build` ✅.
+
+**Note**: this session was interrupted mid-task by the three fixes below,
+which landed in the same commit — see that entry's note on why splitting
+wasn't practical. The password-reset *backend* here (this whole section)
+is complete and safe (additive migration, dead code until linked to),
+but there is still no "Forgot password?" link or `/forgot-password` /
+`/reset-password` UI — not reachable by a real user yet.
+
+## Three fixes: email logo, wordmark color split, admin-configurable commission rate
+
+### 1 — Logo missing in emails
+
+Confirmed the diagnosis before touching anything: `.env`/`.env.local`
+had `NEXT_PUBLIC_APP_URL="http://localhost:3000"` (correct for local
+browsing, but unreachable from any mail client), and — the actual live
+bug — `.env.vercel.local` has **no** `NEXT_PUBLIC_APP_URL` at all,
+meaning production almost certainly falls through to
+`lib/emailTemplates.js`'s code-level fallback, which was the stale,
+never-owned `https://wasla.app`.
+
+Every place in `lib/emailTemplates.js` that builds an asset/link URL:
+- Line 8 (was line 3): the `APP_URL` constant's fallback — fixed to
+  `https://www.wasla-249.com`, and exported (`export const APP_URL`)
+  so nothing needs its own copy of this value again.
+- 5 separate `<a href>` fallbacks in `orderConfirmation`,
+  `orderAccepted`, `orderDelivered`, `newOrderAlert`,
+  `subscriptionActivated` — each had its own inline
+  `process.env.NEXT_PUBLIC_APP_URL ?? 'https://wasla.app'` /
+  `'https://wasla.ae'` (two *different* stale domains, inconsistently).
+  All five now reference the single `APP_URL` constant instead of
+  duplicating the fallback — the duplication itself is what let them
+  drift out of sync with each other in the first place.
+- The `<img>` logo tag (line 40): added `width="56" height="56"` HTML
+  attributes and an inline `style` (not just the existing `<head><style>`
+  `.header img` rule, which many mail clients strip) — belt-and-suspenders
+  so the image reserves its space even before "show images" is clicked.
+  `alt="Wasla"` already existed.
+
+Same stale-fallback bug, same fix, found while grepping for the other
+instances: `app/robots.js` and `app/sitemap.js` both had their own
+`BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://wasla.app'` —
+wrong domain in `robots.txt`/`sitemap.xml` is a real SEO bug, not just
+adjacent noise, so fixed both. Also updated `.env.example`'s documented
+value to `https://www.wasla-249.com`.
+
+**Left alone, flagging instead of guessing**: `app/privacy/page.js` has
+a contact address `privacy@wasla.app` — likely equally stale, but
+unlike a URL fallback this is a real mailbox that may or may not exist;
+didn't want to fabricate a replacement I can't verify is monitored.
+
+**What I can't do from here**: `.env.vercel.local` confirms
+`NEXT_PUBLIC_APP_URL` isn't set in Vercel's project settings — that's
+outside this checkout's reach (Vercel dashboard, not a file). The code
+fallback now being correct means emails will render properly even if
+that's never set, but setting it explicitly is still the right move.
+
+**Verified**: hit a temporary debug route through the real Next.js
+bundler (avoids the ESM extensionless-import issue standalone Node
+scripts hit on this codebase's imports) rendering both
+`welcomeCustomerEmail()` and the new `passwordResetEmail()` — confirmed
+`width="56" height="56"` and `alt="Wasla"` present on the `<img>`, and
+(with `NEXT_PUBLIC_APP_URL` unset in that request) the logo `src`
+resolved through the dev env's explicit localhost override, proving the
+fallback chain works as designed. Route deleted after.
+
+### 2 — Wordmark color split
+
+Was `was` + `<span accent>la</span>` (or, in one place,
+`app/onboarding/page.js`, `text-yellow-300` instead of `text-accent-300`
+— a second inconsistency found while auditing). Every render site found
+via grep for the literal pattern:
+`components/Navbar.js`, `components/MobileMenu.js`, `app/login/page.js`,
+`app/register/page.js` (both the main header and the post-signup
+"submitted" screen), `app/onboarding/page.js`, `app/verify-email/page.js`,
+`app/layout.js`'s footer (previously *not* split at all — plain
+`text-brand-600` "Wasla"), and `lib/emailTemplates.js`'s raw-HTML email
+header.
+
+Rather than fix the same split at 8 call sites again (which is how it
+drifted the first time), extracted `components/Wordmark.js` — one
+component, `<span className={accentClassName}>W</span>asla`, default
+`accentClassName="text-accent-300"` for the white-on-dark-brand-700
+bars, overridden to `text-accent-400` (this codebase's existing
+"accent legible on white" choice — already used for
+`hover:text-accent-400` elsewhere) for the footer's white background.
+The email template's raw HTML got the same swap by hand (`<h1><span>W</span>asla</h1>`)
+since it's a string template, not JSX — its CSS rule
+(`.header h1 span { color: #C1502E }`) didn't need to change, only
+which letters the `<span>` wraps.
+
+**Verified**: grepped for the old `was<span` pattern post-change (zero
+matches) and for every `Wordmark` usage (all 8 JSX call sites present);
+screenshotted the register chooser, login page, and the footer live —
+`W` in terracotta, `asla` in the surrounding text color, both
+directions (white-on-dark and dark-on-white).
+
+### 3 — Commission rate: admin-configurable, with historical integrity
+
+**Found two separate, inconsistent commission systems while exploring
+before changing anything** (documented in code and flagging here since
+it directly bears on what "commission rate" means in this app):
+- `lib/wallet.js`'s `deductCommission()` — the *real* one. 5% of
+  `Order.total` (goods subtotal only), deducted from the shop's wallet
+  at `DELIVERED`, atomic + idempotent + the −100 EGP credit limit. This
+  is the system the task describes and the one made configurable below.
+- `Order.commission` / `Order.commissionRate` — a **separate** snapshot
+  computed at order *creation* in `app/api/orders/route.js` using a
+  hardcoded 10% (not 5%), feeding `GET /api/admin/commission`'s
+  revenue-by-seller/by-month dashboard and the admin Commission tab's
+  summary cards. Confirmed live: after this change, the wallet ledger
+  correctly charged EGP 3.25 (5% of a 65 EGP order) while the "Commission
+  by Seller" table still shows EGP 6.50 (the old 10%-of-total snapshot)
+  for the same order — a real, pre-existing discrepancy, now more
+  visible since the wallet rate is admin-configurable and this snapshot
+  isn't. **Left this alone** — out of scope for "make the wallet rate
+  configurable," and refactoring the reporting pipeline's data source is
+  a separate, non-trivial project. Left an inline comment at the exact
+  spot in `app/admin/page.js` so the next person touching this doesn't
+  mistake the two for the same number. Only fixed the one thing that was
+  actually *in* scope: the admin Commission tab's "Commission Rate"
+  summary card was hardcoded to `'10%'` regardless of reality — now
+  reads the real current rate.
+
+**Schema** (`prisma/migrations/20260811090000_commission_settings`,
+additive only):
+- `CommissionSetting` — deliberately **append-only**: changing the rate
+  `INSERT`s a new row rather than `UPDATE`ing one, so the table is its
+  own audit log for free (who/when — no separate history table needed).
+  "Current rate" = the most recent row. Seeded with one row (`rate:
+  0.05`, `updatedBy: null`) matching the previously-hardcoded constant
+  exactly, so this migration changes no seller's actual charge on
+  deploy.
+- `WalletTransaction.commissionRate` (nullable — only COMMISSION rows
+  get one) — the rate *actually applied* to that specific charge,
+  snapshotted once at creation and never touched again. This is the
+  historical-integrity guarantee: `lib/wallet.js`'s `deductCommission()`
+  now calls `getCurrentCommissionRate()` and stores whatever it returns
+  on the ledger row, so a later rate change can never rewrite what a
+  shop was already charged.
+
+**Reading/writing the rate** (`lib/wallet.js`): `getCurrentCommissionRate()`
+(exported `DEFAULT_COMMISSION_RATE = 0.05` as a should-never-trigger
+fallback only) and `setCommissionRate({ rate, adminId })` — validates
+`0 ≤ rate ≤ 1`, rounds to 4 decimal places on the fraction (2 on the
+percent — "reasonable decimals" without silently truncating), throws
+`INVALID_RATE` on out-of-range input matching the existing
+`topUp`/`adjustBalance` coded-error convention in the same file.
+
+**Admin console** (`app/api/admin/commission-rate/route.js` +
+`app/admin/page.js`'s Commission tab): `GET` returns the current rate
+plus the last 20 `CommissionSetting` rows (the audit trail) with the
+admin's email joined in; `POST` accepts `{ ratePercent }` (0–100, what
+an admin types) and converts to the stored fraction. New "Commission
+Rate" card: current-rate summary tile (no longer hardcoded), an
+update form, and a change-history list. Admin-only via the same
+`getUser(request); role !== 'admin'` guard every other admin route uses.
+
+**Seller wallet page**: `GET /api/seller/wallet` now includes
+`commissionRate`; `app/dashboard/wallet/page.js` shows "Current
+commission rate: N%" on the balance card (new `wallet.currentRate` i18n
+key, bilingual). Trailing-zero formatting (`5%` not `5.00%`) duplicated
+in both the ledger-note string in `lib/wallet.js` and this display —
+two short call sites in different layers (server ledger text vs. client
+UI), not worth a shared helper for.
+
+**Everything else about the wallet is unchanged**: still 5%-equivalent
+of goods subtotal only (default), still deducted at `DELIVERED`, still
+the same row-lock + `@@unique([orderId, shopId, type])` idempotency
+guard (untouched), still the −100 EGP credit limit. `approvedByAdmin`
+and every other wallet mechanic — untouched.
+
+**Verified live** (real seeded accounts, `admin@wasla.com` /
+`seller@wasla.com`, actual HTTP requests against the dev server — not
+mocked): logged in as admin, `GET /api/admin/commission-rate` → `0.05`
++ 1 history row; `POST` with `150` correctly rejected (400); `POST`
+with `7` succeeded (201), `GET` afterward showed `0.07` + 2 history
+rows with `admin@wasla.com` attributed; seller GET on the same admin
+route correctly 403'd; `GET /api/seller/wallet` correctly reflected
+`0.07` immediately. Then walked a real seeded order (id 1, EGP 65)
+through its full status lifecycle to `DELIVERED` via the actual PATCH
+route — the resulting `WalletTransaction` shows `amount: -3.25`,
+`commissionRate: "0.05"` (rate had been reset back to 5% by then) — the
+exact numbers, not approximations. Reset the rate back to 5% after
+testing so the dev DB's demo commission rate matches what a fresh clone
+would see; did **not** revert order 1's DELIVERED status or its wallet
+charge — that's real, harmless, and arguably more realistic dev-seed
+state than an order stuck at PLACED forever. Screenshotted both the
+seller wallet page and the admin Commission tab live — confirmed via
+extracted page text (RTL Arabic content didn't photograph well in the
+raw screenshot, so read the DOM text directly instead of trusting the
+image): `نسبة العمولة الحالية: 5%` on the wallet page, and the full
+three-row change history (`5% — default`, `7% — admin@wasla.com`,
+`5% — admin@wasla.com`) on the admin tab.
+
+**Note on this commit**: `prisma/schema.prisma`, `lib/emailTemplates.js`,
+and `lib/i18n.js` also carry the previous (still UI-incomplete)
+password-reset task's changes — `passwordChangedAt` on `User`,
+`lib/verification/passwordReset.js`'s two new email templates, and
+their i18n keys. Splitting them out would mean manually cutting
+interleaved hunks in the same files (`emailTemplates.js`'s `APP_URL`
+export in particular is now a real dependency of
+`lib/verification/passwordReset.js`, not just adjacent), with real risk
+of a broken intermediate state, for no safety benefit — the
+password-reset migration was already applied to the dev DB, and its
+code is inert (unlinked from any UI) either way. Bundled deliberately,
+flagged here and in that section above rather than silently.
+
+**Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` (dev DB
+vs. `schema.prisma`, no shadow database — `--from-schema-datasource`
+against the confirmed dev endpoint) reports no difference ✅.

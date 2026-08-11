@@ -5,6 +5,7 @@ import { getSession } from 'next-auth/react'
 import Link from 'next/link'
 import { isEgyptianPhone, normalizeDigits } from '../../lib/phone'
 import { getLocaleCookie, t } from '../../lib/i18n'
+import Wordmark from '../../components/Wordmark'
 
 const EGYPT_CITIES = [
   'Cairo', 'Giza', '6th of October', 'Alexandria',
@@ -115,7 +116,7 @@ export default function OnboardingPage() {
 
       <div className="bg-brand-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
-          was<span className="text-yellow-300">la</span>
+          <Wordmark />
         </Link>
       </div>
 

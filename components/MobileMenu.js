@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Wordmark from './Wordmark'
 
 function navLinksFor(user) {
   if (!user) return [
@@ -39,7 +40,7 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
 
         <div className="flex items-center justify-between px-5 py-4 bg-brand-700">
           <span className="text-white font-black text-xl tracking-tight">
-            was<span className="text-accent-300">la</span>
+            <Wordmark />
           </span>
           <button
             onClick={onClose}

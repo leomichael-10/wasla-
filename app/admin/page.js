@@ -25,6 +25,10 @@ export default function AdminPage() {
   const [users,         setUsers]         = useState([])
   const [products,      setProducts]      = useState([])
   const [commission,    setCommission]    = useState(null)
+  const [commissionRateInfo, setCommissionRateInfo] = useState(null) // { rate, history }
+  const [rateInput,  setRateInput]  = useState('')
+  const [rateSaving, setRateSaving] = useState(false)
+  const [rateError,  setRateError]  = useState('')
   const [traffic,       setTraffic]       = useState(null)
   const [masterProducts,  setMasterProducts]  = useState([])
   const [pendingApprovals,setPendingApprovals] = useState([])
@@ -80,21 +84,22 @@ export default function AdminPage() {
     const token   = localStorage.getItem('wasla_token')
     const headers = { Authorization: `Bearer ${token}` }
     try {
-      const [selRes, subRes, stRes, usrRes, prdRes, comRes, catRes, trafRes, mpRes, rpRes, prRes] = await Promise.all([
+      const [selRes, subRes, stRes, usrRes, prdRes, comRes, rateRes, catRes, trafRes, mpRes, rpRes, prRes] = await Promise.all([
         fetch('/api/admin/sellers',          { headers }),
         fetch('/api/admin/subscriptions',    { headers }),
         fetch('/api/admin/stats',            { headers }),
         fetch('/api/admin/users',            { headers }),
         fetch('/api/admin/products',         { headers }),
         fetch('/api/admin/commission',       { headers }),
+        fetch('/api/admin/commission-rate',  { headers }),
         fetch('/api/admin/categories',       { headers }),
         fetch('/api/admin/traffic',          { headers }),
         fetch('/api/admin/master-products',  { headers }),
         fetch('/api/admin/retailer-products?status=PENDING', { headers }),
         fetch('/api/admin/product-requests', { headers }),
       ])
-      const [selData, subData, stData, usrData, prdData, comData, catData, trafData, mpData, rpData, prData] = await Promise.all([
-        selRes.json(), subRes.json(), stRes.json(), usrRes.json(), prdRes.json(), comRes.json(), catRes.json(), trafRes.json(), mpRes.json(), rpRes.json(), prRes.json(),
+      const [selData, subData, stData, usrData, prdData, comData, rateData, catData, trafData, mpData, rpData, prData] = await Promise.all([
+        selRes.json(), subRes.json(), stRes.json(), usrRes.json(), prdRes.json(), comRes.json(), rateRes.json(), catRes.json(), trafRes.json(), mpRes.json(), rpRes.json(), prRes.json(),
       ])
       if (!selRes.ok) throw new Error(selData.error)
       setSellers(       (selData.sellers       ?? []).sort((a,b) => a.businessName.localeCompare(b.businessName)))
@@ -103,6 +108,7 @@ export default function AdminPage() {
       setUsers(          usrData.users         ?? [])
       setProducts(       prdData.products      ?? [])
       setCommission(     comData)
+      if (rateRes.ok) setCommissionRateInfo(rateData)
       setCategories(     catData.categories    ?? [])
       if (trafRes.ok) setTraffic(trafData)
       if (mpRes.ok)   setMasterProducts(  mpData.products  ?? [])
@@ -132,6 +138,35 @@ export default function AdminPage() {
       setError(err.message || 'Failed to approve seller.')
     } finally {
       setApproving(null)
+    }
+  }
+
+  async function handleSetCommissionRate(e) {
+    e.preventDefault()
+    setRateError('')
+    const ratePercent = parseFloat(rateInput)
+    if (!Number.isFinite(ratePercent) || ratePercent < 0 || ratePercent > 100) {
+      setRateError('Enter a number between 0 and 100.')
+      return
+    }
+    setRateSaving(true)
+    const token = localStorage.getItem('wasla_token')
+    try {
+      const res  = await fetch('/api/admin/commission-rate', {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ ratePercent }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setRateInput('')
+      const rateRes  = await fetch('/api/admin/commission-rate', { headers: { Authorization: `Bearer ${token}` } })
+      const rateData = await rateRes.json()
+      if (rateRes.ok) setCommissionRateInfo(rateData)
+    } catch (err) {
+      setRateError(err.message || 'Failed to update commission rate.')
+    } finally {
+      setRateSaving(false)
     }
   }
 
@@ -1188,11 +1223,20 @@ export default function AdminPage() {
               </div>
             ) : commission ? (
               <>
+                {/* NOTE: Total/This Month below come from GET /api/admin/commission,
+                    which sums Order.commission — a snapshot taken at order
+                    CREATION using a separate, still-hardcoded 10% rate
+                    (app/api/orders/route.js). It does not reflect the real,
+                    now-admin-configurable rate actually charged at DELIVERY
+                    via the wallet ledger (lib/wallet.js's deductCommission,
+                    CommissionSetting). Pre-existing inconsistency, out of
+                    scope for the rate-configurability change below — see
+                    PROGRESS.md. Only "Current Commission Rate" reflects reality. */}
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                   {[
                     { label: 'Total Commission',      value: `EGP ${Number(commission.totalCommission ?? 0).toFixed(2)}`,  color: 'text-brand-700' },
                     { label: 'This Month',            value: `EGP ${Number(commission.monthCommission ?? 0).toFixed(2)}`,  color: 'text-blue-700' },
-                    { label: 'Commission Rate',       value: '10%',                                                        color: 'text-gray-900' },
+                    { label: 'Current Commission Rate', value: commissionRateInfo ? `${(commissionRateInfo.rate * 100).toFixed(2).replace(/\.?0+$/, '')}%` : '—', color: 'text-gray-900' },
                   ].map(s => (
                     <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{s.label}</p>
@@ -1200,6 +1244,55 @@ export default function AdminPage() {
                     </div>
                   ))}
                 </div>
+
+                {/* Commission rate management */}
+                <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                  <h2 className="text-base font-black text-gray-900 mb-1">Commission Rate</h2>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Applied to every order's goods subtotal when it's marked delivered. Changing it never
+                    recalculates past charges — shops keep the rate they were actually charged at the time.
+                  </p>
+                  <form onSubmit={handleSetCommissionRate} className="flex flex-wrap items-end gap-3">
+                    <div>
+                      <label htmlFor="rateInput" className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                        New rate (%)
+                      </label>
+                      <input
+                        id="rateInput"
+                        type="number" min="0" max="100" step="0.01"
+                        value={rateInput}
+                        onChange={e => setRateInput(e.target.value)}
+                        placeholder={commissionRateInfo ? `${(commissionRateInfo.rate * 100).toFixed(2).replace(/\.?0+$/, '')}` : '5'}
+                        className="w-32 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={rateSaving || rateInput === ''}
+                      className="bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors"
+                    >
+                      {rateSaving ? 'Saving…' : 'Update rate'}
+                    </button>
+                  </form>
+                  {rateError && <p className="text-sm text-red-600 mt-2">{rateError}</p>}
+
+                  {commissionRateInfo?.history?.length > 0 && (
+                    <div className="mt-5 pt-4 border-t border-gray-100">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Change history</p>
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                        {commissionRateInfo.history.map(h => (
+                          <div key={h.id} className="flex items-center justify-between text-xs">
+                            <span className="text-gray-600">
+                              {(Number(h.rate) * 100).toFixed(2).replace(/\.?0+$/, '')}%
+                              {h.updatedByUser ? ` — ${h.updatedByUser.email}` : ' — default'}
+                            </span>
+                            <span className="text-gray-400 tabular-nums">{new Date(h.createdAt).toLocaleString('en-GB')}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </section>
 
                 {/* By seller */}
                 {commission.bySeller?.length > 0 && (

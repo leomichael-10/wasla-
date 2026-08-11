@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { useUser } from '../../lib/UserContext'
+import Wordmark from '../../components/Wordmark'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -56,7 +57,7 @@ export default function LoginPage() {
 
       <div className="bg-brand-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
-          was<span className="text-accent-300">la</span>
+          <Wordmark />
         </Link>
       </div>
 

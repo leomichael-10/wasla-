@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
 import { getUser } from '../../../../lib/auth'
-import { isBlocked, CREDIT_LIMIT } from '../../../../lib/wallet'
+import { isBlocked, CREDIT_LIMIT, getCurrentCommissionRate } from '../../../../lib/wallet'
 
 // GET /api/seller/wallet — the logged-in seller's OWN wallet + ledger only.
 // Scoped by userId -> sellerProfile, same as every other /api/seller/* route
@@ -33,11 +33,14 @@ export async function GET(request) {
       },
     })
 
+    const commissionRate = await getCurrentCommissionRate()
+
     return NextResponse.json({
       wallet: {
-        balance:     JSON.parse(JSON.stringify(seller.walletBalance)),
-        blocked:     isBlocked(seller.walletBalance),
-        creditLimit: CREDIT_LIMIT,
+        balance:        JSON.parse(JSON.stringify(seller.walletBalance)),
+        blocked:        isBlocked(seller.walletBalance),
+        creditLimit:    CREDIT_LIMIT,
+        commissionRate,
       },
       ledger: JSON.parse(JSON.stringify(ledger)),
     })

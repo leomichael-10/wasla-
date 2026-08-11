@@ -6,6 +6,7 @@ import { signIn } from 'next-auth/react'
 import { isEgyptianPhone, normalizeDigits } from '../../lib/phone'
 import { getLocaleCookie, t } from '../../lib/i18n'
 import { setGoogleSignupIntent } from '../../lib/googleSignupIntent'
+import Wordmark from '../../components/Wordmark'
 
 function handleGoogleSignup(isSeller) {
   setGoogleSignupIntent(isSeller)
@@ -230,7 +231,7 @@ function RegisterForm() {
       <div className="min-h-screen bg-[#FBF6EF] flex flex-col">
         <div className="bg-brand-700 px-6 py-4">
           <Link href="/" className="text-white font-black text-xl tracking-tight">
-            was<span className="text-accent-300">la</span>
+            <Wordmark />
           </Link>
         </div>
         <div className="flex-1 flex items-center justify-center px-4 py-12">
@@ -261,7 +262,7 @@ function RegisterForm() {
 
       <div className="bg-brand-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
-          was<span className="text-accent-300">la</span>
+          <Wordmark />
         </Link>
       </div>
 

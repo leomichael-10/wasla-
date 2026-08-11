@@ -66,6 +66,12 @@ export default function SellerWalletPage() {
           EGP {Math.abs(balance).toFixed(2)}
         </p>
 
+        {wallet?.commissionRate != null && (
+          <p className="text-xs font-semibold text-gray-400 mt-2">
+            {t('wallet.currentRate', locale)}: {(Number(wallet.commissionRate) * 100).toFixed(2).replace(/\.?0+$/, '')}%
+          </p>
+        )}
+
         {wallet?.blocked ? (
           <div className="flex items-start gap-2.5 mt-4 bg-white/70 rounded-xl px-3.5 py-3">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-5 h-5 text-hibiscus-500 shrink-0 mt-0.5">
