@@ -2415,3 +2415,92 @@ flagged here and in that section above rather than silently.
 **Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` (dev DB
 vs. `schema.prisma`, no shadow database — `--from-schema-datasource`
 against the confirmed dev endpoint) reports no difference ✅.
+
+## Forgot-password UI — the backend from above, now actually reachable
+
+The password-reset backend (previous section) shipped inert — no link,
+no pages. This closes that: `app/login/page.js` gets a "Forgot
+password?" link (new `login.forgotPassword` i18n key; the rest of that
+page stays English-only, pre-existing, untouched — consistent with how
+every other auth page in this app has been scoped this session), plus
+two new fully-bilingual pages, `app/forgot-password/page.js` and
+`app/reset-password/page.js`, styled identically to
+`login`/`register`/`verify-email` (same card, same `Wordmark`, same
+`bg-brand-700` header bar).
+
+**`/forgot-password`**: email → `POST /api/auth/forgot-password` →
+always shows the same success state ("Check your email") on any
+non-error response, never branching on whether the account turned out
+to exist — the enumeration-safety guarantee has to hold in the UI too,
+not just the API. Errors (rate-limited, malformed) fall back to one
+generic i18n'd message rather than surfacing the API's raw (English-only)
+error text, since this page needs to actually be bilingual.
+
+**`/reset-password`**: `useSearchParams` (wrapped in `Suspense`, same
+pattern as `app/verify-email/page.js`) reads `email`/`code` from the
+URL the reset email links to. Missing either → an "Invalid link" state
+with a link back to `/forgot-password`, no form rendered at all.
+Otherwise: new password + confirm, client-side checks (length ≥ 6 —
+`MIN_PASSWORD_LENGTH`, duplicated as a same-valued constant in both this
+file and the API route, matching `app/register/page.js`'s
+`minLength={6}` per the task's "match, don't invent a different rule";
+mismatch) before ever hitting the network, then `POST
+/api/auth/reset-password`. Every server-side failure (wrong/expired/
+already-used/locked code) collapses to one generic i18n'd message here
+too, for the same reason the API collapses them server-side — see the
+previous section. Success → redirect to `/login` after a beat.
+
+**Verified live**, end to end, against the real dev server and dev DB
+(not mocked) — this is what actually caught real bugs the code-review
+pass didn't:
+- **Enumeration safety, empirically**: hit `/api/auth/forgot-password`
+  for a registered user, an unregistered address, and a Google-only
+  account — byte-identical `200` response all three times.
+- **The single-use/expiry/hash path with a real plaintext code**: since
+  the code is bcrypt-hashed at rest, there's no way to read it back out
+  of the DB to test the second half of the flow — used a temporary
+  debug route calling the same `issueCode()` core.js already uses (not
+  a parallel mechanism) to get one real plaintext code, then: wrong code
+  → generic 400; correct code + too-short password → 400 (server-side
+  length check, independent of the client-side one); correct code +
+  valid password → 200, and `passwordHash` demonstrably changed (old
+  password stopped authenticating, new one worked); **same code reused
+  → 400** — single-use confirmed against the real `checkCode()` path,
+  not just read from the source.
+- **Session invalidation, against a real protected route** — the one
+  requirement hardest to fake convincingly: logged in before the reset
+  to get a real JWT, completed the reset, then called `/api/profile`
+  (deliberately not `/api/auth/me` — that route sits under the
+  `/api/auth/` prefix middleware treats as public entirely, so it
+  wouldn't have exercised the check at all, a mistake caught mid-test)
+  with the **old** token → `401 "Invalid or expired token"`. A **new**
+  token from logging in with the new password → `200` on the same
+  route, same request shape, proving the rejection is specific to the
+  stale token's `iat` predating `passwordChangedAt`, not a blanket
+  break.
+- **Hit one real, unrelated dev-environment bug while testing, not a
+  code bug**: partway through, an authenticated request through
+  middleware failed with `PrismaClient is not configured to run in Edge
+  Runtime` — despite `middleware.js` already declaring `export const
+  runtime = 'nodejs'` (from the previous session, verified working at
+  the time). Turned out to be a Turbopack dev-server hot-reload
+  artifact: a debug route added to an *already-running* dev server
+  wasn't picked up under the Node.js runtime declaration on some
+  requests, but a full cold restart made it disappear and every
+  subsequent check pass cleanly. Documenting in case it recurs — not
+  something to "fix" in application code, since it never reproduced
+  after a clean restart.
+- **UI**: Arabic `/login` shows the new link correctly RTL-positioned
+  (flex order flips for free, no `rtl:` classes needed — consistent
+  with every other RTL page this session); `/forgot-password` submit →
+  real success screen with the mail icon and 15-minute-expiry copy;
+  `/reset-password` with no query params → the invalid-link state, no
+  form; with params → the form, confirmed the client-side mismatch
+  check renders inline before any network call. Zero console errors
+  across all of it.
+
+All test users, the debug route, and generated screenshots were
+removed after verification — nothing test-only shipped.
+
+**Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
+no difference (no schema change this pass — UI only) ✅.

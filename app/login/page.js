@@ -1,10 +1,11 @@
 ﻿'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { useUser } from '../../lib/UserContext'
 import Wordmark from '../../components/Wordmark'
+import { getLocaleCookie, t } from '../../lib/i18n'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -14,6 +15,9 @@ export default function LoginPage() {
   const [password,     setPassword]     = useState('')
   const [error,        setError]        = useState('')
   const [loading,      setLoading]      = useState(false)
+  const [locale,       setLocale]       = useState('ar')
+
+  useEffect(() => { setLocale(getLocaleCookie()) }, [])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -94,9 +98,14 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                  Password
+                </label>
+                <Link href="/forgot-password" className="text-xs font-semibold text-brand-600 hover:underline">
+                  {t('login.forgotPassword', locale)}
+                </Link>
+              </div>
               <input
                 id="password"
                 type="password"
