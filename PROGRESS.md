@@ -2674,3 +2674,35 @@ asset, and generated screenshots were removed after verification.
 **Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
 no difference (schema was already sufficient — no migration this
 pass) ✅.
+
+## Data migration script for the non-E.164 rows found above (not yet run)
+
+`scripts/migrate-phones.mjs` — idempotent, dry-run by default (`node
+scripts/migrate-phones.mjs`), only writes with an explicit `--apply`
+flag. Re-checks each row's current value immediately before writing
+(not just against the earlier plan), so a second run — or a re-run
+after a partial failure — safely no-ops anything already migrated or
+changed since the plan was made, rather than double-applying or
+clobbering a concurrent edit.
+
+Prints the DB endpoint (via the existing `scripts/check-env.mjs`
+guard), then for `User.phone` and `SellerProfile.whatsappNumber`
+buckets every non-null row into: already E.164 (untouched), resolves
+cleanly via `toE164()` (queued to migrate, before/after shown), or
+doesn't resolve (left alone and reported — never guesses a country for
+an ambiguous or malformed number).
+
+**Dry run against the dev DB** (`ep-wild-cloud-...`) found exactly the
+11 rows the earlier audit counted, zero unresolved: 5
+`User.phone` rows and 6 `SellerProfile.whatsappNumber` rows, all
+bare-local or country-code-without-`+` Egyptian numbers, each
+resolving unambiguously to a `+20…` E.164 value. Full before/after
+shown to the user for explicit confirmation per the task's requirement
+— **not yet applied**: held for a later, deliberate `--apply` run
+rather than writing during this session. The script itself is
+committed now (dry-run-only, so committing it makes no DB changes) so
+it's ready whenever that run happens.
+
+**Gate**: `npm run build` ✅ (script isn't imported by the app, so this
+just confirms it didn't break anything). No schema change — `prisma
+migrate diff` not applicable to this pass.
