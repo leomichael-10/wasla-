@@ -159,10 +159,14 @@ export default function RestaurantPage() {
           </div>
 
           <div className="flex items-start gap-5 flex-wrap">
-            <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
-              <span className="text-3xl font-black text-white select-none">
-                {restaurant.businessName[0].toUpperCase()}
-              </span>
+            <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center shrink-0 overflow-hidden">
+              {restaurant.logoUrl ? (
+                <img src={restaurant.logoUrl} alt={restaurant.businessName} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-3xl font-black text-white select-none">
+                  {restaurant.businessName[0].toUpperCase()}
+                </span>
+              )}
             </div>
 
             <div className="flex-1 min-w-0">

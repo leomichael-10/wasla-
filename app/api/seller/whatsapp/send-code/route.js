@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '../../../../../lib/prisma'
 import { getUser } from '../../../../../lib/auth'
 import { getVerificationProvider } from '../../../../../lib/verification'
-import { isEgyptianPhone, normalizeDigits } from '../../../../../lib/phone'
+import { toWaId } from '../../../../../lib/phone'
 
 // POST /api/seller/whatsapp/send-code
 // Seller only. Sends an OTP to the WhatsApp number the shop wants to
@@ -20,9 +20,15 @@ export async function POST(request) {
     const profile = await prisma.sellerProfile.findUnique({ where: { userId: auth.userId } })
     if (!profile) return NextResponse.json({ error: 'Seller profile not found' }, { status: 404 })
 
-    const target = body.whatsappNumber ? normalizeDigits(body.whatsappNumber) : profile.whatsappNumber
-    if (!target || !isEgyptianPhone(target)) {
-      return NextResponse.json({ error: 'A valid Egyptian WhatsApp number is required' }, { status: 400 })
+    // target is E.164-without-'+' (what Twilio's WhatsApp `to:` param and
+    // wa.me both expect — see lib/phone.js's toWaId and
+    // lib/notifications/waMeLink.js). profile.whatsappNumber is already
+    // full E.164 (with '+') once saved, so toWaId handles both that and a
+    // freshly-typed candidate number the same way.
+    const rawCandidate = body.whatsappNumber || profile.whatsappNumber
+    const target = toWaId(rawCandidate)
+    if (!target) {
+      return NextResponse.json({ error: 'A valid WhatsApp number is required (e.g. 01012345678 or +249…)' }, { status: 400 })
     }
 
     const result = await getVerificationProvider('whatsapp').requestCode({ target, purpose: 'shop_onboarding' })

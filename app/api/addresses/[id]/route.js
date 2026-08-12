@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
 import { getUser } from '../../../../lib/auth'
 import { sanitizeString } from '../../../../lib/sanitize'
-import { toE164Egypt } from '../../../../lib/phone'
+import { toE164 } from '../../../../lib/phone'
 
 const ADDRESS_SELECT = {
   id: true, label: true, zoneId: true, area: true, street: true,
@@ -60,8 +60,8 @@ export async function PATCH(request, { params }) {
       data.landmark = sanitizeString(landmark, 200)
     }
     if (contactPhone !== undefined) {
-      const normalized = toE164Egypt(contactPhone)
-      if (!normalized) return NextResponse.json({ error: 'Please enter a valid Egyptian mobile number for contactPhone.' }, { status: 400 })
+      const normalized = toE164(contactPhone)
+      if (!normalized) return NextResponse.json({ error: 'Please enter a valid phone number for contactPhone.' }, { status: 400 })
       data.contactPhone = normalized
     }
     if (zoneId !== undefined) {

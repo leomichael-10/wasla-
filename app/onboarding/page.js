@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSession } from 'next-auth/react'
 import Link from 'next/link'
-import { isEgyptianPhone, normalizeDigits } from '../../lib/phone'
+import { isValidPhone, toE164 } from '../../lib/phone'
 import { getLocaleCookie, t } from '../../lib/i18n'
 import Wordmark from '../../components/Wordmark'
+import PhonePreview from '../../components/PhonePreview'
 
 const EGYPT_CITIES = [
   'Cairo', 'Giza', '6th of October', 'Alexandria',
@@ -49,16 +50,16 @@ export default function OnboardingPage() {
         setError('Business name is required.')
         return
       }
-      if (!isEgyptianPhone(whatsappNumber)) {
-        setError('A valid WhatsApp number is required to receive orders (e.g. 01012345678).')
+      if (!isValidPhone(whatsappNumber)) {
+        setError('A valid WhatsApp number is required to receive orders, e.g. 01012345678 or +249912345678.')
         return
       }
     } else if (!fullName.trim()) {
       setError('Full name is required.')
       return
     }
-    if (phone && !isEgyptianPhone(phone)) {
-      setError('Please enter a valid Egyptian mobile number (e.g. 01012345678).')
+    if (phone && !isValidPhone(phone)) {
+      setError('Please enter a valid phone number, e.g. 01012345678 or +249912345678.')
       return
     }
 
@@ -67,14 +68,14 @@ export default function OnboardingPage() {
       const body = isSeller
         ? {
             businessName:   businessName.trim(),
-            whatsappNumber: normalizeDigits(whatsappNumber),
+            whatsappNumber: toE164(whatsappNumber),
             sellerType,
-            phone:          phone ? normalizeDigits(phone) : phone,
+            phone:          phone ? toE164(phone) : phone,
             city,
           }
         : {
             fullName,
-            phone: phone ? normalizeDigits(phone) : phone,
+            phone: phone ? toE164(phone) : phone,
             city,
           }
 
@@ -195,9 +196,10 @@ export default function OnboardingPage() {
                     required
                     value={whatsappNumber}
                     onChange={e => setWhatsappNumber(e.target.value)}
-                    placeholder="01012345678"
+                    placeholder="01012345678 or +249912345678"
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   />
+                  <PhonePreview value={whatsappNumber} />
                   <p className="text-xs text-gray-400 mt-1">{t('onboarding.whatsappHint', locale)}</p>
                 </div>
               </>
@@ -231,9 +233,10 @@ export default function OnboardingPage() {
                 autoComplete="tel"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
-                placeholder="+20 10 0000 0000"
+                placeholder="01012345678 or +249912345678"
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
               />
+              <PhonePreview value={phone} />
             </div>
 
             {/* City */}

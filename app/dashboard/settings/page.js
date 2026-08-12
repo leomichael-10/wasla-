@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { getLocaleCookie, t } from '../../../lib/i18n'
+import PhonePreview from '../../../components/PhonePreview'
 
 function ZoneRow({ entry, onSave }) {
   const { zone, coverage } = entry
@@ -88,6 +89,14 @@ export default function DashboardSettingsPage() {
   const [waMsg,      setWaMsg]      = useState('')
   const [devCode,    setDevCode]    = useState('')
 
+  const [businessName,   setBusinessName]   = useState('')
+  const [descriptionAr,  setDescriptionAr]  = useState('')
+  const [descriptionEn,  setDescriptionEn]  = useState('')
+  const [logoPreview,    setLogoPreview]    = useState(null)
+  const [uploadingLogo,  setUploadingLogo]  = useState(false)
+  const [savingProfile,  setSavingProfile]  = useState(false)
+  const [profileMsg,     setProfileMsg]     = useState('')
+
   const load = useCallback(async () => {
     setLoading(true)
     const token = localStorage.getItem('wasla_token')
@@ -101,6 +110,9 @@ export default function DashboardSettingsPage() {
       if (!profRes.ok) throw new Error(profData.error)
       setProfile(profData.profile)
       setWhatsapp(profData.profile?.whatsappNumber ?? '')
+      setBusinessName(profData.profile?.businessName ?? '')
+      setDescriptionAr(profData.profile?.descriptionAr ?? '')
+      setDescriptionEn(profData.profile?.descriptionEn ?? '')
       setZones(zoneData.zones ?? [])
     } catch (err) {
       setError(err.message || 'Failed to load settings.')
@@ -147,6 +159,86 @@ export default function DashboardSettingsPage() {
       setError(err.message || 'Failed to update business type.')
     } finally {
       setTypeSaving(false)
+    }
+  }
+
+  const ALLOWED_LOGO_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+  const MAX_LOGO_BYTES = 5 * 1024 * 1024
+
+  async function handleLogoChange(e) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-selecting the same file later
+    if (!file) return
+
+    setError('')
+    if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
+      setError('Invalid file type. Only JPG, PNG, and WebP are allowed.')
+      return
+    }
+    if (file.size > MAX_LOGO_BYTES) {
+      setError('File too large. Maximum size is 5 MB.')
+      return
+    }
+
+    const localPreview = URL.createObjectURL(file)
+    setLogoPreview(localPreview)
+    setUploadingLogo(true)
+    const token = localStorage.getItem('wasla_token')
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+      const uploadRes  = await fetch('/api/upload', {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body:    formData,
+      })
+      const uploadData = await uploadRes.json()
+      if (!uploadRes.ok) throw new Error(uploadData.error)
+
+      const patchRes  = await fetch('/api/seller/profile', {
+        method:  'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ logoUrl: uploadData.url }),
+      })
+      const patchData = await patchRes.json()
+      if (!patchRes.ok) throw new Error(patchData.error)
+      setProfile(patchData.profile)
+    } catch (err) {
+      setError(err.message || 'Failed to upload image.')
+    } finally {
+      setUploadingLogo(false)
+      URL.revokeObjectURL(localPreview)
+      setLogoPreview(null)
+    }
+  }
+
+  async function handleSaveProfile() {
+    setError('')
+    setProfileMsg('')
+    if (!businessName.trim()) {
+      setError('Business name is required.')
+      return
+    }
+    if (!descriptionAr.trim()) {
+      setError('Arabic description is required.')
+      return
+    }
+    setSavingProfile(true)
+    const token = localStorage.getItem('wasla_token')
+    try {
+      const res  = await fetch('/api/seller/profile', {
+        method:  'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ businessName, descriptionAr, descriptionEn }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setProfile(data.profile)
+      setProfileMsg(t('sellerProfile.saved', locale))
+    } catch (err) {
+      setError(err.message || 'Failed to save profile.')
+    } finally {
+      setSavingProfile(false)
     }
   }
 
@@ -224,6 +316,90 @@ export default function DashboardSettingsPage() {
       )}
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <p className="font-black text-gray-900 mb-3">{t('sellerProfile.heading', locale)}</p>
+
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-20 h-20 rounded-2xl bg-brand-50 shrink-0 overflow-hidden flex items-center justify-center">
+            {logoPreview || profile?.logoUrl ? (
+              <img
+                src={logoPreview || profile.logoUrl}
+                alt={businessName || 'Shop logo'}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-2xl font-black text-brand-700 select-none">
+                {(businessName || '?')[0].toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div>
+            <label className="inline-block text-xs font-bold bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white px-4 py-2 rounded-xl transition-colors cursor-pointer">
+              {uploadingLogo ? t('sellerProfile.uploading', locale) : profile?.logoUrl ? t('sellerProfile.replaceImage', locale) : t('sellerProfile.uploadImage', locale)}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleLogoChange}
+                disabled={uploadingLogo}
+                className="sr-only"
+              />
+            </label>
+            <p className="text-[11px] text-gray-400 mt-1.5">{t('sellerProfile.logoHint', locale)}</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              {t('sellerProfile.businessName', locale)}
+            </label>
+            <input
+              type="text"
+              value={businessName}
+              onChange={e => setBusinessName(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              {t('sellerProfile.descriptionAr', locale)} <span className="text-red-400">*</span>
+            </label>
+            <textarea
+              dir="rtl"
+              rows={2}
+              value={descriptionAr}
+              onChange={e => setDescriptionAr(e.target.value)}
+              placeholder={t('sellerProfile.descriptionArPlaceholder', locale)}
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              {t('sellerProfile.descriptionEn', locale)}
+            </label>
+            <textarea
+              dir="ltr"
+              rows={2}
+              value={descriptionEn}
+              onChange={e => setDescriptionEn(e.target.value)}
+              placeholder={t('sellerProfile.descriptionEnPlaceholder', locale)}
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
+            />
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSaveProfile}
+              disabled={savingProfile}
+              className="text-sm font-bold bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl transition-colors"
+            >
+              {savingProfile ? '…' : t('account.save', locale)}
+            </button>
+            {profileMsg && <p className="text-xs text-green-600 font-semibold">{profileMsg}</p>}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
         <p className="font-black text-gray-900">{t('seller.businessType', locale)}</p>
         <p className="text-sm text-gray-500 mt-0.5 mb-3">{t('seller.businessTypeHint', locale)}</p>
         <div className="grid grid-cols-2 gap-3 max-w-sm">
@@ -283,7 +459,7 @@ export default function DashboardSettingsPage() {
             type="tel"
             value={whatsapp}
             onChange={e => { setWhatsapp(e.target.value); setCodeStep(false); setWaMsg('') }}
-            placeholder="01012345678"
+            placeholder="01012345678 or +249912345678"
             className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
           />
           <button
@@ -294,6 +470,8 @@ export default function DashboardSettingsPage() {
             {sendingWa ? '…' : profile?.whatsappVerified && whatsapp === profile.whatsappNumber ? 'Re-verify' : 'Send Code'}
           </button>
         </div>
+        <PhonePreview value={whatsapp} />
+        <p className="text-[11px] text-gray-400 mt-1">{t('sellerProfile.whatsappHelp', locale)}</p>
 
         {waMsg && <p className="text-xs text-gray-500 mt-2">{waMsg}</p>}
         {devCode && (

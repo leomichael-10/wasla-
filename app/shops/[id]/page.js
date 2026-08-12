@@ -116,10 +116,14 @@ export default function ShopPage() {
 
           <div className="flex items-start gap-5 flex-wrap">
             {/* Avatar */}
-            <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
-              <span className="text-3xl font-black text-white select-none">
-                {shop.businessName[0].toUpperCase()}
-              </span>
+            <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center shrink-0 overflow-hidden">
+              {shop.logoUrl ? (
+                <img src={shop.logoUrl} alt={shop.businessName} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-3xl font-black text-white select-none">
+                  {shop.businessName[0].toUpperCase()}
+                </span>
+              )}
             </div>
 
             <div className="flex-1 min-w-0">

@@ -3,10 +3,11 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
-import { isEgyptianPhone, normalizeDigits } from '../../lib/phone'
+import { isValidPhone, toE164 } from '../../lib/phone'
 import { getLocaleCookie, t } from '../../lib/i18n'
 import { setGoogleSignupIntent } from '../../lib/googleSignupIntent'
 import Wordmark from '../../components/Wordmark'
+import PhonePreview from '../../components/PhonePreview'
 
 function handleGoogleSignup(isSeller) {
   setGoogleSignupIntent(isSeller)
@@ -134,12 +135,12 @@ function RegisterForm() {
     e.preventDefault()
     setStep1Error('')
 
-    if (form.phone && !isEgyptianPhone(form.phone)) {
-      setStep1Error('Please enter a valid Egyptian mobile number (e.g. 01012345678).')
+    if (form.phone && !isValidPhone(form.phone)) {
+      setStep1Error('Please enter a valid phone number, e.g. 01012345678 or +249912345678.')
       return
     }
-    if (isSeller && !isEgyptianPhone(form.whatsappNumber)) {
-      setStep1Error('A valid WhatsApp number is required to receive orders (e.g. 01012345678).')
+    if (isSeller && !isValidPhone(form.whatsappNumber)) {
+      setStep1Error('A valid WhatsApp number is required to receive orders, e.g. 01012345678 or +249912345678.')
       return
     }
 
@@ -149,12 +150,12 @@ function RegisterForm() {
       email:    form.email,
       password: form.password,
       role:     form.role,
-      phone:    form.phone ? normalizeDigits(form.phone) : undefined,
+      phone:    form.phone ? toE164(form.phone) : undefined,
       city:     form.city  || undefined,
     }
     if (isSeller) {
       body.businessName   = form.businessName
-      body.whatsappNumber = normalizeDigits(form.whatsappNumber)
+      body.whatsappNumber = toE164(form.whatsappNumber)
       body.sellerType      = form.sellerType
     }
 
@@ -354,9 +355,10 @@ function RegisterForm() {
                         WhatsApp number <span className="text-red-400">*</span>
                       </label>
                       <input id="whatsappNumber" type="tel" required value={form.whatsappNumber} onChange={set('whatsappNumber')}
-                        placeholder="01012345678"
+                        placeholder="01012345678 or +249912345678"
                         className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
-                      <p className="text-xs text-gray-400 mt-1">Orders are sent here — without it, you can't receive orders.</p>
+                      <PhonePreview value={form.whatsappNumber} />
+                      <p className="text-xs text-gray-400 mt-1">Orders are sent here — without it, you can't receive orders. Outside Egypt? Include your country code, e.g. +249 for Sudan.</p>
                     </div>
                   </>
                 )}
@@ -366,8 +368,9 @@ function RegisterForm() {
                     Phone <span className="text-gray-400 font-normal">(optional)</span>
                   </label>
                   <input id="phone" type="tel" autoComplete="tel" value={form.phone} onChange={set('phone')}
-                    placeholder="+20 10 0000 0000"
+                    placeholder="01012345678 or +249912345678"
                     className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
+                  <PhonePreview value={form.phone} />
                 </div>
 
                 <div>

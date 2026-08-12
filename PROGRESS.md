@@ -2504,3 +2504,173 @@ removed after verification — nothing test-only shipped.
 
 **Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
 no difference (no schema change this pass — UI only) ✅.
+
+## International phone numbers + seller profile with logo upload
+
+Two tasks landed together since the second (seller profile) needed the
+first (phone normalization) for its own WhatsApp field.
+
+### International phone/WhatsApp numbers
+
+**Audit first**: `lib/phone.js` was Egyptian-only (`01[0125]\d{8}`)
+end to end — every "WhatsApp number" field silently rejected Sudanese
+(+249) sellers, which is the actual population this app is signing up
+(Sudanese shops/restaurants operating in Cairo). Also found, while
+tracing every call site, that `SellerProfile.whatsappNumber` was being
+stored as a **bare local digit string** ("01012345678", no country
+code) — and that `lib/notifications/waMeLink.js`'s own ad-hoc
+normalizer (`strip non-digits, drop a leading 0`) and
+`lib/verification/whatsappOtp.js`'s Twilio call (`to:
+`whatsapp:+${target}`\`, prepending its own `+`) both assumed that bare
+string was already a full international number. Concretely: a stored
+"01012345678" produced `wa.me/1012345678` and Twilio `to:
+whatsapp:+01012345678` — both missing the `20` country code entirely,
+and the Twilio one starting with `+0`, which is never valid E.164 for
+any country. This was a live bug independent of Sudan support, just
+never surfaced because nothing had exercised real Twilio Verify yet.
+
+**Library choice**: proper international phone parsing (variable-length
+country codes, per-country number-length validation) is a genuinely
+hard problem — hand-rolling a MENA-country lookup table was the
+alternative considered, but asked the user directly since it's a
+foundational, hard-to-reverse choice affecting ~7 call sites. Chose
+`libphonenumber-js` (small, purpose-built, not Google's heavyweight
+Java-derived port) over hand-rolling. Zero vulnerabilities attributable
+to the new dependency (`npm audit` — the 13 pre-existing ones are
+unrelated, untouched here).
+
+**`lib/phone.js`, rewritten**: `toE164(value)` (default country `EG`
+— explicit `+`/`00` always overrides the default regardless),
+`isValidPhone(value)`, `toWaId(value)` (E.164 minus the leading `+`,
+what wa.me and Twilio's `to:` param both expect). Verified directly
+against the library: bare Egyptian (`01012345678`), already-E.164,
+`00`-prefixed, Sudan with `+249`/`00249`, Saudi with `+966`,
+Arabic-Indic digits (`٠١٠١٢٣٤٥٦٧٨`), and dashes all normalize correctly
+without any pre-processing — the library handles Arabic-Indic digits
+and separators natively, so the old standalone `normalizeDigits` step
+is gone, not just renamed. `isEgyptianPhone`/`normalizeDigits`/
+`toE164Egypt` removed outright (not kept alongside as dead code) —
+every call site now goes through the one shared helper: both
+`app/api/addresses/route.js` and `[id]/route.js`, `app/api/seller/
+profile/route.js`, `app/api/seller/whatsapp/send-code` and
+`verify-code/route.js` (also fixed the Twilio `target`/stored-value
+split described above), `app/api/auth/register/route.js` (now
+validates server-side, not just client-side — previously accepted
+`body.whatsappNumber` completely unchecked), `app/api/onboarding/
+route.js`, and client-side in `app/register/page.js`, `app/onboarding/
+page.js`, `app/dashboard/settings/page.js`, `components/
+AddressForm.js`.
+
+**New `components/PhonePreview.js`**: shows the live-normalized E.164
+form under a phone input once it parses as valid (`dir="ltr"` — a
+digit sequence should never flip under an RTL page) — the task's
+explicit "show the normalized number back so the seller can confirm
+it's right." One small shared component instead of duplicating this in
+four forms.
+
+**UI choice**: kept the existing plain `<input type="tel">` style
+(placeholder updated to `01012345678 or +249912345678`) rather than
+adding a country-code dropdown — every phone field in this app already
+uses a bare text input, and the task explicitly allowed either. A
+dropdown would be the first of its kind in the app's form language.
+
+**Data audit** (ran, did not migrate — task said "report", and
+existing rows are low-stakes/self-correcting the next time each field
+is edited through the new code path): `User.phone` — 5 non-null rows,
+all 5 need migrating. `User.whatsapp` — 0 rows (dead/unused field,
+confirmed, not touched). `SellerProfile.whatsappNumber` — 7 non-null
+rows, 1 already E.164, 6 need migrating (mix of bare-local and
+country-code-without-plus, matching the bug traced above).
+`Address.contactPhone` — 1 non-null row, already E.164 (this field
+already went through `toE164Egypt` before this change).
+
+**Verified live** against the real dev server: every normalization
+edge case above through `PATCH /api/seller/profile`'s `whatsappNumber`
+(all 9 valid-format cases → correct E.164; garbage and too-short → 400
+with the new bilingual-ready error copy); the ambiguous bare-number
+case (`0912345678`, no `+`/`00`) correctly defaults to Egypt
+(`+20912345678`) per the task's explicit ambiguity rule rather than
+being misread as a stray Sudanese number.
+
+### Seller profile with uploadable logo
+
+**Audit result** (per the task's explicit ask, reported before
+building anything): `SellerProfile.businessName`, `descriptionAr`/
+`descriptionEn` (already bilingual), and `logoUrl` **already existed**
+in the schema — no migration needed this pass. What was missing was
+entirely UI/API: `logoUrl` had exactly one reader in the whole app
+(`app/admin/page.js`'s seller list) and zero writers anywhere;
+`components/LogoPrompt.js`, referenced by a schema comment
+("nullable... the dashboard shows a persistent prompt instead"), does
+not exist and never did — stale/aspirational comment, left alone
+(unrelated to this task). `app/dashboard/settings/page.js` (titled
+"Delivery Settings" but already the seller's single settings surface —
+business type, open/closed, WhatsApp verification, delivery zones) was
+confirmed as "the natural home" per the task and extended rather than
+building a second settings screen. `POST /api/upload` already existed,
+already auth-gated to sellers/admin, already validated JPG/PNG/WebP
+and a 5MB cap server-side — reused completely unchanged, satisfying
+"do not add a new upload endpoint" literally.
+
+**`app/api/seller/profile/route.js` PATCH extended**: `businessName`
+(non-empty), `descriptionAr` (non-empty when the key is present —
+Arabic required, matches the register form's rule), `descriptionEn`
+(optional, nullable), `logoUrl` (must be a `https://res.cloudinary.com/`
+URL — the endpoint never accepts an arbitrary client-supplied image
+URL, only what `POST /api/upload` itself returned). Every field stays
+scoped by the existing `where: { userId: auth.userId }` — unchanged,
+already correct; verified live rather than assumed (see below).
+
+**`app/dashboard/settings/page.js`**: new "Shop Profile" card above the
+existing ones — logo (rounded-2xl, `object-cover`, initial-letter
+fallback matching the exact pattern already used on the homepage's
+`RestaurantTile`) with an upload/replace button, business name,
+Arabic description (required) and English description (optional)
+textareas, one Save button. Upload flow: client-side type/size check
+for fast feedback (mirrors the server's own rules, not a stricter
+invented one) → local `URL.createObjectURL` preview while uploading →
+`POST /api/upload` → `PATCH /api/seller/profile` with the returned URL.
+Old Cloudinary assets are not deleted on replace (no `publicId` is
+persisted anywhere to reference for cleanup) — a deliberate, minor,
+documented scope cut, not an oversight.
+
+**Where it shows** — confirmed each surface with a real audit before
+assuming, then fixed all three: the Restaurants rail
+(`app/page.js`'s `getRestaurants()`) was using a random dish photo as
+a `restaurant.image` stand-in and never looked at `logoUrl` at all —
+now prefers the logo, falls back to a dish photo, falls back to the
+initial-letter tile (unchanged for restaurants that haven't uploaded
+one yet). The restaurant detail header, shop listings (`ShopCard`),
+and the individual shop page header were all **unconditionally**
+rendering the initial-letter tile — none had any logo branch at all.
+Added `logoUrl` to the four API responses that were missing it
+(`/api/shops`, `/api/shops/[id]`, `/api/restaurants/[id]`; the
+homepage's restaurant query already returns all scalar `SellerProfile`
+fields via Prisma's `include` default) and the matching conditional
+`<img>`/initial-letter branch to each page, all using `object-cover`
+for center-crop-not-squash exactly as asked.
+
+**Verified live**, end to end, with two real throwaway seller accounts
+(not just code review): all 9 phone-format cases above via the real
+PATCH endpoint; business name + bilingual description save, empty
+`descriptionAr` correctly rejected; a non-Cloudinary `logoUrl` rejected
+with a clear error; **auth-scoping empirically confirmed, not just
+read from the code** — seller A's edits (including a business name
+change) left seller B's profile completely untouched, and an
+unauthenticated PATCH/upload both correctly 401. A **real** 1x1 PNG
+uploaded through the actual `POST /api/upload` → real Cloudinary URL
+(`res.cloudinary.com/...`) → saved via PATCH → confirmed present in
+`GET /api/restaurants/[id]`'s response; a disallowed file type and an
+oversized (6MB) file both correctly rejected server-side, not just
+caught client-side. Playwright screenshots confirmed, in one real
+render, both code paths side by side on the live homepage Restaurants
+rail: a pre-existing seeded restaurant with no logo still shows its
+initial-letter fallback exactly as before, while the test account with
+an uploaded logo shows the real image — and the same confirmed on the
+restaurant detail header and the settings page's own preview. Zero
+console errors throughout. All test accounts, the Cloudinary test
+asset, and generated screenshots were removed after verification.
+
+**Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
+no difference (schema was already sufficient — no migration this
+pass) ✅.

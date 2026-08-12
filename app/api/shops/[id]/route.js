@@ -36,6 +36,7 @@ export async function GET(request, { params }) {
     const base = {
       id:                  seller.id,
       businessName:        seller.businessName,
+      logoUrl:             seller.logoUrl,
       city:                seller.city,
       area:                seller.area,
       deliveryAvailable:   seller.deliveryAvailable,

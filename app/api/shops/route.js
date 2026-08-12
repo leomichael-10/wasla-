@@ -20,6 +20,7 @@ export async function GET() {
       return {
         id:                s.id,
         businessName:      s.businessName,
+        logoUrl:           s.logoUrl,
         city:              s.city,
         area:              s.area,
         workingDays:       s.workingDays,

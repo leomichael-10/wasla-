@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '../../../lib/prisma'
 import { getUser } from '../../../lib/auth'
 import { sanitizeString } from '../../../lib/sanitize'
-import { toE164Egypt } from '../../../lib/phone'
+import { toE164 } from '../../../lib/phone'
 
 const ADDRESS_SELECT = {
   id: true, label: true, zoneId: true, area: true, street: true,
@@ -55,9 +55,9 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Please select a valid delivery zone.' }, { status: 400 })
     }
 
-    const normalizedPhone = toE164Egypt(contactPhone)
+    const normalizedPhone = toE164(contactPhone)
     if (!normalizedPhone) {
-      return NextResponse.json({ error: 'Please enter a valid Egyptian mobile number for contactPhone.' }, { status: 400 })
+      return NextResponse.json({ error: 'Please enter a valid phone number for contactPhone.' }, { status: 400 })
     }
 
     const existingCount = await prisma.address.count({ where: { userId: auth.userId } })

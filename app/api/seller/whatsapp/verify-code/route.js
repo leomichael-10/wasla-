@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '../../../../../lib/prisma'
 import { getUser } from '../../../../../lib/auth'
 import { getVerificationProvider } from '../../../../../lib/verification'
-import { normalizeDigits } from '../../../../../lib/phone'
+import { toE164, toWaId } from '../../../../../lib/phone'
 
 // POST /api/seller/whatsapp/verify-code
 // Seller only. Body: { whatsappNumber, code } — on success, saves the
@@ -19,7 +19,13 @@ export async function POST(request) {
     if (!whatsappNumber || !code) {
       return NextResponse.json({ error: 'whatsappNumber and code are required' }, { status: 400 })
     }
-    const target = normalizeDigits(whatsappNumber)
+    // target (no '+') is what send-code issued the OTP under; e164 (with
+    // '+') is the canonical form stored on the profile — see lib/phone.js.
+    const target = toWaId(whatsappNumber)
+    const e164   = toE164(whatsappNumber)
+    if (!target || !e164) {
+      return NextResponse.json({ error: 'A valid WhatsApp number is required' }, { status: 400 })
+    }
 
     const result = await getVerificationProvider('whatsapp').checkCode({ target, code, purpose: 'shop_onboarding' })
     if (!result.valid) {
@@ -38,7 +44,7 @@ export async function POST(request) {
 
     const profile = await prisma.sellerProfile.update({
       where: { userId: auth.userId },
-      data:  { whatsappNumber: target, whatsappVerified: true },
+      data:  { whatsappNumber: e164, whatsappVerified: true },
     })
     return NextResponse.json({ profile: JSON.parse(JSON.stringify(profile)) })
   } catch (error) {

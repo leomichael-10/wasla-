@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../lib/prisma'
 import { authOptions } from '../../../lib/authOptions'
+import { toE164 } from '../../../lib/phone'
 
 export async function POST(request) {
   const session = await getServerSession(authOptions)
@@ -31,14 +32,22 @@ export async function POST(request) {
       if (!businessName?.trim()) {
         return NextResponse.json({ error: 'Business name is required.' }, { status: 400 })
       }
-      if (!whatsappNumber) {
-        return NextResponse.json({ error: 'A WhatsApp number is required to receive orders.' }, { status: 400 })
+      const whatsappE164 = toE164(whatsappNumber)
+      if (!whatsappE164) {
+        return NextResponse.json({ error: 'A valid WhatsApp number is required to receive orders (e.g. 01012345678 or +249…).' }, { status: 400 })
+      }
+      let phoneE164 = null
+      if (phone) {
+        phoneE164 = toE164(phone)
+        if (!phoneE164) {
+          return NextResponse.json({ error: 'Please enter a valid phone number.' }, { status: 400 })
+        }
       }
 
       await prisma.user.update({
         where: { email: session.user.email },
         data: {
-          phone:       phone?.trim() || null,
+          phone:       phoneE164,
           city:        city?.trim()  || null,
           isOnboarded: true,
         },
@@ -53,7 +62,7 @@ export async function POST(request) {
         where: { userId: session.user.userId },
         data: {
           businessName: businessName.trim(),
-          whatsappNumber,
+          whatsappNumber: whatsappE164,
           sellerType: sellerType === 'RESTAURANT' ? 'RESTAURANT' : 'SHOP',
         },
       })
@@ -66,6 +75,13 @@ export async function POST(request) {
     if (!fullName?.trim()) {
       return NextResponse.json({ error: 'Full name is required.' }, { status: 400 })
     }
+    let customerPhoneE164 = null
+    if (phone) {
+      customerPhoneE164 = toE164(phone)
+      if (!customerPhoneE164) {
+        return NextResponse.json({ error: 'Please enter a valid phone number.' }, { status: 400 })
+      }
+    }
 
     // Onboarding never grants the retailer role — shops are provisioned
     // separately (private retailer link, the signup chooser, or the
@@ -74,7 +90,7 @@ export async function POST(request) {
     await prisma.user.update({
       where: { email: session.user.email },
       data: {
-        phone:       phone?.trim()    || null,
+        phone:       customerPhoneE164,
         city:        city?.trim()     || null,
         isOnboarded: true,
       },

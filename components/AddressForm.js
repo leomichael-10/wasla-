@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { t } from '../lib/i18n'
+import PhonePreview from './PhonePreview'
 
 const inputCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition bg-white'
 const labelCls = 'block text-sm font-semibold text-gray-700 mb-1.5'
@@ -126,8 +127,9 @@ export default function AddressForm({ initial, zones, locale, onSaved, onCancel 
         <label className={labelCls}>{t('address.contactPhone', locale)} *</label>
         <input
           type="tel" value={contactPhone} onChange={e => setContactPhone(e.target.value)}
-          placeholder="01xxxxxxxxx" className={inputCls} required
+          placeholder="01xxxxxxxxx or +249…" className={inputCls} required
         />
+        <PhonePreview value={contactPhone} />
       </div>
 
       <div>

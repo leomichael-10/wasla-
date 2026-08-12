@@ -37,7 +37,10 @@ async function getRestaurants() {
       city:         s.city,
       area:         s.area,
       isOpen:       s.isOpen,
-      image:        s.products.find(p => p.images?.length)?.images?.[0] ?? null,
+      // Prefer the shop's own logo; fall back to a dish photo so
+      // restaurants that haven't uploaded one yet still show something
+      // besides the initial-letter placeholder.
+      image:        s.logoUrl ?? s.products.find(p => p.images?.length)?.images?.[0] ?? null,
     }))
     return JSON.parse(JSON.stringify(restaurants))
   } catch { return [] }

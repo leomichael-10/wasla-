@@ -64,6 +64,7 @@ export async function GET(request, { params }) {
     const restaurant = {
       id:                seller.id,
       businessName:      seller.businessName,
+      logoUrl:           seller.logoUrl,
       descriptionAr:     seller.descriptionAr,
       descriptionEn:     seller.descriptionEn,
       city:              seller.city,

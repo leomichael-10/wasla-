@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import { prisma } from '../../../../lib/prisma'
 import { getVerificationProvider } from '../../../../lib/verification'
 import { sendWelcomeEmail } from '../../../../lib/sendWelcomeEmail'
+import { toE164 } from '../../../../lib/phone'
 
 const rateLimitMap = new Map()
 function isRateLimited(ip) {
@@ -43,11 +44,27 @@ export async function POST(request) {
 
     // Sellers must supply a WhatsApp number — orders are sent there, so
     // without one the shop can't receive orders (see WaMeProvider).
-    if ((role === 'retailer' || role === 'wholesaler') && !body.whatsappNumber) {
-      return NextResponse.json(
-        { error: 'whatsappNumber is required for shops' },
-        { status: 400 }
-      )
+    // Normalized here (not just client-side) so the DB never stores
+    // anything but canonical E.164 — see lib/phone.js.
+    let whatsappE164 = null
+    if (role === 'retailer' || role === 'wholesaler') {
+      whatsappE164 = toE164(body.whatsappNumber)
+      if (!whatsappE164) {
+        return NextResponse.json(
+          { error: 'A valid whatsappNumber is required for shops (e.g. 01012345678 or +249…)' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Optional generic phone (either role) — same rule: reject rather
+    // than silently store a non-normalizable value.
+    let phoneE164 = null
+    if (phone) {
+      phoneE164 = toE164(phone)
+      if (!phoneE164) {
+        return NextResponse.json({ error: 'Please enter a valid phone number.' }, { status: 400 })
+      }
     }
 
     // Business type (shop vs restaurant) — Phase 1 foundation only; SHOP
@@ -75,7 +92,7 @@ export async function POST(request) {
         email,
         passwordHash,
         role,
-        phone,
+        phone: phoneE164,
         whatsapp,
         city,
         gender,
@@ -99,7 +116,7 @@ export async function POST(request) {
         data: {
           userId: user.id,
           businessName: businessName || 'My Shop',
-          whatsappNumber,
+          whatsappNumber: whatsappE164,
           sellerType,
           city: sellerCity?.trim() || null,
           area: sellerArea?.trim() || null,
