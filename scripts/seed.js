@@ -24,7 +24,7 @@ import bcrypt from 'bcryptjs'
 const CATEGORIES = [
   {
     name: 'Our Local Products',
-    icon: 'coffee',
+    icon: 'local',
     isInternal: false,
     subCategories: [
       'Jibna (Cheese)', 'Dakwa & Peanut Products', 'Oils & Ghee', 'Grains & Flour',

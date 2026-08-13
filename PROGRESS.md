@@ -2811,3 +2811,22 @@ name verification).
 
 **Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
 no difference ✅.
+
+## "Our Local Products" category icon
+
+User dropped `public/categories/our-local-products.png` in directly and
+deleted the old `coffee-jabana.png` it was borrowing (the category had
+been keyed to the leftover `coffee` slug from the pre-consolidation
+11-category system — see `lib/categoryIcons.js`). Added a proper
+`local` slug pointing at the new file, updated `scripts/seed.js` so a
+future reseed stays consistent, and updated the live `Category` row
+(id 1) to match — `icon: 'coffee'` → `icon: 'local'`. Removed the now-
+dead `coffee` map entry since its file no longer exists and nothing
+else referenced that slug; left the other still-unused-but-file-backed
+slugs (`tea`, `spices`, etc.) alone.
+
+Verified live: new artwork renders on both the homepage "Shop by
+Category" rail and the `/products` filter sidebar, "Bakhour &
+Perfumes" unaffected, zero console errors.
+
+**Gate**: `npm run build` ✅.
