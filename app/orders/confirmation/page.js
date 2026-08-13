@@ -3,11 +3,15 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '../../../components/Navbar'
 import { buildWaMeUrl } from '../../../lib/notifications'
+import { getLocaleCookie, productName } from '../../../lib/i18n'
 
 export default function OrderConfirmationPage() {
   const [orders,     setOrders]     = useState([])
   const [uploading,  setUploading]  = useState(null)
   const [uploaded,   setUploaded]   = useState({})
+  const [locale,     setLocale]     = useState('ar')
+
+  useEffect(() => { setLocale(getLocaleCookie()) }, [])
 
   useEffect(() => {
     try {
@@ -67,7 +71,7 @@ export default function OrderConfirmationPage() {
                   {order.items?.map((item, i) => (
                     <div key={i} className="flex items-center justify-between text-sm">
                       <span className="text-gray-700">
-                        {item.productVariant?.product?.name ?? 'Product'}
+                        {item.productVariant?.product ? productName(item.productVariant.product, locale) : 'Product'}
                         {item.productVariant?.label ? ` · ${item.productVariant.label}` : ''}
                       </span>
                       <span className="text-gray-500">×{item.quantity}</span>

@@ -427,6 +427,7 @@ export default function AdminPage() {
     const matchStatus = !productStatus || (productStatus === 'active' ? p.isActive : !p.isActive)
     const matchSearch = !productSearch ||
       p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+      (p.nameEn ?? '').toLowerCase().includes(productSearch.toLowerCase()) ||
       (p.brand ?? '').toLowerCase().includes(productSearch.toLowerCase())
     return matchStatus && matchSearch
   })
@@ -512,7 +513,7 @@ export default function AdminPage() {
                   <h3 className="font-black text-gray-900 mb-1">Best Selling Product</h3>
                   {stats.bestSelling ? (
                     <p className="text-sm text-gray-700 mt-2">
-                      <span className="font-bold">{stats.bestSelling.productName}</span>
+                      <span className="font-bold">{stats.bestSelling.productName}{stats.bestSelling.productNameEn ? ` (${stats.bestSelling.productNameEn})` : ''}</span>
                       {stats.bestSelling.brand && <span className="text-gray-500"> · {stats.bestSelling.brand}</span>}
                       <span className="ml-2 text-brand-700 font-semibold">{stats.bestSelling.units} units sold</span>
                     </p>
@@ -996,7 +997,7 @@ export default function AdminPage() {
                                 </td>
                                 <td className="px-4 py-2.5">
                                   <Link href={`/products/${p.id}`} className="font-semibold text-gray-900 hover:text-brand-700 transition-colors">
-                                    {p.name}
+                                    {p.name}{p.nameEn ? <span className="text-gray-400 font-normal"> ({p.nameEn})</span> : null}
                                   </Link>
                                 </td>
                                 <td className="px-4 py-2.5 text-gray-600">{p.brand ?? '—'}</td>

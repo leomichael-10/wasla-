@@ -37,6 +37,7 @@ export async function GET(request) {
   if (search) {
     where.OR = [
       { name:        { contains: search, mode: 'insensitive' } },
+      { nameEn:      { contains: search, mode: 'insensitive' } },
       { description: { contains: search, mode: 'insensitive' } },
     ]
   }
@@ -107,7 +108,7 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    const { name, categoryId, subCategoryId, brand, description, images, price, menuSection } = body
+    const { name, nameEn, categoryId, subCategoryId, brand, description, images, price, menuSection } = body
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Product name is required.' }, { status: 400 })
@@ -149,6 +150,7 @@ export async function POST(request) {
           ? null
           : (subCategoryId ? parseInt(subCategoryId, 10) : null),
         name:          sanitizeString(name, 200),
+        nameEn:        nameEn?.trim()      ? sanitizeString(nameEn, 200)      : null,
         brand:         brand?.trim()       ? sanitizeString(brand, 100)       : null,
         description:   description?.trim() ? sanitizeString(description, 2000) : null,
         images:        Array.isArray(images) ? images.slice(0, 5) : [],

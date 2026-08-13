@@ -7,7 +7,7 @@ import AddressForm from '../../components/AddressForm'
 import AddressCard from '../../components/AddressCard'
 import { toast } from 'sonner'
 import { getCart, removeFromCart, updateQuantity, clearCart } from '../../lib/cart'
-import { getLocaleCookie, t } from '../../lib/i18n'
+import { getLocaleCookie, t, productName } from '../../lib/i18n'
 
 export default function CartPage() {
   const router = useRouter()
@@ -210,7 +210,7 @@ export default function CartPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
                         <p className="font-bold text-gray-900 text-sm leading-snug">
-                          {item.productName}
+                          {productName(item, locale)}
                           {item.brand ? ` · ${item.brand}` : ''}
                         </p>
                         <div className="flex flex-wrap gap-1.5 mt-1">

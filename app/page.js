@@ -179,7 +179,7 @@ function ProductRail({ title, products, viewAllHref, locale }) {
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
         {products.map(product => (
           <div key={product.id} className="w-36 shrink-0">
-            <ProductTile product={product} />
+            <ProductTile product={product} locale={locale} />
           </div>
         ))}
       </div>

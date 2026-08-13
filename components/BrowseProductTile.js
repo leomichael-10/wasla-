@@ -3,13 +3,14 @@ import Link from 'next/link'
 import { useState, useEffect, useLayoutEffect } from 'react'
 import { getCart, addToCart, updateQuantity } from '../lib/cart'
 import CategoryIcon from './CategoryIcon'
-import { t } from '../lib/i18n'
+import { t, productName } from '../lib/i18n'
 
 // Product tile for the Browse grid: image (or category-icon placeholder),
 // name, price, and a round "+" add-to-cart button pinned to the tile's
 // bottom inline-end corner. Once in cart it becomes a −/qty/+ stepper in
 // the same spot — quick-commerce pattern, no detail-page hop needed.
 export default function BrowseProductTile({ product, locale }) {
+  const displayName = productName(product, locale)
   const [userId, setUserId] = useState('guest')
   const [qty,    setQty]    = useState(0)
 
@@ -48,6 +49,7 @@ export default function BrowseProductTile({ product, locale }) {
       productVariantId: variant.id,
       productId:        product.id,
       productName:      product.name,
+      productNameEn:    product.nameEn ?? '',
       brand:            product.brand ?? '',
       label:            variant.label ?? '',
       price:            Number(variant.price),
@@ -68,7 +70,7 @@ export default function BrowseProductTile({ product, locale }) {
       <Link href={`/products/${product.id}`} className="block">
         <div className="aspect-square bg-[#FBF6EF] flex items-center justify-center relative">
           {mainImage ? (
-            <img src={mainImage} alt={product.name} className="w-full h-full object-cover" />
+            <img src={mainImage} alt={displayName} className="w-full h-full object-cover" />
           ) : (
             <CategoryIcon slug={product.category?.icon} name={product.category?.name} locale={locale} className="w-20 h-20" />
           )}
@@ -77,7 +79,7 @@ export default function BrowseProductTile({ product, locale }) {
 
       <div className="p-3 flex flex-col gap-1 flex-1">
         <Link href={`/products/${product.id}`} className="block">
-          <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{product.name}</p>
+          <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{displayName}</p>
         </Link>
         <p className="text-sm font-black text-gray-900">EGP {price.toFixed(0)}</p>
         {!canAdd && (

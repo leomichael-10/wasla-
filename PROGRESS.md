@@ -2706,3 +2706,108 @@ it's ready whenever that run happens.
 **Gate**: `npm run build` ✅ (script isn't imported by the app, so this
 just confirms it didn't break anything). No schema change — `prisma
 migrate diff` not applicable to this pass.
+
+## Bilingual product names (nameEn) + 15 real products for the wasla store
+
+### Bilingual names
+
+`Product.name` becomes the (required) Arabic name; new `Product.nameEn`
+(nullable) is the optional English counterpart. Additive migration,
+existing rows untouched — nothing to backfill, since `name` keeps
+whatever it already held.
+
+`lib/i18n.js` gets one shared `productName(entity, locale)` helper,
+same "Arabic is the required fallback" rule as `SellerProfile`'s
+`descriptionAr`/`descriptionEn`. It accepts **either** shape —
+`{name, nameEn}` (a live `Product` row) or `{productName,
+productNameEn}` (a cart line item / localStorage snapshot, see
+`lib/cart.js`) — so every call site uses the same function without its
+own translation layer.
+
+**Scoping call, consistent with every prior i18n pass this session**:
+pages that already track `locale` (product listing, product detail,
+cart, restaurant menu, `BuyAgainRail`) got real locale-aware switching
+via `productName()`. Pages that are genuinely customer-facing but had
+zero locale tracking before this (`/orders`, `/orders/confirmation`)
+got minimal locale state added, since the task explicitly named "order
+details" as in-scope. Pure seller/admin tooling that's never had i18n
+(`dashboard/products`, `dashboard/orders`, `dashboard/earnings`,
+`admin` panel, `/browse` — confirmed via its `backHref` logic to be an
+admin/seller catalog-preview tool, not an actual customer page) shows
+**both names together** (`Arabic (English)`) instead of retrofitting a
+locale switcher into pages with no other i18n — more useful for
+someone managing bilingual content anyway, and doesn't expand scope
+into translating a dozen pages' surrounding English UI chrome that
+wasn't asked for.
+
+**Search** (`/api/products`, `/api/admin/products`) now matches
+`nameEn` alongside `name` and `description`. **Write paths**
+(`POST`/`PATCH /api/products`, the Google-seller onboarding route)
+sanitize and store `nameEn` the same way `name` already was — optional,
+never required.
+
+**Cart/order snapshots**: `lib/cart.js`'s item shape gains
+`productNameEn` alongside `productName` (docstring updated) — every
+`addToCart()` call site (`ProductTile`, `BrowseProductTile`, restaurant
+`DishCard`, `products/[id]/page.js`, `orders/page.js`'s reorder) now
+passes it through. `Order`/`OrderItem` never persisted a name snapshot
+in the first place (confirmed by tracing the schema) — every order
+screen does a live join back to `Product.name`/`nameEn`, so past orders
+render bilingual automatically, no backfill needed. The only real
+stale-snapshot risk is client-side: a cart already sitting in a
+shopper's browser keeps its old plain name until the item is re-added
+— not fixable server-side, not worth a cart-version bump for this.
+
+**Emails**: `lib/emailTemplates.js`'s `itemsTable` (English, used by
+`newOrderAlert` → the seller) now prefers `nameEn`, falling back to
+`name`. `itemsTableAr` (Arabic, used by `orderConfirmation` → the
+customer) and `lib/notifications/waMeLink.js`'s WhatsApp message stay
+Arabic-only by design — deliberately left alone, not overlooked.
+
+**Verified live**, end to end, against the real dev server: created
+real products with distinct AR/EN names, then confirmed — search by
+Arabic name (`جبنة`) and search by English name (`Sandalwood`,
+`Ghazalatain`) both return the right rows via the real API; the
+product listing page shows English names in `en` and Arabic names in
+`ar` for the same products, confirmed by screenshot in both directions
+(RTL layout correct, category rail localized); the product detail
+page's `<h1>` switches from "Sandalwood" to "الصندل" on the same
+product depending on locale; the seller's add-product form renders the
+new optional English-name field (RTL label, LTR placeholder) and
+that field is genuinely wired — confirmed via a real authenticated
+session, not just read from the source.
+
+### 15 products added to the wasla store
+
+**Audit before writing, per the task's explicit gate**: both categories
+(`Our Local Products` / منتجات بلدنا, `Bakhour & Perfumes` / بخور وعطور)
+already existed — the reseed had run. But **no seller's `businessName`
+matched "wasla"** at all — the closest was `seller@wasla.com`'s shop
+("Kassala Coffee House"), which is a *login email*, not the store name
+the task meant. Rather than guess which of the 8 real sellers was
+intended for a "real data, do not delete after" write, stopped and
+asked — the same caution the task itself asked for on the category
+check, just extended to the store lookup too, since guessing wrong
+here isn't reversible. Confirmed (after the user renamed it live,
+mid-conversation) as **`SellerProfile` id 8, "wasla store", `SHOP`,
+`approvedByAdmin: true`** — both required preconditions verified before
+any write.
+
+All 15 products created directly via Prisma (mirroring
+`POST /api/products`'s exact shape — same default single-variant-with-
+`DEFAULT_STOCK_QTY` pattern, same field set) rather than through the
+authenticated HTTP endpoint, since scripting 15 sequential authenticated
+requests added nothing over matching the route's own logic directly.
+Idempotent by name+sellerId check (safe to re-run, though it wasn't —
+all 15 were new). `images: []` on every row, exactly as instructed —
+the seller uploads photos through the UI. Ids 27–41.
+
+**Verified**: `images: []` confirmed via the live API response, not
+assumed from the write. All 15 correctly categorized (11 → *Our Local
+Products*, 4 → *Bakhour & Perfumes*) and immediately searchable/
+displayable bilingually (see above — several of these exact products,
+e.g. "الصندل"/Sandalwood, were the live test data for the bilingual-
+name verification).
+
+**Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
+no difference ✅.

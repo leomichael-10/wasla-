@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 import { addToCart } from '../../lib/cart'
+import { getLocaleCookie, productName } from '../../lib/i18n'
 
 const STATUS_STYLES = {
   PLACED:           'bg-yellow-100 text-yellow-700',
@@ -23,6 +24,9 @@ export default function OrdersPage() {
   const [ready,      setReady]      = useState(false)
   const [reordering, setReordering] = useState(null)
   const [reorderMsg, setReorderMsg] = useState('')
+  const [locale,     setLocale]     = useState('ar')
+
+  useEffect(() => { setLocale(getLocaleCookie()) }, [])
 
   function handleReorder(order) {
     if (!order.items?.length) return
@@ -40,6 +44,7 @@ export default function OrdersPage() {
         productVariantId: v.id,
         productId:        v.product?.id ?? 0,
         productName:      v.product?.name ?? 'Product',
+        productNameEn:    v.product?.nameEn ?? '',
         brand:            v.product?.brand ?? '',
         label:            v.label         ?? '',
         price:         Number(item.priceAtPurchase),
@@ -154,7 +159,7 @@ export default function OrdersPage() {
                     {order.items?.map(item => (
                       <div key={item.id} className="flex items-center justify-between text-sm gap-2">
                         <span className="text-gray-700 truncate">
-                          {item.productVariant?.product?.name ?? 'Product'}
+                          {item.productVariant?.product ? productName(item.productVariant.product, locale) : 'Product'}
                           {item.productVariant?.label ? ` · ${item.productVariant.label}` : ''}
                         </span>
                         <span className="shrink-0 text-gray-500 font-medium">×{item.quantity}</span>

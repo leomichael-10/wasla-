@@ -14,7 +14,7 @@ const ORDER_INCLUDE = {
       productVariant: {
         include: {
           product: {
-            select: { id: true, name: true, brand: true, images: true },
+            select: { id: true, name: true, nameEn: true, brand: true, images: true },
           },
         },
       },

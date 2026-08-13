@@ -110,6 +110,7 @@ export default function AddProductPage() {
   const router = useRouter()
 
   const [name,          setName]          = useState('')
+  const [nameEn,        setNameEn]        = useState('')
   const [brand,         setBrand]         = useState('')
   const [categoryId,    setCategoryId]    = useState('')
   const [subCategoryId, setSubCategoryId] = useState('')
@@ -176,6 +177,7 @@ export default function AddProductPage() {
     const token = localStorage.getItem('wasla_token')
     const body  = {
       name:          name.trim(),
+      nameEn:        nameEn.trim()      || undefined,
       brand:         brand.trim()       || undefined,
       categoryId:    isRestaurant ? undefined : parseInt(categoryId, 10),
       subCategoryId: isRestaurant || !subCategoryId ? undefined : parseInt(subCategoryId, 10),
@@ -228,6 +230,15 @@ export default function AddProductPage() {
               placeholder={t(isRestaurant ? 'seller.dishNamePlaceholder' : 'seller.productNamePlaceholder', locale)}
               className={`${inputCls} ${fieldErrors.name ? 'border-red-300 ring-red-200' : ''}`} />
             {fieldErrors.name && <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>}
+          </div>
+          <div>
+            <label className={labelCls}>
+              {t(isRestaurant ? 'seller.dishNameEn' : 'seller.productNameEn', locale)}{' '}
+              <span className="text-gray-400 font-normal">({t('seller.optional', locale)})</span>
+            </label>
+            <input type="text" dir="ltr" value={nameEn} onChange={e => setNameEn(e.target.value)}
+              placeholder={t(isRestaurant ? 'seller.dishNameEnPlaceholder' : 'seller.productNameEnPlaceholder', locale)}
+              className={inputCls} />
           </div>
           <div>
             <label className={labelCls}>{t('seller.brand', locale)}</label>

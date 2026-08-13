@@ -56,6 +56,7 @@ export async function GET(request) {
       productUnitMap[pid] = {
         productId:    pid,
         productName:  v.product.name,
+        productNameEn: v.product.nameEn,
         brand:        v.product.brand,
         categoryName: v.product.category?.name,
         sellerId:     v.product.sellerId,

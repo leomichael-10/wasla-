@@ -49,7 +49,9 @@ function BrowseProductCard({ product }) {
         {product.brand && (
           <span className="text-[11px] font-bold text-brand-700 uppercase tracking-wide">{product.brand}</span>
         )}
-        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{product.name}</h3>
+        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">
+          {product.name}{product.nameEn ? <span className="text-gray-400 font-normal"> ({product.nameEn})</span> : null}
+        </h3>
         {labels.length > 0 && (
           <p className="text-xs text-gray-400">
             {labels.length} option{labels.length !== 1 ? 's' : ''}

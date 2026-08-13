@@ -109,7 +109,7 @@ export default function ManageStockPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-black text-gray-900">Manage Stock</h1>
-          <p className="text-sm text-gray-500">{product.name}</p>
+          <p className="text-sm text-gray-500">{product.name}{product.nameEn ? ` (${product.nameEn})` : ''}</p>
         </div>
       </div>
 

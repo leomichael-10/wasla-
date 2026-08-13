@@ -216,7 +216,11 @@ model Product {
   categoryId     Int
   subCategoryId  Int?
   brand          String?
+  // Arabic name — required (Wasla is Arabic-first). nameEn is the
+  // optional English counterpart; customer-facing display always falls
+  // back to `name` when nameEn is empty (see lib/i18n.js's productName()).
   name           String
+  nameEn         String?
   description    String?
   images         String[]         @default([])
   isActive       Boolean          @default(true)

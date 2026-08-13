@@ -29,6 +29,7 @@ export default function BuyAgainRail() {
             seen.set(product.id, {
               id:          product.id,
               name:        product.name,
+              nameEn:      product.nameEn,
               brand:       product.brand,
               images:      product.images ?? [],
               seller:      order.seller,
@@ -50,7 +51,7 @@ export default function BuyAgainRail() {
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
         {items.map(product => (
           <div key={product.id} className="w-36 shrink-0">
-            <ProductTile product={product} />
+            <ProductTile product={product} locale={locale} />
           </div>
         ))}
       </div>

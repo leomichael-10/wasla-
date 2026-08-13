@@ -28,10 +28,11 @@ export async function PATCH(request, { params }) {
     }
 
     const body = await request.json()
-    const { name, brand, description, categoryId, subCategoryId, images, variants, menuSection, available } = body
+    const { name, nameEn, brand, description, categoryId, subCategoryId, images, variants, menuSection, available } = body
 
     const productData = {}
     if (name          !== undefined) productData.name          = sanitizeString(name, 200)
+    if (nameEn        !== undefined) productData.nameEn        = nameEn?.trim() ? sanitizeString(nameEn, 200) : null
     if (brand         !== undefined) productData.brand         = sanitizeString(brand, 100)
     if (description   !== undefined) productData.description   = sanitizeString(description, 2000)
     if (images        !== undefined) productData.images        = Array.isArray(images) ? images : []

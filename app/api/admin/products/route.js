@@ -19,8 +19,9 @@ export async function GET(request) {
     if (status === 'inactive') where.isActive = false
     if (search) {
       where.OR = [
-        { name:  { contains: search, mode: 'insensitive' } },
-        { brand: { contains: search, mode: 'insensitive' } },
+        { name:   { contains: search, mode: 'insensitive' } },
+        { nameEn: { contains: search, mode: 'insensitive' } },
+        { brand:  { contains: search, mode: 'insensitive' } },
       ]
     }
 

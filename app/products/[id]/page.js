@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../../components/Navbar'
 import { addToCart } from '../../../lib/cart'
+import { getLocaleCookie, productName } from '../../../lib/i18n'
 
 function Skeleton() {
   return (
@@ -60,6 +61,9 @@ export default function ProductDetailPage() {
   const [reviewSuccess,   setReviewSuccess]   = useState(false)
   const [canReview,       setCanReview]       = useState(false)
   const [alreadyReviewed, setAlreadyReviewed] = useState(false)
+  const [locale,          setLocale]          = useState('ar')
+
+  useEffect(() => { setLocale(getLocaleCookie()) }, [])
 
   useEffect(() => {
     fetch(`/api/products/${id}`)
@@ -111,6 +115,7 @@ export default function ProductDetailPage() {
       productVariantId: selectedVariant.id,
       productId:        product.id,
       productName:      product.name,
+      productNameEn:    product.nameEn ?? '',
       brand:            product.brand ?? '',
       label:            selectedVariant.label ?? '',
       price:         Number(selectedVariant.price),
@@ -171,11 +176,12 @@ export default function ProductDetailPage() {
 
   const outOfStock = selectedVariant?.stockQty === 0
   const images     = product.images ?? []
+  const displayName = productName(product, locale)
 
   const jsonLd = {
     '@context':    'https://schema.org',
     '@type':       'Product',
-    name:          product.name,
+    name:          displayName,
     description:   product.description ?? undefined,
     image:         product.images?.[0] ?? undefined,
     brand:         product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
@@ -207,7 +213,7 @@ export default function ProductDetailPage() {
             </>
           )}
           <span>/</span>
-          <span className="text-gray-700 font-medium truncate max-w-45">{product.name}</span>
+          <span className="text-gray-700 font-medium truncate max-w-45">{displayName}</span>
         </nav>
 
         {/* Main grid */}
@@ -218,7 +224,7 @@ export default function ProductDetailPage() {
             {images.length > 0 ? (
               <>
                 <div className="aspect-square rounded-3xl overflow-hidden bg-white border border-brand-100 shadow-sm">
-                  <img src={images[mainImageIdx]} alt={product.name} className="w-full h-full object-cover" />
+                  <img src={images[mainImageIdx]} alt={displayName} className="w-full h-full object-cover" />
                 </div>
                 {images.length > 1 && (
                   <div className="flex gap-2 overflow-x-auto pb-1">
@@ -244,7 +250,7 @@ export default function ProductDetailPage() {
           <div className="flex flex-col gap-4">
             <div>
               <span className="text-xs font-black text-brand-600 uppercase tracking-widest">{product.brand}</span>
-              <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mt-1 leading-tight">{product.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mt-1 leading-tight">{displayName}</h1>
               {product.category && (
                 <Link href={`/products?category=${encodeURIComponent(product.category.name)}`}
                   className="inline-block mt-2 bg-brand-50 text-brand-700 text-xs font-semibold px-3 py-1 rounded-full hover:bg-brand-100 transition-colors">

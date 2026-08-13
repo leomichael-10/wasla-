@@ -2,10 +2,12 @@
 import Link from 'next/link'
 import { useState, useEffect, useLayoutEffect } from 'react'
 import { getCart, addToCart, updateQuantity } from '../lib/cart'
+import { productName, DEFAULT_LOCALE } from '../lib/i18n'
 
 // Compact quick-commerce tile: image, name, price, and an inline +/- stepper
 // that adds straight to cart — no detail-page hop required for staples.
-export default function ProductTile({ product }) {
+export default function ProductTile({ product, locale = DEFAULT_LOCALE }) {
+  const displayName = productName(product, locale)
   const [userId, setUserId] = useState('guest')
   const [qty,    setQty]    = useState(0)
 
@@ -44,6 +46,7 @@ export default function ProductTile({ product }) {
       productVariantId: inStockVariant.id,
       productId:        product.id,
       productName:      product.name,
+      productNameEn:    product.nameEn ?? '',
       brand:            product.brand ?? '',
       label:            inStockVariant.label ?? '',
       price:            Number(inStockVariant.price),
@@ -64,10 +67,10 @@ export default function ProductTile({ product }) {
       <Link href={`/products/${product.id}`} className="block">
         <div className="aspect-square bg-[#FBF6EF] flex items-center justify-center relative">
           {mainImage ? (
-            <img src={mainImage} alt={product.name} className="w-full h-full object-cover" />
+            <img src={mainImage} alt={displayName} className="w-full h-full object-cover" />
           ) : (
             <span className="text-3xl font-black text-brand-200 select-none">
-              {(product.brand ?? product.name ?? 'W')[0].toUpperCase()}
+              {(product.brand ?? displayName ?? 'W')[0].toUpperCase()}
             </span>
           )}
         </div>
@@ -75,7 +78,7 @@ export default function ProductTile({ product }) {
 
       <div className="p-2.5 flex flex-col gap-1 flex-1">
         <Link href={`/products/${product.id}`} className="block">
-          <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{product.name}</p>
+          <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{displayName}</p>
         </Link>
         <p className="text-sm font-black text-gray-900">EGP {price.toFixed(0)}</p>
 

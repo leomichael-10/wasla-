@@ -103,7 +103,7 @@ export default function EarningsPage() {
             <div className="space-y-2">
               {data.topProducts.map(p => (
                 <div key={p.id} className="flex items-center justify-between text-sm">
-                  <span className="text-gray-700 font-medium truncate max-w-40">{p.name}</span>
+                  <span className="text-gray-700 font-medium truncate max-w-40">{p.name}{p.nameEn ? ` (${p.nameEn})` : ''}</span>
                   <span className="font-black text-gray-900 tabular-nums shrink-0">{p.units} units</span>
                 </div>
               ))}

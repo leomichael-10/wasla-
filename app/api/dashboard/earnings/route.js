@@ -25,7 +25,7 @@ export async function GET(request) {
         items: {
           include: {
             productVariant: {
-              include: { product: { select: { id: true, name: true, brand: true } } },
+              include: { product: { select: { id: true, name: true, nameEn: true, brand: true } } },
             },
           },
         },
@@ -62,18 +62,20 @@ export async function GET(request) {
     // Top selling products
     const unitMap  = {}
     const nameMap  = {}
+    const nameEnMap = {}
     for (const o of deliveredOrders) {
       for (const item of o.items) {
         const pid = item.productVariant?.product?.id
         if (!pid) continue
         unitMap[pid]  = (unitMap[pid]  || 0) + item.quantity
         nameMap[pid]  = item.productVariant?.product?.name ?? `Product ${pid}`
+        nameEnMap[pid] = item.productVariant?.product?.nameEn ?? null
       }
     }
     const topProducts = Object.entries(unitMap)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
-      .map(([id, units]) => ({ id: Number(id), name: nameMap[id], units }))
+      .map(([id, units]) => ({ id: Number(id), name: nameMap[id], nameEn: nameEnMap[id], units }))
 
     // Top selling variants (by label)
     const labelMap = {}

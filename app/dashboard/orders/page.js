@@ -212,6 +212,7 @@ export default function DashboardOrdersPage() {
                         <div key={item.id} className="flex items-center justify-between text-sm gap-2">
                           <span className="text-gray-700 truncate">
                             {item.productVariant?.product?.name ?? 'Product'}
+                            {item.productVariant?.product?.nameEn ? ` (${item.productVariant.product.nameEn})` : ''}
                             {item.productVariant?.label ? ` · ${item.productVariant.label}` : ''}
                           </span>
                           <span className="shrink-0 text-gray-500 font-medium">

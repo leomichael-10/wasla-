@@ -105,7 +105,7 @@ export default function DashboardProductsPage() {
                           </div>
                         )}
                         <Link href={`/dashboard/products/${product.id}/edit`} className="font-semibold text-gray-900 hover:text-brand-700 transition-colors">
-                          {product.name}
+                          {product.name}{product.nameEn ? <span className="text-gray-400 font-normal"> ({product.nameEn})</span> : null}
                         </Link>
                       </div>
                     </td>

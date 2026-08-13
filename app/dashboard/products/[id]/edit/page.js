@@ -108,6 +108,7 @@ export default function EditProductPage() {
   const { id } = useParams()
 
   const [name,          setName]          = useState('')
+  const [nameEn,        setNameEn]        = useState('')
   const [brand,         setBrand]         = useState('')
   const [description,   setDescription]   = useState('')
   const [categoryId,    setCategoryId]    = useState('')
@@ -133,6 +134,7 @@ export default function EditProductPage() {
       const p = pData.product
       if (!p) { setError('Product not found'); return }
       setName(p.name ?? '')
+      setNameEn(p.nameEn ?? '')
       setBrand(p.brand ?? '')
       setDescription(p.description ?? '')
       setCategoryId(String(p.categoryId ?? ''))
@@ -172,6 +174,7 @@ export default function EditProductPage() {
     const token = localStorage.getItem('wasla_token')
     const body  = {
       name:          name.trim(),
+      nameEn:        nameEn.trim()      || null,
       brand:         brand.trim()       || null,
       description:   description.trim() || null,
       categoryId:    parseInt(categoryId, 10),
@@ -228,6 +231,8 @@ export default function EditProductPage() {
           <h2 className="font-black text-gray-900">Product Details</h2>
           <div><label className={labelCls}>Product Name *</label>
             <input type="text" value={name} onChange={e => setName(e.target.value)} required className={inputCls} /></div>
+          <div><label className={labelCls}>Product Name (English) <span className="text-gray-400 font-normal">— optional</span></label>
+            <input type="text" dir="ltr" value={nameEn} onChange={e => setNameEn(e.target.value)} className={inputCls} /></div>
           <div><label className={labelCls}>Brand</label>
             <input type="text" value={brand} onChange={e => setBrand(e.target.value)} className={inputCls} /></div>
           <div className="grid sm:grid-cols-2 gap-4">

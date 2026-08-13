@@ -4,11 +4,12 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../../components/Navbar'
 import { addToCart } from '../../../lib/cart'
-import { getLocaleCookie, t } from '../../../lib/i18n'
+import { getLocaleCookie, t, productName } from '../../../lib/i18n'
 
 function DishCard({ dish, locale }) {
   const [feedback, setFeedback] = useState(false)
   const [userId,   setUserId]   = useState('guest')
+  const displayName = productName(dish, locale)
 
   const prices     = dish.variants.map(v => Number(v.price))
   const minPrice   = Math.min(...prices)
@@ -36,6 +37,7 @@ function DishCard({ dish, locale }) {
       productVariantId: inStockVariant.id,
       productId:        dish.id,
       productName:      dish.name,
+      productNameEn:    dish.nameEn ?? '',
       brand:            dish.brand ?? '',
       label:            inStockVariant.label ?? '',
       price:            Number(inStockVariant.price),
@@ -52,10 +54,10 @@ function DishCard({ dish, locale }) {
       <div className="relative bg-linear-to-br from-brand-700 to-brand-500 pt-5 pb-8 px-4 flex items-center justify-center">
         <div className="w-28 h-28 rounded-full bg-white border-4 border-white/80 overflow-hidden flex items-center justify-center shadow-lg">
           {mainImage ? (
-            <img src={mainImage} alt={dish.name} className="w-full h-full object-cover" />
+            <img src={mainImage} alt={displayName} className="w-full h-full object-cover" />
           ) : (
             <span className="text-4xl font-black text-brand-200 select-none tracking-tighter">
-              {dish.name[0].toUpperCase()}
+              {displayName[0].toUpperCase()}
             </span>
           )}
         </div>
@@ -65,7 +67,7 @@ function DishCard({ dish, locale }) {
       </div>
 
       <div className="pt-6 px-4 pb-4 flex flex-col flex-1 gap-1.5">
-        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 min-h-10">{dish.name}</h3>
+        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 min-h-10">{displayName}</h3>
         {dish.description && (
           <p className="text-xs text-gray-400 leading-tight line-clamp-2">{dish.description}</p>
         )}
