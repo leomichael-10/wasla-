@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { UserProvider } from '../lib/UserContext'
 import { LocaleProvider } from '../lib/LocaleContext'
 import SessionProviderWrapper from '../components/SessionProviderWrapper'
+import SessionGuard from '../components/SessionGuard'
 import AuthSync from '../components/AuthSync'
 import GlobalTracker from '../components/GlobalTracker'
 import SplashScreen from '../components/SplashScreen'
@@ -134,6 +135,7 @@ export default async function RootLayout({ children }) {
         <UserProvider initialUser={initialUser}>
         <LocaleProvider initialLocale={locale}>
         <SplashScreen />
+        <SessionGuard />
         <AuthSync />
         <GlobalTracker />
         <ZoneGate />

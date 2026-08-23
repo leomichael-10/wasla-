@@ -2970,3 +2970,139 @@ mode renders `dir="rtl"` end-to-end with the dropdown correctly
 positioned and mirrored.
 
 **Gate**: `npm run build` ✅ (clean `.next` rebuild, no type errors).
+
+## Cart page showing raw "Invalid or expired token" instead of addresses
+
+**1 — which request, and why.** `GET /api/addresses`, called from
+`app/cart/page.js`'s `loadAddresses()` with `Authorization: Bearer
+${token}` where `token = localStorage.getItem('wasla_token')`.
+`middleware.js` runs `jwtVerify(token, JWT_SECRET)` on every
+`/api/*` request that needs auth; on failure (bad signature,
+malformed, or expired `exp`) it returns exactly `{ error: 'Invalid or
+expired token' }`, 401 — confirmed live with `curl -H "Authorization:
+Bearer <token-signed-with-a-different-secret>" localhost:3000/api/
+addresses`. So the *mechanism* is: `wasla_token` doesn't verify
+against the currently-configured `JWT_SECRET` — could be a genuinely
+expired token (`wasla_token` is a 7-day JWT — see below), or one
+signed under a since-rotated secret.
+
+**2 — about NEXTAUTH_SECRET specifically.** Traced every place a
+secret is used: `middleware.js`'s `jwtVerify` (and both places that
+mint `wasla_token` — `app/api/auth/login/route.js` for email/password,
+`lib/authOptions.js`'s NextAuth `jwt` callback for Google) all use
+`process.env.JWT_SECRET`. NextAuth's own session cookie is separately
+signed/encrypted with `process.env.NEXTAUTH_SECRET` — a **different**
+env var (confirmed both are set to different values in `.env`). So
+rotating `NEXTAUTH_SECRET` alone does not directly invalidate a
+`wasla_token`'s signature. What it *does* break: `getServerSession()`
+can no longer decrypt any session cookie issued before the rotation,
+so a previously-Google-signed-in user's session silently becomes
+`unauthenticated` — which matters because it's also the *only* thing
+capable of silently minting a fresh `wasla_token` (`GET /api/auth/
+token`, used by `components/AuthSync.js`). Net effect: after a
+NEXTAUTH_SECRET rotation, a Google-linked user whose `wasla_token` has
+since expired has no working recovery path left — they're stuck in
+exactly this state until they explicitly sign in again. Whether *this*
+report was that scenario or plain 7-day token expiry, both produce the
+identical symptom and needed the identical fix (item 3).
+
+**3 — the actual UI bug, and the fix.** `loadAddresses()` itself
+doesn't render anything raw (a 401 there just resolves to `data.addresses
+?? []`, silently showing "no saved addresses" — misleading, but not
+literal error text). The literal leak is in `handleCheckout()`:
+`if (!res.ok) throw new Error(data.error ?? ...)` → `catch (err) {
+setError(err.message) }` → `{error && <p>{error}</p>}` — a 401 on
+`POST /api/orders` (clicking "Place order" with a stale token) puts
+the server's raw string directly on screen. The same `throw new
+Error(data.error)` / `setError(err.message)` shape exists at **40+
+other call sites** across the app (admin, dashboard, seller pages,
+profile, etc. — found via `grep -rn "setError(.*\(data\.error\|err
+\.message\)"`).
+
+Rather than editing all 40+ files' copy (most of those messages are
+legitimate, curated, business-logic strings like "Category not
+found" — not the bug), added one shared interception point instead:
+**`lib/apiInterceptor.js`** wraps `window.fetch` once (installed by
+the new **`components/SessionGuard.js`**, mounted in `app/layout.js`
+next to `AuthSync`). For any request that carried an `Authorization:
+Bearer` header (i.e., every one of this app's own authenticated API
+calls — confirmed no call site conditionally omits the header, so
+this reliably distinguishes them from `POST /api/auth/login`'s
+"Invalid or expired token"-shaped-but-unrelated "Invalid email or
+password" 401, which never carries one) that comes back 401:
+
+- First tries a **silent refresh** — `GET /api/auth/token` (the same
+  endpoint `AuthSync` uses), memoized so concurrent 401s share one
+  attempt. If it succeeds (a live NextAuth session still exists), it
+  re-stores `wasla_token`/`wasla_user`, and **silently retries the
+  original request** with the fresh token — the caller never sees a
+  failure at all. This is the "or silently refresh" option from the
+  task, and it's the actual fix for the NEXTAUTH_SECRET-still-valid /
+  wasla_token-just-expired case.
+- If refresh fails (no session — plain email/password login, or a
+  Google session NextAuth can no longer decrypt), it rewrites the
+  response body's `error` field to `t('errors.sessionExpired',
+  locale)` (new bilingual key) before handing it back — so *even*
+  code that doesn't know about any of this (all 40+ existing call
+  sites, unmodified) shows a friendly message if it renders `data
+  .error`/`err.message`, never the raw string. It also clears
+  `wasla_token`/`wasla_user`/the `wasla_user_info` cookie and fires a
+  `wasla:session-expired` window event once (a module-level flag
+  prevents duplicate redirects from several concurrent 401s).
+  `SessionGuard` listens for that event, shows a toast, and
+  `router.push('/login?redirect=<current path>')`.
+
+No existing fetch call site needed to change — the whole app's
+Bearer-authed calls get this behavior automatically since it's
+installed at the `window.fetch` layer, not per-call-site.
+
+**4 — audit for the pattern elsewhere.** The `setError(err.message)`
+grep above is the full inventory of the pattern. Left the actual
+message *text* alone at those 40+ sites — they're intentional,
+already-short, already-translated-in-spirit server strings for
+genuine business-logic failures (wrong password, missing required
+field, etc.), which is a different and legitimate thing from an
+auth/session-layer error masquerading as content. What made *this*
+case a bug wasn't "an API error reached the UI" in general, it was
+specifically an **auth-layer 401** doing that — which the interceptor
+now closes everywhere at once, per (3).
+
+**5 — two auth systems, and yes, they can fall out of sync.**
+Confirmed: NextAuth's own session (Google sign-in, `NEXTAUTH_SECRET`)
+and the custom `wasla_token` (`JWT_SECRET`, read from `localStorage`
+and sent as `Authorization: Bearer` on every API call) are genuinely
+separate systems. `AuthSync.js` bridges them, but only **once per
+page load** — `synced.current` short-circuits any later re-sync even
+if the session changes. Meanwhile `wasla_user`/the `wasla_user_info`
+cookie (what the UI actually checks to decide "am I logged in") carry
+**no expiry check** client-side, but `wasla_token` is a real 7-day JWT
+that does expire — so the UI can keep confidently showing a logged-in
+customer for days after their token has died, and every authenticated
+request from that point 401s. That's "a valid-looking login with a
+rejected token" exactly as suspected. Didn't change `AuthSync`'s
+sync-once behavior itself — the new interceptor's refresh-on-401 (item
+3) is a second, independent, always-available recovery path that
+doesn't depend on `AuthSync` having run recently, so it closes the
+practical gap without needing to touch that component.
+
+**Verified live** (`npx playwright`, same as the prior task, not a
+project dependency): minted a `wasla_token` signed with a different
+secret (simulating a rotated `JWT_SECRET`/expired token) for a real
+customer row in the dev DB, put it in `localStorage`, and loaded
+`/cart` with items in the cart — confirmed via `curl` first that raw
+`GET /api/addresses` really does 401 with the literal string. With
+the fix: the page redirects to `/login?redirect=%2Fcart`, a toast
+reads "انتهت صلاحية جلستك. الرجاء تسجيل الدخول مرة أخرى." (session
+expired, sign in again), `wasla_token` is cleared from `localStorage`,
+and the raw string is never present in the DOM at any point (checked
+`body.innerText()` after the redirect). Separately confirmed `POST
+/api/orders` with the same stale token returns the friendly message
+in its JSON body too (not just the redirect path), and that a token
+signed with the real current `JWT_SECRET` is completely unaffected —
+`GET /api/addresses` still returns real data at 200, un-intercepted.
+Could not live-test the silent-refresh branch specifically (needs a
+real Google OAuth session, not scriptable here) — verified that code
+path by inspection instead: it calls the same `/api/auth/token` route
+`AuthSync` already uses successfully in production.
+
+**Gate**: `npm run build` ✅ (clean `.next` rebuild, no type errors).
