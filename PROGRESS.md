@@ -2830,3 +2830,143 @@ Category" rail and the `/products` filter sidebar, "Bakhour &
 Perfumes" unaffected, zero console errors.
 
 **Gate**: `npm run build` ✅.
+
+## Duplicate search bars, header locale bug, and search suggestions
+
+Four-part task: dedupe the homepage's two stacked search bars, fix a
+locale bug in the header search, add an autocomplete dropdown, and
+index the columns it queries.
+
+**1 — duplicate search bars.** Audit: `components/Navbar.js` renders
+the header search (desktop `lg:flex`, plus a toggle-revealed mobile
+row) on every page. `app/page.js` additionally rendered a second,
+homepage-only search bar in its own `bg-brand-700` band, directly below
+`Navbar` + `ZoneBar`. Both posted to the same place
+(`/products?search=...`); the header one is the one that's always
+present and in the standard position, so kept it and deleted the
+homepage band's entire `<section>` (not just the input) — nothing else
+lived in that section, so removing it leaves no empty brown strip.
+Mobile already had its own reveal pattern (search icon in the header
+toggles a collapsible row) independent of the removed band, so mobile
+search was never at risk.
+
+**2 — language bug.** The header placeholder was already going through
+`t('nav.search', locale)` — routed through i18n correctly on its face.
+The actual bug: `Navbar`'s `locale` came from `useState('ar')` +
+`useEffect(() => setLocale(getLocaleCookie()))`, the same pattern used
+by ~10 other client components in this app. `getLocaleCookie()` reads
+`document.cookie`, which doesn't exist during SSR, so every server
+render (and the first client render before the effect fires) uses the
+hardcoded `'ar'` default — confirmed with `curl -H "Cookie:
+wasla_locale=en" localhost:3000/` returning the Arabic placeholder in
+the raw HTML regardless of the cookie. Since `nav.search` is the
+*only* translated string in `Navbar`, this was the entire bug.
+
+Fixed by giving `Navbar` a real server-known initial value instead of
+guessing: added `lib/LocaleContext.js` (`LocaleProvider`/`useLocale`),
+seeded in `app/layout.js` with the `locale` it already computes from
+the cookie for `<html lang>`/`dir` — mirrors how `lib/UserContext.js`'s
+`UserProvider` already gets `initialUser` from a server-side cookie
+read for the exact same reason. `Navbar` now reads `const { locale } =
+useLocale()` instead of managing its own state, so its very first
+render (server and client) has the right locale — no flash, no
+mismatch. Re-verified with the same curl command: placeholder now
+matches the cookie in the raw SSR HTML in both directions.
+
+The same `useState('ar') + useEffect(getLocaleCookie)` pattern still
+exists in the ~10 other components that had it before (`CartBar`,
+`ZoneGate`, `MobileTabBar`, etc.) — deliberately left alone, not
+overlooked. Only `Navbar` was in scope for the reported bug, and
+migrating every locale-reading component to the new context is a
+bigger, unrelated refactor.
+
+**3 — search suggestions.** New `components/SearchAutocomplete.js`,
+mounted twice by `Navbar` (desktop bar, mobile toggle row) — each
+instance owns its own query/suggestion/network state. Debounced 280ms,
+2-character minimum, queries `GET /api/search/suggestions?q=`. Results
+render in two labelled groups (Products; Shops & Restaurants, capped 5
+each) with image/logo + name + price where applicable. Arrow keys
+move a highlighted selection across both groups, Enter selects it (or
+runs the full search if nothing's highlighted), Escape closes, and a
+`mousedown` listener outside the input+dropdown closes it too. Empty
+results show the literal bilingual `"لا توجد نتائج / No results"`
+string (matches the task's exact copy — always both languages
+together, not locale-switched, so it isn't in the `t()` dict as a
+per-locale pair; `search.shops`/`nav.products` group labels are, since
+those genuinely differ by locale).
+
+The dropdown is rendered via `createPortal(..., document.body)`,
+positioned with `position: fixed` computed from the input's
+`getBoundingClientRect()`, not `position: absolute` in the input's own
+wrapper. Reason: the mobile toggle row it lives in
+(`Navbar`'s collapsible search panel) is height-clipped with
+`overflow-hidden` for its slide-open animation — an absolutely
+positioned dropdown would be clipped by that same overflow the moment
+it tried to extend below the collapsed row. Fixed coordinates from
+`getBoundingClientRect()` are already true viewport coordinates
+regardless of text direction, so this also comes out RTL-correct for
+free — confirmed live in `ar` (`dir="rtl"`): dropdown aligns under the
+input, group label and row content read right-to-left, price/image
+order mirrors via the browser's default RTL row-reversal (no direction
+-specific CSS needed).
+
+`GET /api/search/suggestions` (new route) returns just the fields the
+dropdown renders: products (`isActive`, `seller.isOpen`, `sellerType:
+'SHOP'` — same exclusion as `GET /api/products`, so restaurant dishes
+stay out of the Products group exactly like they're excluded from the
+main browse) matched on `name` OR `nameEn` `contains`+`insensitive`;
+shops (`approvedByAdmin`, both `SHOP` and `RESTAURANT` sellers
+together in one group, matching how the task described it) matched on
+`businessName`. Added `/api/search` to `middleware.js`'s
+`OPTIONAL_AUTH_PREFIXES` so it's public for guests, same as
+`/api/products`.
+
+**4 — optimize.** Debounce + 2-char minimum above. Cancellation: the
+suggestions `useEffect` depends on `query`; every keystroke's cleanup
+(from the *previous* keystroke's effect run) clears that run's pending
+timer and aborts its `AbortController`-backed fetch before the new one
+starts, so a slow response for a stale term can never resolve after
+(and overwrite) a newer one — no refs needed, cleanup order does it.
+The route selects only `id`/`name`/`nameEn`/`images[0]`/cheapest-
+variant-price for products and `id`/`businessName`/`logoUrl`/
+`sellerType` for shops, capped at 5 rows each via `take`.
+
+Indexing: `Product.name`, `Product.nameEn`, and
+`SellerProfile.businessName` are the columns both this route and the
+existing `/api/products` search filter with `contains`+`insensitive`
+(`ILIKE '%term%'`), which a plain B-tree index can't accelerate. Added
+`prisma/migrations/20260823120000_search_suggestion_trgm_indexes/` —
+purely additive (`CREATE EXTENSION IF NOT EXISTS pg_trgm` +
+`CREATE INDEX IF NOT EXISTS ... USING GIN (... gin_trgm_ops)` on all
+three columns), applied via `prisma migrate deploy` against the
+confirmed dev DB host (`ep-wild-cloud-ax3xihv9-pooler...`, not the
+production host banned in `CLAUDE.md`). Verified live: `EXPLAIN` with
+`enable_seqscan off` shows the planner using
+`Product_name_trgm_idx` for an `ILIKE '%...%'` query — the index is
+valid and does what it's meant to. With `enable_seqscan` on (the
+default), the planner currently prefers a sequential scan, because the
+dev catalog is only ~40 rows — expected, correct cost-based planning
+at this size; the index is there for when that stops being true. Not
+mirrored in `schema.prisma`: a GIN index with the `gin_trgm_ops`
+operator class needs Prisma's `postgresqlExtensions` preview feature to
+express in the DSL, which is a generator-wide config change judged not
+worth the added risk for a DB-only optimization Prisma Client never
+reads at query time either way. `prisma migrate diff` will show these
+three indexes as drift against `schema.prisma` going forward — a known,
+accepted tradeoff, not an oversight.
+
+**Verified live** against the real dev server (`npx playwright`,
+installed locally with `--no-save`, not a project dependency) rather
+than just reading the code: homepage has exactly one search bar with
+no leftover empty band; header placeholder is Arabic with an `ar`
+cookie and English with an `en` cookie, confirmed in the raw SSR HTML
+via curl (not just after hydration); typing "co" opens a dropdown
+grouped "Shops & Restaurants" with the one matching shop; ArrowDown
+then Enter navigates straight to `/shops/1`; a query with no matches
+shows the exact empty-state string; Escape closes the dropdown; the
+mobile toggle search panel opens via its icon, and its suggestions
+dropdown renders fully un-clipped below the collapsed panel; Arabic
+mode renders `dir="rtl"` end-to-end with the dropdown correctly
+positioned and mirrored.
+
+**Gate**: `npm run build` ✅ (clean `.next` rebuild, no type errors).

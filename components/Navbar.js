@@ -4,8 +4,10 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { getCartCount } from '../lib/cart'
 import { useUser } from '../lib/UserContext'
-import { getLocaleCookie, setLocaleCookie, t } from '../lib/i18n'
+import { useLocale } from '../lib/LocaleContext'
+import { setLocaleCookie } from '../lib/i18n'
 import MobileMenu from './MobileMenu'
+import SearchAutocomplete from './SearchAutocomplete'
 import Wordmark from './Wordmark'
 
 function navLinksFor(user) {
@@ -39,13 +41,10 @@ const isSellerOrAdmin = (user) =>
 export default function Navbar() {
   const router = useRouter()
   const { user, logout } = useUser()
-  const [query,       setQuery]       = useState('')
+  const { locale } = useLocale()
   const [cartCount,   setCartCount]   = useState(0)
   const [menuOpen,    setMenuOpen]    = useState(false)
   const [searchOpen,  setSearchOpen]  = useState(false)
-  const [locale,      setLocale]      = useState('ar')
-
-  useEffect(() => { setLocale(getLocaleCookie()) }, [])
 
   useEffect(() => {
     const uid = user?.id ?? 'guest'
@@ -54,13 +53,6 @@ export default function Navbar() {
     window.addEventListener('cartUpdated', syncCart)
     return () => window.removeEventListener('cartUpdated', syncCart)
   }, [user])
-
-  function handleSearch(e) {
-    e.preventDefault()
-    const q = query.trim()
-    router.push(q ? `/products?search=${encodeURIComponent(q)}` : '/products')
-    setSearchOpen(false)
-  }
 
   function handleLogout() {
     logout()
@@ -122,23 +114,13 @@ export default function Navbar() {
             </div>
           )}
 
-          <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-lg mx-auto">
-            <div className="relative w-full">
-              <input
-                type="text"
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder={t('nav.search', locale)}
-                className="w-full rounded-2xl pl-4 pr-10 py-2 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-400"
-              />
-              <button type="submit" aria-label="Search"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-brand-600 hover:text-brand-800 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                </svg>
-              </button>
-            </div>
-          </form>
+          <SearchAutocomplete
+            locale={locale}
+            id="nav-search-desktop"
+            formClassName="hidden lg:flex flex-1 max-w-lg mx-auto"
+            inputClassName="w-full rounded-2xl pl-4 pr-10 py-2 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-400"
+            buttonClassName="absolute right-2 top-1/2 -translate-y-1/2 text-brand-600 hover:text-brand-800 transition-colors"
+          />
 
           <div className="flex items-center gap-1 shrink-0 ml-auto lg:ml-0">
             {user ? (
@@ -203,24 +185,15 @@ export default function Navbar() {
         </div>
 
         <div className={`lg:hidden overflow-hidden transition-all duration-200 ${searchOpen ? 'max-h-16 opacity-100' : 'max-h-0 opacity-0'}`}>
-          <form onSubmit={handleSearch} className="px-4 pb-3">
-            <div className="relative">
-              <input
-                type="text"
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder={t('nav.search', locale)}
-                autoFocus={searchOpen}
-                className="w-full rounded-2xl pl-4 pr-10 py-2.5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-400"
-              />
-              <button type="submit" aria-label="Search"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-600 hover:text-brand-800 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                </svg>
-              </button>
-            </div>
-          </form>
+          <SearchAutocomplete
+            locale={locale}
+            id="nav-search-mobile"
+            autoFocus={searchOpen}
+            onNavigate={() => setSearchOpen(false)}
+            formClassName="px-4 pb-3"
+            inputClassName="w-full rounded-2xl pl-4 pr-10 py-2.5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-400"
+            buttonClassName="absolute right-3 top-1/2 -translate-y-1/2 text-brand-600 hover:text-brand-800 transition-colors"
+          />
         </div>
       </nav>
 

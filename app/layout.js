@@ -3,6 +3,7 @@ import { Toaster } from 'sonner'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { UserProvider } from '../lib/UserContext'
+import { LocaleProvider } from '../lib/LocaleContext'
 import SessionProviderWrapper from '../components/SessionProviderWrapper'
 import AuthSync from '../components/AuthSync'
 import GlobalTracker from '../components/GlobalTracker'
@@ -131,6 +132,7 @@ export default async function RootLayout({ children }) {
       <body className={`min-h-full flex flex-col bg-sand-50 text-brand-900 ${locale === 'ar' ? 'font-(family-name:--font-cairo)' : ''}`}>
         <SessionProviderWrapper>
         <UserProvider initialUser={initialUser}>
+        <LocaleProvider initialLocale={locale}>
         <SplashScreen />
         <AuthSync />
         <GlobalTracker />
@@ -174,6 +176,7 @@ export default async function RootLayout({ children }) {
             </div>
           </div>
         </footer>
+        </LocaleProvider>
         </UserProvider>
         </SessionProviderWrapper>
       </body>

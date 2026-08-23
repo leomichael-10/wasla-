@@ -35,6 +35,7 @@ const OPTIONAL_AUTH_PREFIXES = [
   '/api/categories',
   '/api/zones',
   '/api/delivery',
+  '/api/search',
 ]
 
 // Routes restricted by role

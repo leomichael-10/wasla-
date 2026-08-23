@@ -209,26 +209,6 @@ export default async function HomePage() {
       <Navbar />
       <ZoneBar />
 
-      {/* Search */}
-      <section className="bg-brand-700 px-4 py-4">
-        <form action="/products" method="GET" className="max-w-2xl mx-auto">
-          <div className="flex bg-white rounded-2xl shadow-lg overflow-hidden p-1">
-            <input
-              type="text"
-              name="search"
-              placeholder={t('home.searchPlaceholder', locale)}
-              className="flex-1 px-4 py-2.5 text-gray-800 text-sm focus:outline-none bg-transparent placeholder-gray-400"
-            />
-            <button
-              type="submit"
-              className="bg-accent-400 hover:bg-accent-500 active:scale-95 text-gray-900 font-black px-5 py-2.5 rounded-xl text-sm transition-all duration-200 shrink-0"
-            >
-              {t('home.search', locale)}
-            </button>
-          </div>
-        </form>
-      </section>
-
       {/* Restaurants — separate from product categories; hidden until one exists */}
       <RestaurantSection restaurants={restaurants} locale={locale} />
 
