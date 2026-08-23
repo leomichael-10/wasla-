@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 import AddressForm from '../../components/AddressForm'
 import AddressCard from '../../components/AddressCard'
+import ChangePasswordForm from '../../components/ChangePasswordForm'
 import { useUser } from '../../lib/UserContext'
 import { getLocaleCookie, setLocaleCookie, t } from '../../lib/i18n'
 
@@ -252,6 +253,12 @@ export default function ProfilePage() {
                 <span className="text-sm font-semibold text-gray-700">{t('account.language', locale)}</span>
                 <span className="text-sm font-bold text-accent-600">{locale === 'ar' ? 'العربية' : 'English'}</span>
               </button>
+            </section>
+
+            {/* Security */}
+            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+              <h2 className="font-black text-gray-900">{t('changePassword.heading', locale)}</h2>
+              <ChangePasswordForm locale={locale} />
             </section>
 
             {/* Account actions */}

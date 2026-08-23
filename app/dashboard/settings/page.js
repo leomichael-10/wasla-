@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getLocaleCookie, t } from '../../../lib/i18n'
 import PhonePreview from '../../../components/PhonePreview'
+import ChangePasswordForm from '../../../components/ChangePasswordForm'
 
 function ZoneRow({ entry, onSave }) {
   const { zone, coverage } = entry
@@ -504,6 +505,11 @@ export default function DashboardSettingsPage() {
         {!profile?.whatsappVerified && (
           <p className="text-xs text-red-500 font-semibold mt-2">Not verified yet — you can't receive orders until this is confirmed.</p>
         )}
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <h2 className="font-black text-gray-900 mb-3">{t('changePassword.heading', locale)}</h2>
+        <ChangePasswordForm locale={locale} />
       </div>
 
       <div>
