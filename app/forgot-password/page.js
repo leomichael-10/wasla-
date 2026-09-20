@@ -1,17 +1,34 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { getLocaleCookie, t } from '../../lib/i18n'
 import Wordmark from '../../components/Wordmark'
 
 export default function ForgotPasswordPage() {
+  const router = useRouter()
+  const [mode,      setMode]      = useState('email') // 'email' | 'code'
   const [email,     setEmail]     = useState('')
   const [error,     setError]     = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [locale,    setLocale]    = useState('ar')
 
+  // "I have a code" path — email + code fields only, no server round trip
+  // here. Continuing just routes into /reset-password with the same
+  // email/code query params the emailed link itself would carry, so both
+  // paths land on the exact same form and hit the exact same
+  // /api/auth/reset-password → completePasswordReset() → checkCode() logic.
+  // Nothing about verification is duplicated for this entry point.
+  const [codeEmail, setCodeEmail] = useState('')
+  const [codeValue, setCodeValue] = useState('')
+
   useEffect(() => { setLocale(getLocaleCookie()) }, [])
+
+  function handleCodeContinue(e) {
+    e.preventDefault()
+    router.push(`/reset-password?email=${encodeURIComponent(codeEmail)}&code=${encodeURIComponent(codeValue)}`)
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -64,6 +81,66 @@ export default function ForgotPasswordPage() {
                 {t('forgotPassword.backToLogin', locale)}
               </Link>
             </div>
+          ) : mode === 'code' ? (
+            <>
+              <div className="mb-8 text-center">
+                <h1 className="text-2xl font-black text-gray-900">{t('forgotPassword.codeModeHeading', locale)}</h1>
+                <p className="text-gray-500 text-sm mt-1">{t('forgotPassword.codeModeSubtitle', locale)}</p>
+              </div>
+
+              <form onSubmit={handleCodeContinue} className="space-y-4">
+                <div>
+                  <label htmlFor="codeEmail" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    {t('forgotPassword.emailLabel', locale)}
+                  </label>
+                  <input
+                    id="codeEmail"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={codeEmail}
+                    onChange={e => setCodeEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="codeValue" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    {t('forgotPassword.codeFieldLabel', locale)}
+                  </label>
+                  <input
+                    id="codeValue"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    required
+                    value={codeValue}
+                    onChange={e => setCodeValue(e.target.value.replace(/\D/g, ''))}
+                    placeholder="123456"
+                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-center text-2xl tracking-[0.5em] font-black focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={codeValue.length !== 6 || !codeEmail}
+                  className="w-full bg-brand-700 hover:bg-brand-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200 mt-2"
+                >
+                  {t('forgotPassword.codeContinue', locale)}
+                </button>
+              </form>
+
+              <p className="text-center text-sm text-gray-500 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setMode('email')}
+                  className="text-brand-600 font-semibold hover:underline"
+                >
+                  {t('forgotPassword.backToEmailLink', locale)}
+                </button>
+              </p>
+            </>
           ) : (
             <>
               <div className="mb-8 text-center">
@@ -103,7 +180,14 @@ export default function ForgotPasswordPage() {
                 </button>
               </form>
 
-              <p className="text-center text-sm text-gray-500 mt-6">
+              <p className="text-center text-sm text-gray-500 mt-6 space-y-2 flex flex-col">
+                <button
+                  type="button"
+                  onClick={() => setMode('code')}
+                  className="text-brand-600 font-semibold hover:underline"
+                >
+                  {t('forgotPassword.haveCodeLink', locale)}
+                </button>
                 <Link href="/login" className="text-brand-600 font-semibold hover:underline">
                   {t('forgotPassword.backToLogin', locale)}
                 </Link>

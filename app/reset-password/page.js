@@ -46,15 +46,20 @@ function ResetPasswordForm() {
         body:    JSON.stringify({ email, code, newPassword }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error()
+      if (!res.ok) throw new Error(data.error)
       setSuccess(true)
       setTimeout(() => router.push('/login'), 1500)
-    } catch {
-      // Every server-side failure reason (wrong/expired/locked code,
-      // rate limit) collapses to one message here — see
-      // app/api/auth/reset-password/route.js for why distinguishing them
-      // would leak whether a pending reset exists for this email.
-      setError(t('resetPassword.genericError', locale))
+    } catch (err) {
+      // See app/api/auth/reset-password/route.js's toClientErrorCode for
+      // which reasons are safe to distinguish without leaking whether a
+      // pending reset exists for this email (EXPIRED_CODE/LOCKED are; a
+      // missing vs. wrong code is not, so both collapse to WRONG_CODE).
+      setError(
+        err.message === 'EXPIRED_CODE' ? t('resetPassword.errorExpiredCode', locale) :
+        err.message === 'LOCKED'       ? t('resetPassword.errorLocked', locale) :
+        err.message === 'WRONG_CODE'   ? t('resetPassword.errorWrongCode', locale) :
+        t('resetPassword.genericError', locale)
+      )
     } finally {
       setSubmitting(false)
     }

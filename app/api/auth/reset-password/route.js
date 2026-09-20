@@ -15,11 +15,24 @@ function isIpRateLimited(ip) {
 // task asked to match the existing signup rule, not invent a new one.
 const MIN_PASSWORD_LENGTH = 6
 
+// Maps completePasswordReset()'s internal reasons to a small, stable set of
+// client-facing codes. 'expired' and 'locked' are safe to distinguish: both
+// are only reachable by someone who already submitted the *correct* code
+// for that email (guessing a random 6-digit code and landing on an expired
+// or locked row by chance is ~1-in-a-million), so surfacing them doesn't
+// tell a guesser anything they didn't already prove. 'no_active_code',
+// 'wrong_code', and 'google_account' are deliberately collapsed into one
+// WRONG_CODE bucket — distinguishing "no code was ever issued" from "a code
+// exists but doesn't match" would leak whether the email has a pending
+// reset request, i.e. whether it's a registered password account.
+function toClientErrorCode(reason) {
+  if (reason === 'expired') return 'EXPIRED_CODE'
+  if (reason === 'locked')  return 'LOCKED'
+  return 'WRONG_CODE'
+}
+
 // POST /api/auth/reset-password
-// Public. Body: { email, code, newPassword }. Every checkCode failure
-// reason (wrong code, expired, already used, locked after 5 attempts)
-// collapses to the same generic error here — distinguishing them in the
-// response would leak whether a pending reset exists for that email.
+// Public. Body: { email, code, newPassword }.
 export async function POST(request) {
   const ip = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'unknown'
   if (isIpRateLimited(ip)) {
@@ -44,7 +57,7 @@ export async function POST(request) {
   try {
     const result = await completePasswordReset(email, code, newPassword)
     if (!result.ok) {
-      return NextResponse.json({ error: 'Invalid or expired code. Please request a new reset link.' }, { status: 400 })
+      return NextResponse.json({ error: toClientErrorCode(result.reason) }, { status: 400 })
     }
     return NextResponse.json({ message: 'Password reset successfully.' })
   } catch (error) {

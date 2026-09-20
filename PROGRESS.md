@@ -3106,3 +3106,120 @@ path by inspection instead: it calls the same `/api/auth/token` route
 `AuthSync` already uses successfully in production.
 
 **Gate**: `npm run build` ✅ (clean `.next` rebuild, no type errors).
+
+## Password reset: link diagnosis + code-entry alternative path
+
+### 1 — "The reset link doesn't work"
+
+Traced the whole pipeline end to end before changing anything:
+`NEXT_PUBLIC_APP_URL` → `lib/emailTemplates.js`'s `APP_URL` constant →
+`lib/verification/passwordReset.js`'s `resetUrl` → the emailed `<a href>`
+→ `app/reset-password/page.js`'s `useSearchParams()`.
+
+**The specific bug described (stale `wasla.app`/`wasla.ae` fallbacks)
+was already fixed** in the "Three fixes" entry above this one — `APP_URL`
+already falls back to `https://www.wasla-249.com`, and all five other
+hardcoded-fallback call sites were already consolidated onto it. Grepped
+the whole codebase for `wasla.app`/`wasla.ae` to confirm: zero remaining
+code references (only this file's own history and an unrelated
+`privacy@wasla.app` mailbox address in `app/privacy/page.js`, left alone
+as before — a real inbox, not a URL fallback, still unverifiable from
+here).
+
+Two real issues found while re-verifying, both fixed:
+- **Unescaped `&` in the emailed link's `href`.** `resetUrl` is
+  `${APP_URL}/reset-password?email=...&code=...` — the literal `&`
+  between params was going straight into the HTML attribute unescaped.
+  Modern HTML5 parsers tolerate this (an unrecognized character
+  reference like `&code` is kept literal per spec), but it's invalid
+  markup and a real risk with stricter mail-client renderers (Outlook
+  desktop's Word engine in particular). `passwordResetEmail()` now
+  HTML-escapes the URL (`&` → `&amp;`) once, only for the two `<a href>`
+  uses — the plain-text fallback and the visible `<p class="code">`
+  keep the raw code.
+- **`.env` (local, gitignored, not deployed) defined
+  `NEXT_PUBLIC_APP_URL` twice** — the real domain near the top, then
+  silently re-defined to `http://localhost:3000` further down under a
+  later `# App URL` comment block. dotenv's parser takes the last
+  assignment, so the first was dead. Not the production bug (Vercel
+  reads its own dashboard env vars, never this file; `.env.local`
+  already carries the same localhost value with higher precedence
+  anyway), but confusing cruft directly in the file this task was about
+  — removed the dead duplicate.
+
+**Verified, not just reasoned about**: added a temporary debug route
+(`app/api/debug-pwreset-test`, deleted after use, briefly allow-listed
+in `middleware.js` then reverted) that calls
+`passwordResetEmail()`/`issueCode()`/`checkCode()` directly — no real
+SMTP send triggered. Confirmed the rendered email's two `<a href>` tags
+carry a properly `&amp;`-escaped, correctly-domained URL, and that
+`new URL(resetUrl).searchParams` round-trips an email containing `+`/`@`
+losslessly (matches how `app/reset-password/page.js` already reads
+`email`/`code` via `useSearchParams()` — no change needed there).
+
+### 2 — Code-entry alternative to the link
+
+`app/forgot-password/page.js` now has a second view, toggled by an
+"عندك كود بالفعل؟ أدخله هنا" / "Already have a code? Enter it here" link
+under the main form: an email + 6-digit-code form (styling/behavior
+matches the existing `app/verify-email/page.js` code input — numeric
+input mode, digit-only sanitization, disabled until 6 digits). On
+submit it does **not** hit the server — it `router.push()`s straight to
+`/reset-password?email=...&code=...`, the exact same URL shape the
+emailed link itself produces. That means the code-entry path and the
+link path converge on the same page, the same
+`POST /api/auth/reset-password`, and the same
+`completePasswordReset()` → `checkCode()` — genuinely one verification
+path, not a parallel one that could drift out of sync.
+
+The email itself already showed both the button and the plain code
+(built in the "Resend email order confirmation" step earlier in this
+log) — only the code's caption changed, from "or use this code if the
+button doesn't work" to "أو أدخل الكود ده على الموقع لو الزر ما اشتغلش" /
+"Or enter this code on the site if the button doesn't work", so it
+actually names where to use it.
+
+**Distinguishable Arabic-first errors, without reopening account
+enumeration**: `app/api/auth/reset-password/route.js` previously
+collapsed every `checkCode()` failure into one generic English message.
+Now maps `reason` to one of three client-facing codes via
+`toClientErrorCode()`: `EXPIRED_CODE`, `LOCKED` (too many attempts), or
+`WRONG_CODE`. `expired`/`locked` are safe to surface distinctly because
+reaching either requires having already submitted the *correct* code for
+that email (a random guess landing on an expired-but-otherwise-correct
+or locked-but-otherwise-correct row is a ~1-in-900,000 coincidence) — so
+telling the requester "expired" or "too many attempts" doesn't tell a
+guesser anything they hadn't already proven. `no_active_code`,
+`wrong_code`, and `google_account` stay collapsed into `WRONG_CODE`,
+exactly as before — distinguishing "no code was ever issued" from "one
+exists but doesn't match" would leak whether the email has a pending
+reset at all, i.e. whether it's a registered password account. The
+`/forgot-password` request step's response is untouched — still one
+identical generic message regardless of registration status, the
+primary enumeration surface. New `resetPassword.errorWrongCode` /
+`errorExpiredCode` / `errorLocked` keys in both locales in `lib/i18n.js`.
+
+**Verified live** (dev server, temporary debug route as above, cleaned
+up after): drove all four outcomes through the real
+`POST /api/auth/reset-password` — wrong code → `WRONG_CODE`, correct
+code → success with `passwordChangedAt` set and the code's `consumedAt`
+stamped, re-submitting the same now-consumed code → `WRONG_CODE` (single
+-use holds), force-expired code → `EXPIRED_CODE`, force-locked
+(`attempts: 5`) code → `LOCKED`. Then a Playwright pass (installed
+temporarily, uninstalled after — same as prior verification passes in
+this log) drove the actual UI at 390px: toggled into code mode in
+Arabic, confirmed `dir="rtl"` on `<html>`, submitted a wrong code
+through the code-entry redirect and saw the real
+"الكود غير صحيح. تأكد منه وحاول تاني." banner render on
+`/reset-password` — confirming the redirect target, the query-string
+round-trip, and the new error copy all work together, not just in
+isolation. Repeated the toggle in English and confirmed `dir="ltr"` and
+the English copy.
+
+All existing security properties confirmed untouched: 15-minute expiry
+and single-use enforcement (`lib/verification/core.js`, unmodified),
+bcrypt-hashed code storage, the 3-sends-per-10-minutes and per-IP rate
+limits, and session invalidation via `passwordChangedAt` in
+`middleware.js` (unmodified).
+
+**Gate**: `npm run build` ✅.
