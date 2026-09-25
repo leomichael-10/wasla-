@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { useState, useLayoutEffect } from 'react'
 import { addToCart } from '../lib/cart'
+import MediaThumb from './MediaThumb'
 
 function StarRating({ rating, count }) {
   const rounded = Math.round(rating * 2) / 2
@@ -56,6 +57,7 @@ export default function ProductCard({ product }) {
       productVariantId: inStockVariant.id,
       productId:        product.id,
       productName:      product.name,
+      image:            mainImage,
       brand:            product.brand ?? '',
       label:            inStockVariant.label ?? '',
       price:         Number(inStockVariant.price),
@@ -73,15 +75,13 @@ export default function ProductCard({ product }) {
       <Link href={`/products/${product.id}`} className="absolute inset-0 z-0" aria-label={`View ${product.name}`} />
 
       <div className="relative bg-linear-to-br from-brand-700 to-brand-500 pt-5 pb-8 px-4 flex items-center justify-center">
-        <div className="w-28 h-28 rounded-full bg-white border-4 border-white/80 overflow-hidden flex items-center justify-center shadow-lg">
-          {mainImage ? (
-            <img src={mainImage} alt={product.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-          ) : (
-            <span className="text-4xl font-black text-brand-200 select-none tracking-tighter">
-              {(product.brand ?? 'V')[0].toUpperCase()}
-            </span>
-          )}
+        <div className="w-28 h-28 rounded-full border-4 border-white/80 shadow-lg overflow-hidden">
+          <MediaThumb
+            src={mainImage}
+            alt={product.name}
+            className="w-full h-full rounded-full"
+            imgClassName="group-hover:scale-110 transition-transform duration-500"
+          />
         </div>
 
         <div className="absolute bottom-0 translate-y-1/2 right-4 bg-accent-400 text-gray-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg z-10">

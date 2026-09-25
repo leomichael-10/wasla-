@@ -2,6 +2,7 @@
 import { createPortal } from 'react-dom'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import MediaThumb from './MediaThumb'
 import { t, productName, formatPrice } from '../lib/i18n'
 
 const DEBOUNCE_MS = 280
@@ -23,13 +24,7 @@ function SuggestionRow({ id, item, label, price, active, onSelect, locale }) {
       onClick={onSelect}
       className={`w-full flex items-center gap-3 px-4 py-2 text-start transition-colors ${active ? 'bg-accent-50' : 'hover:bg-gray-50'}`}
     >
-      <span className="w-9 h-9 rounded-lg bg-[#FBF6EF] shrink-0 overflow-hidden flex items-center justify-center">
-        {item.image ? (
-          <img src={item.image} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <span className="text-xs font-black text-brand-200">{label?.[0]?.toUpperCase() ?? '?'}</span>
-        )}
-      </span>
+      <MediaThumb src={item.image} alt="" className="w-9 h-9 rounded-lg shrink-0" />
       <span className="flex-1 min-w-0 text-xs font-bold text-gray-900 truncate">{label}</span>
       {price != null && (
         <span className="text-xs font-black text-gray-900 shrink-0">{formatPrice(price, locale)}</span>

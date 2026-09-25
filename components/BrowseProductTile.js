@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { useState, useEffect, useLayoutEffect } from 'react'
 import { getCart, addToCart, updateQuantity } from '../lib/cart'
-import CategoryIcon from './CategoryIcon'
+import MediaThumb from './MediaThumb'
 import { t, productName, formatPrice } from '../lib/i18n'
 
 // Product tile for the Browse grid: image (or category-icon placeholder),
@@ -50,6 +50,7 @@ export default function BrowseProductTile({ product, locale }) {
       productId:        product.id,
       productName:      product.name,
       productNameEn:    product.nameEn ?? '',
+      image:            mainImage,
       brand:            product.brand ?? '',
       label:            variant.label ?? '',
       price:            Number(variant.price),
@@ -68,13 +69,7 @@ export default function BrowseProductTile({ product, locale }) {
   return (
     <div className={`relative bg-white rounded-2xl border border-brand-50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col ${!canAdd ? 'opacity-70' : ''}`}>
       <Link href={`/products/${product.id}`} className="block">
-        <div className="aspect-square bg-[#FBF6EF] flex items-center justify-center relative">
-          {mainImage ? (
-            <img src={mainImage} alt={displayName} className="w-full h-full object-cover" />
-          ) : (
-            <CategoryIcon slug={product.category?.icon} name={product.category?.name} locale={locale} className="w-20 h-20" />
-          )}
-        </div>
+        <MediaThumb src={mainImage} alt={displayName} className="aspect-square" />
       </Link>
 
       <div className="p-3 flex flex-col gap-1 flex-1">

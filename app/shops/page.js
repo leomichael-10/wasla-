@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
+import MediaThumb from '../../components/MediaThumb'
 
 const CITIES = ['All Cities', 'Cairo', 'Giza', '6th of October', 'Alexandria']
 
@@ -23,15 +24,7 @@ function ShopCard({ shop }) {
       className="group bg-white rounded-3xl border border-brand-50 shadow-sm hover:shadow-lg hover:border-brand-200 transition-all duration-300 flex flex-col overflow-hidden"
     >
       <div className="h-20 bg-linear-to-br from-brand-700 to-brand-500 flex items-center px-5 gap-4 relative">
-        <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0 overflow-hidden">
-          {shop.logoUrl ? (
-            <img src={shop.logoUrl} alt={shop.businessName} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-2xl font-black text-white select-none">
-              {shop.businessName[0].toUpperCase()}
-            </span>
-          )}
-        </div>
+        <MediaThumb src={shop.logoUrl} alt={shop.businessName} className="w-12 h-12 rounded-2xl shrink-0" />
         <div className="min-w-0">
           <h3 className="font-black text-white text-base truncate group-hover:underline">
             {shop.businessName}

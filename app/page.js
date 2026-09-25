@@ -6,6 +6,7 @@ import ZoneBar from '../components/ZoneBar'
 import ProductTile from '../components/ProductTile'
 import BuyAgainRail from '../components/BuyAgainRail'
 import CategoryIcon from '../components/CategoryIcon'
+import MediaThumb from '../components/MediaThumb'
 import { DEFAULT_LOCALE, LOCALE_COOKIE, t, categoryName, placeName } from '../lib/i18n'
 
 async function getCategories() {
@@ -132,15 +133,12 @@ function RestaurantTile({ restaurant, locale }) {
       href={`/restaurant/${restaurant.id}`}
       className="group w-40 shrink-0 bg-white rounded-2xl border border-brand-100 shadow-sm hover:shadow-md hover:border-accent-300 transition-all duration-200 overflow-hidden flex flex-col"
     >
-      <div className="aspect-square bg-linear-to-br from-brand-700 to-brand-500 flex items-center justify-center overflow-hidden">
-        {restaurant.image ? (
-          <img src={restaurant.image} alt={restaurant.businessName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-        ) : (
-          <span className="text-3xl font-black text-white/90 select-none">
-            {restaurant.businessName[0].toUpperCase()}
-          </span>
-        )}
-      </div>
+      <MediaThumb
+        src={restaurant.image}
+        alt={restaurant.businessName}
+        className="aspect-square"
+        imgClassName="group-hover:scale-105 transition-transform duration-500"
+      />
       <div className="p-2.5">
         <p dir="auto" className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{restaurant.businessName}</p>
         {location.length > 0 && (

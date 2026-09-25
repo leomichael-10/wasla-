@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { useState, useEffect, useLayoutEffect } from 'react'
 import { getCart, addToCart, updateQuantity } from '../lib/cart'
+import MediaThumb from './MediaThumb'
 import { productName, formatPrice, DEFAULT_LOCALE } from '../lib/i18n'
 
 // Compact quick-commerce tile: image, name, price, and an inline +/- stepper
@@ -47,6 +48,7 @@ export default function ProductTile({ product, locale = DEFAULT_LOCALE }) {
       productId:        product.id,
       productName:      product.name,
       productNameEn:    product.nameEn ?? '',
+      image:            mainImage,
       brand:            product.brand ?? '',
       label:            inStockVariant.label ?? '',
       price:            Number(inStockVariant.price),
@@ -65,15 +67,7 @@ export default function ProductTile({ product, locale = DEFAULT_LOCALE }) {
   return (
     <div className={`relative bg-white rounded-2xl border border-brand-50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col ${unavailable ? 'opacity-60 grayscale-35' : ''}`}>
       <Link href={`/products/${product.id}`} className="block">
-        <div className="aspect-square bg-[#FBF6EF] flex items-center justify-center relative">
-          {mainImage ? (
-            <img src={mainImage} alt={displayName} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-3xl font-black text-brand-200 select-none">
-              {(product.brand ?? displayName ?? 'W')[0].toUpperCase()}
-            </span>
-          )}
-        </div>
+        <MediaThumb src={mainImage} alt={displayName} className="aspect-square" />
       </Link>
 
       <div className="p-2.5 flex flex-col gap-1 flex-1">

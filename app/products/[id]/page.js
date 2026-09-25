@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../../components/Navbar'
+import MediaThumb from '../../../components/MediaThumb'
 import { addToCart } from '../../../lib/cart'
 import { getLocaleCookie, productName, categoryName, placeName, t, interpolate, formatPrice } from '../../../lib/i18n'
 
@@ -116,6 +117,7 @@ export default function ProductDetailPage() {
       productId:        product.id,
       productName:      product.name,
       productNameEn:    product.nameEn ?? '',
+      image:            product.images?.[0] ?? null,
       brand:            product.brand ?? '',
       label:            selectedVariant.label ?? '',
       price:         Number(selectedVariant.price),
@@ -228,27 +230,19 @@ export default function ProductDetailPage() {
 
           {/* Image gallery */}
           <div className="space-y-3">
-            {images.length > 0 ? (
-              <>
-                <div className="aspect-square rounded-3xl overflow-hidden bg-white border border-brand-100 shadow-sm">
-                  <img src={images[mainImageIdx]} alt={displayName} className="w-full h-full object-cover" />
-                </div>
-                {images.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto pb-1">
-                    {images.map((url, i) => (
-                      <button key={url} onClick={() => setMainImageIdx(i)}
-                        className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-colors ${i === mainImageIdx ? 'border-brand-500' : 'border-transparent hover:border-gray-300'}`}>
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="bg-linear-to-br from-brand-700 to-brand-500 rounded-3xl aspect-square flex items-center justify-center shadow-sm">
-                <span className="text-6xl font-black text-white/30 select-none tracking-tighter">
-                  {(product.brand ?? 'V')[0].toUpperCase()}
-                </span>
+            <MediaThumb
+              src={images[mainImageIdx]}
+              alt={displayName}
+              className="aspect-square rounded-3xl border border-brand-100 shadow-sm"
+            />
+            {images.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {images.map((url, i) => (
+                  <button key={url} onClick={() => setMainImageIdx(i)}
+                    className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-colors ${i === mainImageIdx ? 'border-brand-500' : 'border-transparent hover:border-gray-300'}`}>
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
               </div>
             )}
           </div>

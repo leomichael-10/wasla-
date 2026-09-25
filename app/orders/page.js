@@ -45,6 +45,7 @@ export default function OrdersPage() {
         productId:        v.product?.id ?? 0,
         productName:      v.product?.name ?? 'Product',
         productNameEn:    v.product?.nameEn ?? '',
+        image:            v.product?.images?.[0] ?? null,
         brand:            v.product?.brand ?? '',
         label:            v.label         ?? '',
         price:         Number(item.priceAtPurchase),

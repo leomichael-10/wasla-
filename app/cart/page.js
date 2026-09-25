@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 import AddressForm from '../../components/AddressForm'
 import AddressCard from '../../components/AddressCard'
+import MediaThumb from '../../components/MediaThumb'
 import { toast } from 'sonner'
 import { getCart, removeFromCart, updateQuantity, clearCart } from '../../lib/cart'
 import { getLocaleCookie, t, productName, formatPrice } from '../../lib/i18n'
@@ -207,33 +208,36 @@ export default function CartPage() {
               <div className="space-y-3">
                 {cartItems.map(item => (
                   <div key={item.productVariantId} className="bg-white rounded-3xl border border-brand-50 shadow-sm p-4 sm:p-5 transition-all duration-300">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-bold text-gray-900 text-sm leading-snug">
-                          {productName(item, locale)}
-                          {item.brand ? ` · ${item.brand}` : ''}
-                        </p>
-                        <div className="flex flex-wrap gap-1.5 mt-1">
-                          {item.label && (
-                            <span className="text-[11px] bg-brand-50 text-brand-700 font-semibold px-2 py-0.5 rounded-full">{item.label}</span>
+                    <div className="flex items-start gap-3">
+                      <MediaThumb src={item.image} alt={productName(item, locale)} className="w-16 h-16 rounded-2xl shrink-0" />
+                      <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-gray-900 text-sm leading-snug">
+                            {productName(item, locale)}
+                            {item.brand ? ` · ${item.brand}` : ''}
+                          </p>
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {item.label && (
+                              <span className="text-[11px] bg-brand-50 text-brand-700 font-semibold px-2 py-0.5 rounded-full">{item.label}</span>
+                            )}
+                          </div>
+                          {item.sellerName && (
+                            <p className="text-xs text-gray-400 mt-1">{t('cart.soldBy', locale)} {item.sellerName}</p>
                           )}
                         </div>
-                        {item.sellerName && (
-                          <p className="text-xs text-gray-400 mt-1">{t('cart.soldBy', locale)} {item.sellerName}</p>
-                        )}
-                      </div>
 
-                      <div className="shrink-0 text-end">
-                        <p className="font-black text-gray-900 text-sm tabular-nums">
-                          {formatPrice(item.price * item.quantity, locale, { decimals: 2 })}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-0.5">{formatPrice(item.price, locale, { decimals: 2 })} {t('cart.each', locale)}</p>
-                        <button
-                          onClick={() => removeFromCart(item.productVariantId, userId)}
-                          className="mt-2 text-xs text-red-400 hover:text-red-600 font-semibold transition-colors"
-                        >
-                          {t('cart.remove', locale)}
-                        </button>
+                        <div className="shrink-0 text-end">
+                          <p className="font-black text-gray-900 text-sm tabular-nums">
+                            {formatPrice(item.price * item.quantity, locale, { decimals: 2 })}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-0.5">{formatPrice(item.price, locale, { decimals: 2 })} {t('cart.each', locale)}</p>
+                          <button
+                            onClick={() => removeFromCart(item.productVariantId, userId)}
+                            className="mt-2 text-xs text-red-400 hover:text-red-600 font-semibold transition-colors"
+                          >
+                            {t('cart.remove', locale)}
+                          </button>
+                        </div>
                       </div>
                     </div>
 

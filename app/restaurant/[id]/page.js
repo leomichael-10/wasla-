@@ -3,6 +3,7 @@ import { useState, useEffect, useLayoutEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../../components/Navbar'
+import MediaThumb from '../../../components/MediaThumb'
 import { addToCart } from '../../../lib/cart'
 import { getLocaleCookie, t, productName, formatPriceRange, placeName } from '../../../lib/i18n'
 
@@ -36,6 +37,7 @@ function DishCard({ dish, locale }) {
       productId:        dish.id,
       productName:      dish.name,
       productNameEn:    dish.nameEn ?? '',
+      image:            mainImage,
       brand:            dish.brand ?? '',
       label:            inStockVariant.label ?? '',
       price:            Number(inStockVariant.price),
@@ -50,14 +52,8 @@ function DishCard({ dish, locale }) {
   return (
     <div className={`relative bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-brand-50 hover:border-brand-200 overflow-hidden flex flex-col h-full ${shopClosed ? 'opacity-60 grayscale-35' : ''}`}>
       <div className="relative bg-linear-to-br from-brand-700 to-brand-500 pt-5 pb-8 px-4 flex items-center justify-center">
-        <div className="w-28 h-28 rounded-full bg-white border-4 border-white/80 overflow-hidden flex items-center justify-center shadow-lg">
-          {mainImage ? (
-            <img src={mainImage} alt={displayName} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-4xl font-black text-brand-200 select-none tracking-tighter">
-              {displayName[0].toUpperCase()}
-            </span>
-          )}
+        <div className="w-28 h-28 rounded-full border-4 border-white/80 shadow-lg overflow-hidden">
+          <MediaThumb src={mainImage} alt={displayName} className="w-full h-full rounded-full" />
         </div>
         <div className="absolute bottom-0 translate-y-1/2 rtl:left-4 ltr:right-4 bg-accent-400 text-gray-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg z-10">
           {priceLabel}
@@ -159,15 +155,11 @@ export default function RestaurantPage() {
           </div>
 
           <div className="flex items-start gap-5 flex-wrap">
-            <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center shrink-0 overflow-hidden">
-              {restaurant.logoUrl ? (
-                <img src={restaurant.logoUrl} alt={restaurant.businessName} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-3xl font-black text-white select-none">
-                  {restaurant.businessName[0].toUpperCase()}
-                </span>
-              )}
-            </div>
+            <MediaThumb
+              src={restaurant.logoUrl}
+              alt={restaurant.businessName}
+              className="w-20 h-20 rounded-2xl shrink-0"
+            />
 
             <div className="flex-1 min-w-0">
               <h1 dir="auto" className="text-2xl font-black text-white mb-1">{restaurant.businessName}</h1>

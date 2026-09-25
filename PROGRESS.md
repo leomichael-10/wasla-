@@ -3362,3 +3362,102 @@ right-aligned with no `dir="auto"` side effects; the zone modal shows
 "لقمة حلوة" restaurant card shows "مصر الجديدة، القاهرة".
 
 **Gate**: `npm run build` ✅.
+
+## Product/shop image handling: one shared fallback everywhere
+
+Every surface that renders a product or shop photo had grown its own,
+different "no photo" treatment — a full-bleed brand-gradient block with
+a giant letter on the product detail page, a `CategoryIcon` illustration
+on the Browse grid (inconsistent size tile to tile, since the
+illustrations aren't uniformly padded), a plain letter avatar on
+`ProductTile`/`ProductCard`/search/shop-header/restaurant-rail, and no
+image at all on the cart page. Three different mechanisms, none of them
+sharing code, which is exactly what produced the reported
+inconsistency.
+
+### `components/MediaThumb.js`
+
+One component, used everywhere a product/shop/restaurant photo renders:
+a real `<img>` (`object-cover`) when `src` is truthy, otherwise a small
+centered line-art "photo" mark (a picture-frame glyph, muted
+`text-brand-200`, capped at `max-w-12 max-h-12` so it never grows
+past a small, quiet size no matter how big the box is) on the app's
+existing cream tile background (`#FBF6EF`). The box itself — size,
+corners, aspect ratio — is entirely the caller's `className`; the real
+photo and the fallback always render inside that exact same box, so a
+missing photo never changes a tile's size or shape. Two props only
+(`src`/`alt`, plus an optional `imgClassName` for the couple of
+call sites that had a hover zoom-on-image effect) — deliberately not a
+generic "avatar" component, since person avatars (review authors,
+admin users) are a different thing and were left alone.
+
+### Swapped in everywhere a product/shop image renders
+
+Product detail gallery + thumbnails, the Browse grid (`BrowseProductTile`
+— this is also where the `CategoryIcon`-as-fallback mechanism was
+removed), home-page rails (`ProductTile`), shop-page product grid
+(`ProductCard`), search suggestions (`SearchAutocomplete`, both product
+and shop rows — the API already returned `logoUrl` for shops, just
+wasn't mapped to a thumbnail), the restaurant rail and restaurant menu
+grid (`app/page.js`, `app/restaurant/[id]/page.js`'s `DishCard`), and
+every shop/restaurant header logo (`app/shops/[id]/page.js`,
+`app/shops/page.js`'s list, the restaurant page's own header). Left
+alone: person-avatar initials (reviewers, admin users — a different
+thing from a product/shop photo), `app/dashboard/*` and `app/admin/*`
+(internal seller/admin tooling, small 36–40px table-row thumbnails, not
+the reported bug, same boundary the Arabic-mode pass above already
+drew), and `app/browse/page.js` (confirmed unlinked from anywhere —
+superseded by `/products`).
+
+### Cart — didn't have images at all
+
+The cart page never rendered a product photo, so "cart" from the
+report meant adding this, not just fixing a fallback. `lib/cart.js`'s
+item shape gains an `image` field (nullable — an item added before
+this shipped, still sitting in a shopper's `localStorage` cart, just
+renders `MediaThumb`'s fallback until re-added, no migration needed).
+Every `addToCart()` call site now passes it through:
+`BrowseProductTile`, `ProductTile`, `ProductCard`, the restaurant
+`DishCard`, `app/products/[id]/page.js`, and `app/orders/page.js`'s
+reorder button (the orders API already selected `product.images`, so
+this was free).
+
+### Data audit (task's explicit REPORT ask)
+
+Queried the live dev DB directly (same `check-env.mjs`-verified dev
+branch as the Arabic-mode audit above) rather than assuming from seed
+data:
+
+**35 products with no image** — every one of the original 18 demo
+products (ids 1–18, the same set flagged with no real Arabic name
+above), all 8 "لقمة حلوة" restaurant dishes (ids 19–26), and 9 of the
+15 "wasla store" products (ids 27–31, 36–38, 40 — "جبنة"/Sudanese White
+Cheese, "طلح"/Talh Honey, "شاف"/Shaf Incense, "الصندل"/Sandalwood,
+"صندل مبشور"/Grated Sandalwood, "شاي الغزالتين نص رطل"/half-lb tea,
+"شاي الغزالتين ١٠٠ جرام"/100g tea, "كركديه فتلة"/loose hibiscus,
+"قشطة"/Sudanese Cream). The other 6 "wasla store" products (32–35, 39,
+41) already have real photos.
+
+**7 sellers with no logo**: Kassala Coffee House, Masr El Gedida
+Sudanese Market, Bayt Al Sudan Heritage Store, لقمة حلوة (the
+restaurant from the bug report), Karso (not yet admin-approved), ام
+عبدالله, DR.FRAGRANCES. Only "wasla store" (seller id 8) has a logo.
+
+### Verified live
+
+Dev server + a temporary Playwright pass (deleted after, nothing
+committed — same pattern as prior verification passes in this log).
+Screenshotted: the product detail page for a no-image product (id 19)
+— the fallback is now a small quiet mark in the same rounded box a
+photo would fill, not a giant brown block — directly next to the same
+page for a real-photo product (id 32), confirming both render in the
+identical box; the Browse grid with a mix of photographed and
+unphotographed products — every fallback tile is now the same size as
+every other tile and as the photographed ones, the exact "one tiny, one
+medium" bug now gone; the home page's restaurant rail showing the quiet
+mark for لقمة حلوة instead of a "ل" letter square; a search suggestion
+dropdown showing a real thumbnail box; and the cart page now showing a
+64px thumbnail (photo or fallback) next to each line item where none
+rendered before. Zero console errors across all of it.
+
+**Gate**: `npm run build` ✅.
