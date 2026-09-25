@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useState, useEffect, useLayoutEffect } from 'react'
 import { getCart, addToCart, updateQuantity } from '../lib/cart'
 import CategoryIcon from './CategoryIcon'
-import { t, productName } from '../lib/i18n'
+import { t, productName, formatPrice } from '../lib/i18n'
 
 // Product tile for the Browse grid: image (or category-icon placeholder),
 // name, price, and a round "+" add-to-cart button pinned to the tile's
@@ -81,7 +81,7 @@ export default function BrowseProductTile({ product, locale }) {
         <Link href={`/products/${product.id}`} className="block">
           <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{displayName}</p>
         </Link>
-        <p className="text-sm font-black text-gray-900">EGP {price.toFixed(0)}</p>
+        <p className="text-sm font-black text-gray-900">{formatPrice(price, locale)}</p>
         {!canAdd && (
           <p className="text-[10px] text-red-500 font-bold">
             {outOfZone ? t('browse.outOfZone', locale) : t('browse.outOfStock', locale)}

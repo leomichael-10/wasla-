@@ -3223,3 +3223,142 @@ limits, and session invalidation via `passwordChangedAt` in
 `middleware.js` (unmodified).
 
 **Gate**: `npm run build` ✅.
+
+## Arabic mode: product detail page translation, two RTL bugs, price formatting, stragglers
+
+The Arabic site was the primary audience but was the worse-tested half —
+Phase 6 had explicitly flagged `/products/[id]` as still English-only
+(see its "Not done" line above), and it showed: everything below the
+Navbar on the product page rendered in English regardless of locale,
+plus two real RTL rendering bugs.
+
+### Product detail page — full translation
+
+Routed every string on `app/products/[id]/page.js` through
+`lib/i18n.js`'s `t()`, not just the ones in the bug report: category
+chip and breadcrumb category (`categoryName()`), "Option" label and the
+`Option {id}` fallback for unlabeled variants, the stock badge, Add to
+Cart / Out of Stock / Added to cart! button states, the "Product not
+found" empty state, the entire Seller Information block (SHOP/
+LOCATION/DELIVERY/HOURS labels, Available/Not available, View Shop),
+and — going beyond the report's explicit list per its own "audit the
+whole page" instruction — the reviews section (Write a Review, star
+rating label, comment field + placeholder, submit button and its
+loading/error states, Customer Reviews heading, per-review date
+formatting, and the "Customer" fallback name), all added as new
+`product.*` keys in `lib/i18n.js`. Also fixed three `ml-2` (physical)
+classes that should have been `ms-2` (logical) — real RTL mirroring
+bugs sitting right next to the two reported ones, on the same page.
+
+New `interpolate(str, vars)` helper in `lib/i18n.js` (same tiny
+`{key}`-substitution `lib/emailTemplates.js` already had, made
+reusable) so "In stock · {count} left" can flip its own word order in
+Arabic (`متوفر · باقي {count}`) instead of the number and unit being
+concatenated in a fixed order that only works in English.
+
+### Two RTL bugs — one mechanism, applied everywhere it applies
+
+Both reported bugs (the description's trailing period jumping to the
+front — `.Concentrated sandalwood perfume oil` — and the breadcrumb's
+ellipsis truncating the *start* of the string instead of the end) come
+from the same root cause: Latin-script text (an English fallback name,
+or genuinely mixed-language seller copy) rendered inside the page's
+`dir="rtl"` container with no isolation of its own. Fixed with
+`dir="auto"` (not a one-off string patch) on every element that renders
+seller- or user-authored text of unknown language: product name,
+description, breadcrumb's current-page crumb, seller business name,
+seller address (city/area), seller working hours, and — since the
+restaurant page (`app/restaurant/[id]/page.js`) has the exact same
+shape (dish name/description, restaurant name/description/address) —
+applied there too, plus review author name and review comment text on
+the product page. `dir="auto"` both isolates the bidi run (fixes the
+punctuation) and resolves the element's own `direction`, which is what
+makes `text-overflow: ellipsis` clip the true end of the string instead
+of the start — same attribute, both bugs.
+
+### Data audit — products with no real Arabic name (task's explicit GATE ask)
+
+Queried the live dev DB (`ep-wild-cloud-*`, confirmed via
+`scripts/check-env.mjs` before running anything, per the DB-safety
+rule) rather than trusting `scripts/seed.js`, since the 15 "wasla
+store" products from the prior phase were written directly via Prisma
+and never added back to that script. Root cause: `Product.name` is the
+*required Arabic* field (`nameEn` is the optional English one — see
+Phase "Bilingual product names" above) — for these 18 rows, `name`
+literally holds English text and `nameEn` is `null`, so
+`productName(product, 'ar')` correctly returns `name` (there's no
+fallback bug), it's just that `name` was never actually filled with
+Arabic:
+
+- **All 18 original demo products** (`Kassala Coffee House`,
+  `Masr El Gedida Sudanese Market`, `Bayt Al Sudan Heritage Store` —
+  the pre-"wasla store" seed set), ids 1–18: Bun Kassala, Traditional
+  Jabana Coffee Set, Karkade (Dried Hibiscus), Gongolez (Baobab
+  Powder), Shatta (Sudanese Chili Paste), Kombo Spice Mix, Sirij
+  Sesame Oil, Jibna Beida (White Cheese), Dura (Sudanese Sorghum),
+  Kisra Flour, Dakwa (Peanut Butter Spread), Roasted Peanuts (Fol
+  Sudani), Weika (Dried Okra Powder), Tahniya (Sesame Halva), Sudanese
+  Ghee (Samn), Khumra Bakhour Blend, Dilka Perfumed Body Scrub,
+  Sandalia Sandalwood Perfume Oil — both `name` (Arabic-required
+  field) and `description` are English-only for every one of these 18.
+
+Everything else is fine: the 8 "لقمة حلوة" restaurant dishes (ids
+19–26) already have real Arabic name+description with no English
+counterpart needed, and the 15 "wasla store" products (ids 27–41) have
+proper `name`+`nameEn` pairs from the prior phase. Not inventing
+Arabic for the 18 — reported here per the task's explicit instruction,
+waiting on real translations to backfill `name`/`description`.
+
+### Price formatting — one shared formatter
+
+`formatPrice(amount, locale, {decimals})` / `formatPriceRange(min, max,
+locale, {decimals})` added to `lib/i18n.js` — Arabic renders the native
+`180 ج.م` form, English keeps `EGP 180`. Replaced every hand-built
+`` `EGP ${x}` `` string on pages/components that already track
+`locale` (i.e. genuinely customer-facing, not the seller/admin tooling
+Phase 6 scoped out): product detail, `ProductTile`, `BrowseProductTile`,
+`CartBar`, `SearchAutocomplete`'s suggestion price, the cart page
+(line items, per-shop delivery quote, subtotal/delivery/total), both
+order pages, and the restaurant menu's `DishCard` price range. Left
+`app/browse/page.js` (a legacy, unlinked duplicate of `/products` —
+confirmed nothing routes to it) and `components/ProductCard.js` +
+`app/shops/[id]/page.js` (not locale-aware at all, same pre-existing
+gap as dashboard/admin) untouched — expanding into either is a
+separate, bigger i18n pass, not this task's scope.
+
+### Stragglers
+
+- **Restaurant card location** (`app/page.js`'s home page): city/area
+  are DB free text ("Cairo", "Heliopolis") with no Arabic column, same
+  situation `categoryName()` already solved for category names — added
+  a matching `placeName()` lookup (cities + the zone-area names that
+  already have `nameAr` on `DeliveryZone`, same values, kept in sync by
+  hand since there's no FK between `SellerProfile.area` and
+  `DeliveryZone`). Also wrapped in `dir="auto"` and joined with `، `
+  instead of `,` in Arabic.
+- **Zone modal ETA** (`components/ZoneGate.js`): new `formatEta(minutes,
+  locale)` — `~90 min` in English, `٩٠ دقيقة تقريباً` in Arabic
+  (Eastern Arabic-Indic digits via a small `toArabicDigits()`, word
+  order flipped, not just the English string reused with Arabic
+  characters spliced in).
+
+### Verified live
+
+Dev server + a temporary Playwright pass (script + screenshots written
+to the scratchpad, deleted after — same pattern as prior verification
+passes in this log, nothing committed). Confirmed on product id 18
+(the exact "Sandalia Sandalwood Perfume Oil" case from the report, `ar`
+locale): `<html dir="rtl">`, description renders
+"Concentrated sandalwood perfume oil." with the period at the end (was
+jumping to the front), breadcrumb renders
+"Sandalia Sandalwood Perfu…" with the ellipsis at the end (was cutting
+the start), category chip "بخور وعطور", stock badge
+"متوفر · باقي 15", price "180 ج.م", every button/label/heading in
+Arabic, zero console errors. Cross-checked: English locale on the same
+product still shows "EGP 180" / "Add to Cart" (no regression); a
+product with real Arabic data (id 27, "جبنة") renders cleanly
+right-aligned with no `dir="auto"` side effects; the zone modal shows
+"٩٠ دقيقة تقريباً" / "١١٠ دقيقة تقريباً" per zone; the home page's
+"لقمة حلوة" restaurant card shows "مصر الجديدة، القاهرة".
+
+**Gate**: `npm run build` ✅.

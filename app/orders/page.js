@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 import { addToCart } from '../../lib/cart'
-import { getLocaleCookie, productName } from '../../lib/i18n'
+import { getLocaleCookie, productName, formatPrice } from '../../lib/i18n'
 
 const STATUS_STYLES = {
   PLACED:           'bg-yellow-100 text-yellow-700',
@@ -145,7 +145,7 @@ export default function OrdersPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="font-black text-gray-900 tabular-nums">EGP {Number(order.total).toFixed(2)}</span>
+                    <span className="font-black text-gray-900 tabular-nums">{formatPrice(order.total, locale, { decimals: 2 })}</span>
                     <span className="text-gray-400">
                       {new Date(order.createdAt).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>

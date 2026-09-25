@@ -2,7 +2,7 @@
 import { createPortal } from 'react-dom'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { t, productName } from '../lib/i18n'
+import { t, productName, formatPrice } from '../lib/i18n'
 
 const DEBOUNCE_MS = 280
 const MIN_QUERY_LENGTH = 2
@@ -12,7 +12,7 @@ function suggestionHref(item) {
   return item.type === 'RESTAURANT' ? `/restaurant/${item.id}` : `/shops/${item.id}`
 }
 
-function SuggestionRow({ id, item, label, price, active, onSelect }) {
+function SuggestionRow({ id, item, label, price, active, onSelect, locale }) {
   return (
     <button
       id={id}
@@ -32,7 +32,7 @@ function SuggestionRow({ id, item, label, price, active, onSelect }) {
       </span>
       <span className="flex-1 min-w-0 text-xs font-bold text-gray-900 truncate">{label}</span>
       {price != null && (
-        <span className="text-xs font-black text-gray-900 shrink-0">EGP {price.toFixed(0)}</span>
+        <span className="text-xs font-black text-gray-900 shrink-0">{formatPrice(price, locale)}</span>
       )}
     </button>
   )
@@ -264,6 +264,7 @@ export default function SearchAutocomplete({
                       price={item.price}
                       active={item.key === highlightedKey}
                       onSelect={() => handleSelect(item)}
+                      locale={locale}
                     />
                   ))}
                 </div>
@@ -280,6 +281,7 @@ export default function SearchAutocomplete({
                       price={null}
                       active={item.key === highlightedKey}
                       onSelect={() => handleSelect(item)}
+                      locale={locale}
                     />
                   ))}
                 </div>

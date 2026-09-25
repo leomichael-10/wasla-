@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../../components/Navbar'
 import { addToCart } from '../../../lib/cart'
-import { getLocaleCookie, productName } from '../../../lib/i18n'
+import { getLocaleCookie, productName, categoryName, placeName, t, interpolate, formatPrice } from '../../../lib/i18n'
 
 function Skeleton() {
   return (
@@ -152,7 +152,7 @@ export default function ProductDetailPage() {
       setAlreadyReviewed(true)
       setReviewComment('')
     } catch (err) {
-      setReviewError(err.message || 'Failed to submit review.')
+      setReviewError(err.message || t('product.reviewSubmitError', locale))
     } finally {
       setReviewLoading(false)
     }
@@ -165,9 +165,9 @@ export default function ProductDetailPage() {
       <div className="min-h-screen bg-[#FBF6EF]">
         <Navbar />
         <div className="max-w-4xl mx-auto px-4 py-24 text-center">
-          <p className="text-gray-500 font-semibold text-lg">Product not found</p>
+          <p className="text-gray-500 font-semibold text-lg">{t('product.notFound', locale)}</p>
           <Link href="/products" className="mt-4 inline-block text-brand-600 font-bold hover:underline text-sm">
-            Back to products
+            {t('product.backToProducts', locale)}
           </Link>
         </div>
       </div>
@@ -202,18 +202,25 @@ export default function ProductDetailPage() {
 
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm text-gray-400 mb-7 flex-wrap">
-          <Link href="/"         className="hover:text-brand-600 transition-colors">Home</Link>
+          <Link href="/"         className="hover:text-brand-600 transition-colors">{t('tab.home', locale)}</Link>
           <span>/</span>
-          <Link href="/products" className="hover:text-brand-600 transition-colors">Products</Link>
+          <Link href="/products" className="hover:text-brand-600 transition-colors">{t('nav.products', locale)}</Link>
           {product.category && (
             <>
               <span>/</span>
               <Link href={`/products?category=${encodeURIComponent(product.category.name)}`}
-                className="hover:text-brand-600 transition-colors">{product.category.name}</Link>
+                className="hover:text-brand-600 transition-colors">{categoryName(product.category.name, locale)}</Link>
             </>
           )}
           <span>/</span>
-          <span className="text-gray-700 font-medium truncate max-w-45">{displayName}</span>
+          {/* dir="auto" isolates this from the surrounding rtl context (fixes
+              punctuation jumping to the wrong side) and resolves this span's
+              own direction from its content, so `truncate`'s ellipsis lands
+              at the real end of the string instead of the start — both are
+              the same underlying bidi issue, since displayName is often an
+              English fallback (see lib/i18n.js productName()) rendered
+              inside an rtl-direction page. */}
+          <span dir="auto" className="text-gray-700 font-medium truncate max-w-45">{displayName}</span>
         </nav>
 
         {/* Main grid */}
@@ -250,11 +257,15 @@ export default function ProductDetailPage() {
           <div className="flex flex-col gap-4">
             <div>
               <span className="text-xs font-black text-brand-600 uppercase tracking-widest">{product.brand}</span>
-              <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mt-1 leading-tight">{displayName}</h1>
+              {/* dir="auto" — displayName/description are seller-entered text of
+                  unknown language (often an untranslated English fallback, see
+                  lib/i18n.js productName()); isolating it keeps trailing Latin
+                  punctuation from jumping to the wrong side inside this rtl page. */}
+              <h1 dir="auto" className="text-2xl sm:text-3xl font-black text-gray-900 mt-1 leading-tight">{displayName}</h1>
               {product.category && (
                 <Link href={`/products?category=${encodeURIComponent(product.category.name)}`}
                   className="inline-block mt-2 bg-brand-50 text-brand-700 text-xs font-semibold px-3 py-1 rounded-full hover:bg-brand-100 transition-colors">
-                  {product.category.name}
+                  {categoryName(product.category.name, locale)}
                 </Link>
               )}
               {reviews.length > 0 && (
@@ -265,18 +276,18 @@ export default function ProductDetailPage() {
                     ))}
                   </div>
                   <span className="text-sm font-semibold text-gray-600">
-                    {avgRating.toFixed(1)} ({reviews.length} review{reviews.length !== 1 ? 's' : ''})
+                    {avgRating.toFixed(1)} ({reviews.length} {t('product.reviewsLabel', locale)})
                   </span>
                 </div>
               )}
             </div>
 
-            {product.description && <p className="text-sm text-gray-600 leading-relaxed">{product.description}</p>}
+            {product.description && <p dir="auto" className="text-sm text-gray-600 leading-relaxed">{product.description}</p>}
 
             {/* Variant selector */}
             <div>
               <p className="text-sm font-bold text-gray-800 mb-2.5">
-                Option{selectedVariant?.label && <span className="ml-2 font-normal text-brand-700">{selectedVariant.label}</span>}
+                {t('product.option', locale)}{selectedVariant?.label && <span className="ms-2 font-normal text-brand-700">{selectedVariant.label}</span>}
               </p>
               <div className="flex flex-wrap gap-2">
                 {product.variants.map(variant => {
@@ -288,7 +299,7 @@ export default function ProductDetailPage() {
                       className={`px-3.5 py-1.5 rounded-full text-sm font-semibold border transition-all duration-150
                         ${isSelected ? 'bg-brand-700 border-brand-700 text-white shadow-sm' : 'bg-white border-gray-200 text-gray-700 hover:border-brand-400 hover:text-brand-600'}
                         ${isOutOfStock ? 'opacity-35 cursor-not-allowed line-through' : 'cursor-pointer'}`}>
-                      {variant.label ?? `Option ${variant.id}`}
+                      {variant.label ?? `${t('product.option', locale)} ${variant.id}`}
                     </button>
                   )
                 })}
@@ -299,10 +310,10 @@ export default function ProductDetailPage() {
             {selectedVariant && (
               <div className="flex flex-wrap gap-2">
                 {outOfStock ? (
-                  <span className="bg-red-50 text-red-500 text-xs font-semibold px-3 py-1 rounded-full">Out of stock</span>
+                  <span className="bg-red-50 text-red-500 text-xs font-semibold px-3 py-1 rounded-full">{t('browse.outOfStock', locale)}</span>
                 ) : (
                   <span className="bg-green-50 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
-                    In stock · {selectedVariant.stockQty} left
+                    {interpolate(t('product.inStock', locale), { count: selectedVariant.stockQty })}
                   </span>
                 )}
               </div>
@@ -311,13 +322,13 @@ export default function ProductDetailPage() {
             {/* Price + cart */}
             <div className="flex items-center gap-3 mt-1">
               <span className="text-3xl font-black text-gray-900 tabular-nums">
-                {selectedVariant ? `EGP ${Number(selectedVariant.price)}` : '—'}
+                {selectedVariant ? formatPrice(selectedVariant.price, locale) : '—'}
               </span>
               <button onClick={handleAddToCart} disabled={!selectedVariant || outOfStock}
                 className={`flex-1 py-3.5 rounded-full font-black text-sm transition-all duration-200
                   ${cartFeedback ? 'bg-green-500 text-white scale-95' : 'bg-brand-700 hover:bg-brand-800 active:bg-brand-900 text-white'}
                   disabled:opacity-40 disabled:cursor-not-allowed`}>
-                {cartFeedback ? 'Added to cart!' : outOfStock ? 'Out of Stock' : 'Add to Cart'}
+                {cartFeedback ? t('product.addedToCart', locale) : outOfStock ? t('browse.outOfStock', locale) : t('product.addToCart', locale)}
               </button>
             </div>
           </div>
@@ -327,34 +338,34 @@ export default function ProductDetailPage() {
         {product.seller && (
           <div className="mt-10 bg-white rounded-3xl border border-brand-50 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-black text-gray-900 text-base">Seller Information</h2>
+              <h2 className="font-black text-gray-900 text-base">{t('product.sellerInfo', locale)}</h2>
               <Link href={`/shops/${product.seller.id}`} className="text-sm font-bold text-brand-600 hover:underline">
-                View Shop
+                {t('product.viewShop', locale)}
               </Link>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Shop</p>
-                <p className="font-bold text-gray-800 text-sm">{product.seller.businessName}</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">{t('checkout.shopFallbackName', locale)}</p>
+                <p dir="auto" className="font-bold text-gray-800 text-sm">{product.seller.businessName}</p>
               </div>
               {product.seller.city && (
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Location</p>
-                  <p className="font-bold text-gray-800 text-sm">
-                    {product.seller.city}{product.seller.area ? `, ${product.seller.area}` : ''}
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">{t('product.locationLabel', locale)}</p>
+                  <p dir="auto" className="font-bold text-gray-800 text-sm">
+                    {placeName(product.seller.city, locale)}{product.seller.area ? `${locale === 'ar' ? '، ' : ', '}${placeName(product.seller.area, locale)}` : ''}
                   </p>
                 </div>
               )}
               <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Delivery</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">{t('product.deliveryLabel', locale)}</p>
                 <p className={`font-bold text-sm ${product.seller.deliveryAvailable ? 'text-green-600' : 'text-gray-400'}`}>
-                  {product.seller.deliveryAvailable ? 'Available' : 'Not available'}
+                  {product.seller.deliveryAvailable ? t('product.deliveryAvailable', locale) : t('product.deliveryNotAvailable', locale)}
                 </p>
               </div>
               {product.seller.workingHours && (
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Hours</p>
-                  <p className="font-bold text-gray-800 text-sm">{product.seller.workingHours}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">{t('product.hoursLabel', locale)}</p>
+                  <p dir="auto" className="font-bold text-gray-800 text-sm">{product.seller.workingHours}</p>
                 </div>
               )}
             </div>
@@ -367,25 +378,25 @@ export default function ProductDetailPage() {
           {/* Write a review */}
           {user?.role === 'customer' && canReview && !alreadyReviewed && (
             <div className="bg-white rounded-3xl border border-brand-50 shadow-sm p-6">
-              <h2 className="font-black text-gray-900 text-base mb-4">Write a Review</h2>
+              <h2 className="font-black text-gray-900 text-base mb-4">{t('product.writeReview', locale)}</h2>
               {reviewSuccess ? (
-                <p className="text-green-600 font-semibold text-sm">Thank you! Your review has been submitted.</p>
+                <p className="text-green-600 font-semibold text-sm">{t('product.reviewSubmitted', locale)}</p>
               ) : (
                 <form onSubmit={handleSubmitReview} className="space-y-4">
                   <div>
-                    <p className="text-sm font-semibold text-gray-700 mb-2">Your Rating</p>
+                    <p className="text-sm font-semibold text-gray-700 mb-2">{t('product.yourRating', locale)}</p>
                     <StarSelector value={reviewRating} onChange={setReviewRating} />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Comment (optional)</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('product.commentOptional', locale)}</label>
                     <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)}
-                      placeholder="Tell others about your experience…" rows={3}
+                      placeholder={t('product.commentPlaceholder', locale)} rows={3}
                       className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none" />
                   </div>
                   {reviewError && <p className="text-xs text-red-500">{reviewError}</p>}
                   <button type="submit" disabled={reviewLoading}
                     className="bg-brand-700 hover:bg-brand-800 disabled:opacity-60 text-white font-black px-6 py-2.5 rounded-xl text-sm transition-colors">
-                    {reviewLoading ? 'Submitting…' : 'Submit Review'}
+                    {reviewLoading ? t('product.submittingReview', locale) : t('product.submitReview', locale)}
                   </button>
                 </form>
               )}
@@ -396,23 +407,25 @@ export default function ProductDetailPage() {
           {reviews.length > 0 && (
             <div className="bg-white rounded-3xl border border-brand-50 shadow-sm p-6">
               <h2 className="font-black text-gray-900 text-base mb-5">
-                Customer Reviews
-                <span className="ml-2 text-gray-400 font-normal">({reviews.length})</span>
-                <span className="ml-2 text-sm font-semibold text-yellow-500">{avgRating.toFixed(1)} / 5</span>
+                {t('product.customerReviews', locale)}
+                <span className="ms-2 text-gray-400 font-normal">({reviews.length})</span>
+                <span className="ms-2 text-sm font-semibold text-yellow-500">{avgRating.toFixed(1)} / 5</span>
               </h2>
               <div className="space-y-4">
-                {reviews.map(review => (
+                {reviews.map(review => {
+                  const reviewerName = review.customer?.customerProfile?.fullName ?? t('product.customerFallback', locale)
+                  return (
                   <div key={review.id} className="flex gap-3 border-b border-gray-50 last:border-0 pb-4 last:pb-0">
                     <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs shrink-0">
-                      {(review.customer?.customerProfile?.fullName ?? 'C')[0].toUpperCase()}
+                      {reviewerName[0].toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-xs font-semibold text-gray-700">
-                          {review.customer?.customerProfile?.fullName ?? 'Customer'}
+                        <span dir="auto" className="text-xs font-semibold text-gray-700">
+                          {reviewerName}
                         </span>
                         <span className="text-[10px] text-gray-400">
-                          {new Date(review.createdAt).toLocaleDateString('en-AE', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {new Date(review.createdAt).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-GB', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                       </div>
                       <div className="flex gap-0.5 mb-1">
@@ -420,10 +433,11 @@ export default function ProductDetailPage() {
                           <span key={i} className={`text-sm ${i < review.rating ? 'text-yellow-400' : 'text-gray-200'}`}>&#9733;</span>
                         ))}
                       </div>
-                      {review.comment && <p className="text-sm text-gray-600 leading-relaxed">{review.comment}</p>}
+                      {review.comment && <p dir="auto" className="text-sm text-gray-600 leading-relaxed">{review.comment}</p>}
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}

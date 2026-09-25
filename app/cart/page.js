@@ -7,7 +7,7 @@ import AddressForm from '../../components/AddressForm'
 import AddressCard from '../../components/AddressCard'
 import { toast } from 'sonner'
 import { getCart, removeFromCart, updateQuantity, clearCart } from '../../lib/cart'
-import { getLocaleCookie, t, productName } from '../../lib/i18n'
+import { getLocaleCookie, t, productName, formatPrice } from '../../lib/i18n'
 
 export default function CartPage() {
   const router = useRouter()
@@ -225,9 +225,9 @@ export default function CartPage() {
 
                       <div className="shrink-0 text-end">
                         <p className="font-black text-gray-900 text-sm tabular-nums">
-                          EGP {(item.price * item.quantity).toFixed(2)}
+                          {formatPrice(item.price * item.quantity, locale, { decimals: 2 })}
                         </p>
-                        <p className="text-xs text-gray-400 mt-0.5">EGP {item.price.toFixed(2)} {t('cart.each', locale)}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{formatPrice(item.price, locale, { decimals: 2 })} {t('cart.each', locale)}</p>
                         <button
                           onClick={() => removeFromCart(item.productVariantId, userId)}
                           className="mt-2 text-xs text-red-400 hover:text-red-600 font-semibold transition-colors"
@@ -300,8 +300,8 @@ export default function CartPage() {
                           <p className="font-bold text-gray-800">{name}</p>
                           {q.covered ? (
                             <p className="text-gray-500 mt-0.5">
-                              EGP {q.fee.toFixed(2)} · {q.sameDay ? t('checkout.sameDay', locale) : t('checkout.nextDay', locale)}
-                              {q.minOrderValue > 0 && ` · ${t('checkout.minOrder', locale)} EGP ${q.minOrderValue.toFixed(0)}`}
+                              {formatPrice(q.fee, locale, { decimals: 2 })} · {q.sameDay ? t('checkout.sameDay', locale) : t('checkout.nextDay', locale)}
+                              {q.minOrderValue > 0 && ` · ${t('checkout.minOrder', locale)} ${formatPrice(q.minOrderValue, locale)}`}
                             </p>
                           ) : (
                             <p className="text-hibiscus-600 font-semibold mt-0.5">{t('checkout.outOfZoneShop', locale)}</p>
@@ -315,15 +315,15 @@ export default function CartPage() {
                 <div className="space-y-2 text-sm border-t border-brand-50 pt-4">
                   <div className="flex justify-between text-gray-600">
                     <span>{t('cart.subtotal', locale)}</span>
-                    <span className="font-semibold tabular-nums">EGP {subtotal.toFixed(2)}</span>
+                    <span className="font-semibold tabular-nums">{formatPrice(subtotal, locale, { decimals: 2 })}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>{t('cart.delivery', locale)}</span>
-                    <span className="font-semibold tabular-nums">EGP {deliveryFee.toFixed(2)}</span>
+                    <span className="font-semibold tabular-nums">{formatPrice(deliveryFee, locale, { decimals: 2 })}</span>
                   </div>
                   <div className="border-t border-brand-100 pt-3 flex justify-between items-baseline">
                     <span className="font-bold text-gray-900">{t('cart.total', locale)}</span>
-                    <span className="text-xl font-black text-gray-900 tabular-nums">EGP {total.toFixed(2)}</span>
+                    <span className="text-xl font-black text-gray-900 tabular-nums">{formatPrice(total, locale, { decimals: 2 })}</span>
                   </div>
                 </div>
 

@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { useState, useEffect, useLayoutEffect } from 'react'
 import { getCart, addToCart, updateQuantity } from '../lib/cart'
-import { productName, DEFAULT_LOCALE } from '../lib/i18n'
+import { productName, formatPrice, DEFAULT_LOCALE } from '../lib/i18n'
 
 // Compact quick-commerce tile: image, name, price, and an inline +/- stepper
 // that adds straight to cart — no detail-page hop required for staples.
@@ -80,7 +80,7 @@ export default function ProductTile({ product, locale = DEFAULT_LOCALE }) {
         <Link href={`/products/${product.id}`} className="block">
           <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{displayName}</p>
         </Link>
-        <p className="text-sm font-black text-gray-900">EGP {price.toFixed(0)}</p>
+        <p className="text-sm font-black text-gray-900">{formatPrice(price, locale)}</p>
 
         <div className="mt-auto pt-1">
           {unavailable ? (

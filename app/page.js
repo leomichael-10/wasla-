@@ -6,7 +6,7 @@ import ZoneBar from '../components/ZoneBar'
 import ProductTile from '../components/ProductTile'
 import BuyAgainRail from '../components/BuyAgainRail'
 import CategoryIcon from '../components/CategoryIcon'
-import { DEFAULT_LOCALE, LOCALE_COOKIE, t, categoryName } from '../lib/i18n'
+import { DEFAULT_LOCALE, LOCALE_COOKIE, t, categoryName, placeName } from '../lib/i18n'
 
 async function getCategories() {
   try {
@@ -125,7 +125,8 @@ function CategoryTile({ category, locale }) {
   )
 }
 
-function RestaurantTile({ restaurant }) {
+function RestaurantTile({ restaurant, locale }) {
+  const location = [restaurant.area, restaurant.city].filter(Boolean).map(p => placeName(p, locale))
   return (
     <Link
       href={`/restaurant/${restaurant.id}`}
@@ -141,9 +142,9 @@ function RestaurantTile({ restaurant }) {
         )}
       </div>
       <div className="p-2.5">
-        <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{restaurant.businessName}</p>
-        {(restaurant.area || restaurant.city) && (
-          <p className="text-[11px] text-gray-400 truncate mt-0.5">{[restaurant.area, restaurant.city].filter(Boolean).join(', ')}</p>
+        <p dir="auto" className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{restaurant.businessName}</p>
+        {location.length > 0 && (
+          <p dir="auto" className="text-[11px] text-gray-400 truncate mt-0.5">{location.join(locale === 'ar' ? '، ' : ', ')}</p>
         )}
       </div>
     </Link>
@@ -157,7 +158,7 @@ function RestaurantSection({ restaurants, locale }) {
       <h2 className="text-lg font-black text-gray-900 mb-3">{t('home.restaurants', locale)}</h2>
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
         {restaurants.map(restaurant => (
-          <RestaurantTile key={restaurant.id} restaurant={restaurant} />
+          <RestaurantTile key={restaurant.id} restaurant={restaurant} locale={locale} />
         ))}
       </div>
     </section>

@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../../components/Navbar'
 import { addToCart } from '../../../lib/cart'
-import { getLocaleCookie, t, productName } from '../../../lib/i18n'
+import { getLocaleCookie, t, productName, formatPriceRange, placeName } from '../../../lib/i18n'
 
 function DishCard({ dish, locale }) {
   const [feedback, setFeedback] = useState(false)
@@ -14,9 +14,7 @@ function DishCard({ dish, locale }) {
   const prices     = dish.variants.map(v => Number(v.price))
   const minPrice   = Math.min(...prices)
   const maxPrice   = Math.max(...prices)
-  const priceLabel = minPrice === maxPrice
-    ? `EGP ${minPrice.toFixed(0)}`
-    : `EGP ${minPrice.toFixed(0)}–${maxPrice.toFixed(0)}`
+  const priceLabel = formatPriceRange(minPrice, maxPrice, locale)
 
   const shopClosed      = dish.seller?.isOpen === false
   const inStockVariant  = shopClosed ? null : (dish.variants.find(v => v.inStock) ?? null)
@@ -67,9 +65,9 @@ function DishCard({ dish, locale }) {
       </div>
 
       <div className="pt-6 px-4 pb-4 flex flex-col flex-1 gap-1.5">
-        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 min-h-10">{displayName}</h3>
+        <h3 dir="auto" className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 min-h-10">{displayName}</h3>
         {dish.description && (
-          <p className="text-xs text-gray-400 leading-tight line-clamp-2">{dish.description}</p>
+          <p dir="auto" className="text-xs text-gray-400 leading-tight line-clamp-2">{dish.description}</p>
         )}
 
         <div className="mt-auto pt-2">
@@ -157,7 +155,7 @@ export default function RestaurantPage() {
             <span>/</span>
             <span className="text-white font-medium">{t('restaurant.breadcrumb', locale)}</span>
             <span>/</span>
-            <span className="text-white font-medium">{restaurant.businessName}</span>
+            <span dir="auto" className="text-white font-medium">{restaurant.businessName}</span>
           </div>
 
           <div className="flex items-start gap-5 flex-wrap">
@@ -172,19 +170,19 @@ export default function RestaurantPage() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-black text-white mb-1">{restaurant.businessName}</h1>
+              <h1 dir="auto" className="text-2xl font-black text-white mb-1">{restaurant.businessName}</h1>
 
               {/* English falls back to Arabic when descriptionEn is empty —
                   never render an empty tagline either way. */}
               {(locale === 'en' ? (restaurant.descriptionEn || restaurant.descriptionAr) : restaurant.descriptionAr) && (
-                <p className="text-brand-100 text-sm mb-1">
+                <p dir="auto" className="text-brand-100 text-sm mb-1">
                   {locale === 'en' ? (restaurant.descriptionEn || restaurant.descriptionAr) : restaurant.descriptionAr}
                 </p>
               )}
 
               {(restaurant.city || restaurant.area) && (
-                <p className="text-brand-100 text-sm mb-2">
-                  {[restaurant.area, restaurant.city].filter(Boolean).join(', ')}
+                <p dir="auto" className="text-brand-100 text-sm mb-2">
+                  {[restaurant.area, restaurant.city].filter(Boolean).map(p => placeName(p, locale)).join(locale === 'ar' ? '، ' : ', ')}
                 </p>
               )}
 

@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { getZoneCookie, setZoneCookie } from '../lib/zone'
-import { getLocaleCookie, t } from '../lib/i18n'
+import { getLocaleCookie, t, formatEta } from '../lib/i18n'
 
 // Explicit, mutually-exclusive views — never two of these mounted at once.
 // 'loading' | 'zones' | 'error' | 'waitlist-thanks'
@@ -115,7 +115,7 @@ export default function ZoneGate() {
                     {locale === 'ar' ? zone.nameEn : zone.nameAr}
                   </span>
                 </span>
-                <span className="text-xs text-gray-400 shrink-0">~{zone.etaMinutes}m</span>
+                <span className="text-xs text-gray-400 shrink-0">{formatEta(zone.etaMinutes, locale)}</span>
               </button>
             ))}
           </div>
