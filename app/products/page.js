@@ -214,6 +214,15 @@ function ProductsBrowser() {
 
   function clearFilters() { setSearch(''); setBrand(''); setCategory(''); setCity('') }
 
+  // Deliverable products first — an out-of-zone product with its add
+  // button removed shouldn't occupy a prime grid slot ahead of ones the
+  // shopper can actually buy. Stable sort, so it only moves the
+  // undeliverable ones down without disturbing the chosen sort order
+  // otherwise.
+  const sortedProducts = [...products].sort((a, b) =>
+    Number(a.seller?.deliversToZone === false) - Number(b.seller?.deliversToZone === false)
+  )
+
   return (
     <div className="min-h-screen bg-[#FBF6EF]" dir={dir}>
       <Navbar />
@@ -259,16 +268,6 @@ function ProductsBrowser() {
                 <option key={o.value} value={o.value}>{t(o.key, locale)}</option>
               ))}
             </select>
-
-            <div className="relative">
-              <input
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder={t('browse.search', locale)}
-                className="border border-brand-100 rounded-2xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-300 bg-white w-32 sm:w-40"
-              />
-            </div>
 
             <button
               onClick={() => setMobileOpen(true)}
@@ -329,7 +328,7 @@ function ProductsBrowser() {
 
           <main className="flex-1 min-w-0">
             {loading ? (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-4">
                 {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : products.length === 0 ? (
@@ -352,8 +351,8 @@ function ProductsBrowser() {
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                {products.map(product => (
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-4">
+                {sortedProducts.map(product => (
                   <BrowseProductTile key={product.id} product={product} locale={locale} />
                 ))}
               </div>
@@ -372,7 +371,7 @@ export default function ProductsPage() {
       <div className="min-h-screen bg-[#FBF6EF]">
         <div className="h-16 bg-brand-700" />
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-10">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-4 mt-10">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         </div>

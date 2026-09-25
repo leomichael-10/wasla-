@@ -155,8 +155,16 @@ export default async function RootLayout({ children }) {
             },
           }}
         />
-        <main className="flex-1 pb-16 lg:pb-0">{children}</main>
-        <footer className="bg-white border-t border-gray-100 mt-auto">
+        {/* Neither main's old flex-1 nor footer's old mt-auto is needed to
+            pin the footer to the viewport bottom on a short page — every
+            page already sets its own min-h-screen (directly, or via a
+            route-group layout like app/dashboard/layout.js), so both were
+            only ever stretching the one page that deliberately doesn't
+            reach viewport height (the home page), leaving dead space
+            above the footer instead of letting it sit right after the
+            actual content. */}
+        <main className="pb-16 lg:pb-0">{children}</main>
+        <footer className="bg-white border-t border-gray-100">
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">

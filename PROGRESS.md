@@ -3461,3 +3461,82 @@ dropdown showing a real thumbnail box; and the cart page now showing a
 rendered before. Zero console errors across all of it.
 
 **Gate**: `npm run build` ✅.
+
+## Layout fixes: Browse grid density, home page dead space, browse header, out-of-zone sort
+
+Four unrelated layout bugs from the same live-site pass, each isolated
+to its own file/mechanism.
+
+### Browse grid tiles were up to ~300px wide, not the ~144px the home
+rails use
+
+Root cause wasn't `BrowseProductTile` itself — its markup is already
+essentially identical to `ProductTile` (the rail tile the brief points
+at as "correctly sized"). The rail tiles are compact because each sits
+in a fixed `w-36` wrapper; the Browse grid tiles had no such cap —
+`grid grid-cols-2 lg:grid-cols-3` stretches every tile to fill 1/2 or
+1/3 of whatever width `main` has (up to ~300px inside the
+`max-w-7xl` layout once the category rail + filters sidebar are
+subtracted), and since the image is `aspect-square`, a wide tile means
+a *tall* tile. Fixed by swapping the fixed column-count grid for
+`grid-cols-[repeat(auto-fill,minmax(9rem,1fr))]` (same 9rem/144px floor
+as the rail tiles' `w-36`) in all three places this grid is defined
+(the loading skeleton, the real grid, and the route's Suspense
+fallback) — columns now auto-fill to fit as many 144px+ tiles as the
+row has room for, instead of being capped at a fixed count that forces
+each one wide. Verified live: 1280px viewport went from 3 columns of
+~300px tiles to 5 columns of ~164px tiles, matching the rail proportions.
+
+### Home page: ~250–320px of dead cream space above the footer
+
+Two independent "stretch to fill the viewport" mechanisms were both
+firing on the home page specifically, because the home page is the one
+real page in the app that doesn't set its own `min-h-screen` (every
+other page does, either directly or via a route-group layout like
+`app/dashboard/layout.js`): the home page's own root div had
+`min-h-screen` too (removed — redundant with, and part of, the actual
+problem), and independently `app/layout.js`'s `<main>` had `flex-1`
+plus `<footer>` had `mt-auto`, both classic "pin to the bottom of a
+flex column" tricks. With `body`'s own `min-h-full`, either mechanism
+alone is enough to stretch the page to at least 100vh whenever real
+content falls short — normally invisible, since every other page's own
+`min-h-screen` already guarantees they're tall enough that neither
+does anything, but on the home page (thinner content: a couple of
+rails, no guaranteed-nonempty `BuyAgainRail`/origin rails) it left a
+real gap between the last rail and the footer. Removed `flex-1` from
+`main` and `mt-auto` from `footer` in `app/layout.js` — confirmed via a
+tall-viewport Playwright check that every other page (`/terms`,
+`/login`, `/privacy`, all of which have their own `min-h-screen`) still
+pins its footer to the viewport bottom exactly as before, while the
+home page's footer now sits directly after the last rail with only the
+existing intentional `pb-20`.
+
+### Browse header decluttered
+
+Removed the `/products` page's own search `<input>` from the sort/
+search/filters row — the global Navbar search (`SearchAutocomplete`)
+already exists on every page including this one, and already
+`router.push`es to `/products?search=...` on submit, so this was a
+genuine duplicate control, not a second capability. The `search` state
+itself, the `?search=` URL param, and its removable filter chip are
+untouched — a link that arrives with `?search=` still filters and shows
+that chip, only the redundant typing box is gone. Left with just
+[sort] on desktop and [sort] + [Filters] compact on one line on
+mobile, directly above the category rail instead of a three-control row.
+
+### Out-of-zone products no longer sit in prime grid slots
+
+`app/products/page.js` now sorts the fetched product list — a stable
+sort by `seller.deliversToZone === false` — right before rendering the
+grid, so undeliverable products (already visually de-emphasised and
+missing their add button in `BrowseProductTile`) move to the end
+instead of occupying early slots ahead of what a shopper can actually
+buy. Stable sort means it only demotes the undeliverable ones; it
+doesn't disturb the chosen A–Z/popular/price ordering otherwise. A
+no-op when no zone is selected (`deliversToZone` is `undefined` for
+every product, so nothing reorders). Verified live: the two
+out-of-zone products in the seeded catalog now render in the grid's
+last row instead of interleaved with deliverable ones, on both desktop
+and mobile widths.
+
+**Gate**: `npm run build` ✅.

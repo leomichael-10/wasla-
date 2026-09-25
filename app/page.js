@@ -204,7 +204,7 @@ export default async function HomePage() {
   ])
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF] pb-20">
+    <div className="bg-[#FBF6EF] pb-20">
       <Navbar />
       <ZoneBar />
 
