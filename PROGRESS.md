@@ -3607,3 +3607,68 @@ script coupled to one seller id and one file in the repo.
 
 **Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
 no difference ✅ (data-only, no schema change).
+
+## Cleaned up seller #8's duplicate products from the CSV import
+
+Confirmed the dev DB endpoint again before touching anything. Pulled
+full records for all 7 pairs flagged in the previous entry plus an
+order-reference check on every one of their variants before proposing
+anything, then — per the task's explicit "show me before deleting
+anything" — posted the full pair-by-pair keep/delete table and waited
+for a go-ahead before running any write.
+
+**#41 "افلتين" was worse than just miscategorized**: its description
+actively called it a fragrance ("افلتين سوداني أصلي، عطر تقليدي برائحة
+دافية مميزة") while filed under Bakhour & Perfumes — someone had
+described it as if the name were an attar/perfume rather than
+recognizing it as a colloquial spelling of Ovaltine. The image was
+genuinely Ovaltine's product photo throughout, and — the reason it
+couldn't just be deleted in favor of the cleaner CSV-imported
+"أوفالتين" — **its variant is on a real order** (`OrderItem` #2). Fixed
+in place instead of replaced: renamed to `أوفالتين` (matching the
+CSV's spelling), recategorized to `Our Local Products`, description
+rewritten to actually describe the product
+(`أوفالتين، مشروب شوكولاتة بالشعير، علبة ٤٠٠ جرام`), reactivated.
+Verified after the fact that `OrderItem #2 → ProductVariant #49 →
+Product #41` still resolves correctly with the corrected data — order
+history intact, nothing orphaned.
+
+**4 other merges**, same "keep the row with the photo/real description,
+delete the CSV-imported one that only has unit metadata in its
+description" rule the task specified: kept #32 (`الصمغ العربي`), #35
+(`شاي الغزالتين رطل`), #36 (`شاي الغزالتين نص رطل`), #29 (`شاف`);
+deleted #58 (`صمغ عربي`), #43 (`شاي الغزالتين — رطل`), #44
+(`شاي الغزالتين — نص رطل`), #77 (`بخور شاف`).
+
+**Reactivation, called out before doing it**: #41/#35/#36 were sitting
+at `isActive: false` — pre-existing state, not something this pass
+caused. Deleting their duplicates without reactivating them would have
+made those products disappear from the store entirely, which isn't
+what a "keep the better one" merge should do, so all three were
+flipped back to active as part of the merge. Flagged this inference to
+the user before running it rather than deciding it silently.
+
+**Left alone, as instructed**: `قنقليز` (#60) / `قنقليز بدرة` (#34) —
+whole fruit vs. powder; `كركديه فتلة` (#38, still `isActive: false`,
+untouched) / `كركديه النصر فتلة` (#46) — likely a different, branded
+product. No changes to either row in both pairs.
+
+**Safety**: checked every variant belonging to all 14 products in play
+(not just the ones being deleted) against `OrderItem` and `Review`
+before deciding anything. Only #41's variant had any reference, and
+#41 was being kept, not deleted — so all 5 deletions were safe hard
+`prisma.product.delete()` calls, no deactivate-instead-of-delete case
+needed. `ProductVariant`'s `onDelete: Cascade` handled the variant
+rows; confirmed 0 of the 5 deleted product ids remain afterward.
+
+**Final product count for seller #8 ("wasla store"): 58** (63 before
+this pass, −5 deleted).
+
+Noted but out of scope for this task: 12 untracked product-photo PNGs
+(`gum-arabic.png`, `mastic.png`, `sandalwood.png`, etc.) sitting in the
+project root, apparently staged for uploading against the
+missing-image report from an earlier pass — left untouched, not
+something this cleanup should decide what to do with.
+
+**Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
+no difference ✅ (data-only, no schema change).
