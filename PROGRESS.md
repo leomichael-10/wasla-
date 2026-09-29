@@ -3871,3 +3871,38 @@ what's actually there now, nothing assumed.
 
 **Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
 no difference ✅ (data-only, no schema change).
+
+## Fixing the شاف/الصندل duplicate and طحنية's wrong photo
+
+Confirmed the exact bug the previous entry had flagged as "worth a
+note, not an action": downloaded both #29 شاف's and #30 الصندل's
+images fresh and they were pixel-identical wood chips in a wooden
+bowl — the same underlying photo uploaded twice under two different
+Cloudinary asset names in two earlier rounds, not two independently
+sourced photos.
+
+The task's own hypothesis checked out too: downloaded #93 طحنية's
+current image and it was exactly the "rounded brown-and-tan resin
+nuggets in a wooden bowl" that شاف was supposed to show — sitting on
+the wrong product the whole time. No new upload needed for that half
+of the swap, just moving the existing URL from #93 to #29.
+
+طحنية's real photo (a pale beige halva block, sliced) had never been
+uploaded — recognized it as image 13 from the second image-supply
+round, which got left unplaced back then because its target wasn't
+clear yet. Confirmed it's still sitting in that round's scratchpad
+folder, re-viewed it to be sure, uploaded it, attached to #93.
+
+Deleted the now-orphaned Cloudinary asset — #29's old (duplicate)
+wood-chip upload. Checked first that no product still referenced it
+before deleting (#30 has its own separate upload of the same-looking
+photo, untouched).
+
+**Confirmed by re-downloading and viewing all three after the fix:**
+- **#29 شاف** — rounded brown-and-tan resin nuggets in a wooden bowl ✅
+- **#30 الصندل** — light wood chips/blocks in a wooden bowl (unchanged) ✅
+- **#93 طحنية** — pale beige halva block, rectangular, two slices cut
+  and laid in front, no bowl ✅
+
+**Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
+no difference ✅ (data-only, no schema change).
