@@ -3540,3 +3540,70 @@ last row instead of interleaved with deliverable ones, on both desktop
 and mobile widths.
 
 **Gate**: `npm run build` ✅.
+
+## Bulk product import: wasla-products-alamir.csv → wasla store
+
+Confirmed the dev DB endpoint (`ep-wild-cloud-*`, via `check-env.mjs`)
+before touching anything, per the task's explicit instruction and the
+CLAUDE.md DB-safety rule. Asked which seller the rows belonged to
+before writing anything (none of the current sellers' names obviously
+matched "alamir") — confirmed **seller id 8, "wasla store"**, the same
+account the earlier "15 real products" phase used.
+
+**Category mapping**: both `category_ar` values in the file
+(`منتجات بلدنا`, `بخور وعطور`) map cleanly to the two existing
+categories (`Our Local Products` id 1, `Bakhour & Perfumes` id 2) — no
+STOP condition hit.
+
+**Unit handling**: `Product` has no dedicated unit column and the
+file's `unit_ar` values are too varied to force into the `unitType`
+enum without guessing (traditional units like `رطل`/ratl, bag counts
+like `25 فتلة`, branded box sizes like `علبة 400 جم`) — went with the
+task's other option and wrote it into `description` as
+`"الوحدة: {unit_ar}"` (verbatim, not reworded), so "٤٥٠ ج.م" for gum
+arabic reads as "٤٥٠ ج.م — الوحدة: كيلو" once formatted, not a bare
+unexplained price.
+
+**Import**, matching `POST /api/products`' exact shape (single
+variant, `label: null`, `stockQty: 999`, `images: []`) rather than
+scripting authenticated requests — same reasoning as the earlier
+15-product import: sellerId 8, resolved categoryId, `name`/`nameEn`
+through the same `sanitizeString()` the route uses, `subCategoryId`/
+`brand` null (the file doesn't supply either). Idempotent by
+`findFirst({ name, sellerId })` before each create — same pattern
+`scripts/seed.js` already uses — so a second run creates nothing new;
+verified empirically by running the script twice.
+
+**Results** (64 data rows):
+- **48 imported**
+- **14 skipped** — `needs_check` was non-empty (`شطة جبنيت`, `قضيم`,
+  `اورنجال`, `كومبا`, `كافرو`, `مويّة بخور`, `صندل خام دسكو`,
+  `معلبية وسوتيه`, `حنة صايمة زارف`, `عبرة حلو مر`, `عبرية أبيض`,
+  `مزة`, `بيز`, `ستيم`) — waiting on the corrections mentioned in the
+  task
+- **2 skipped as already-existing** — `مستكة` and `صندل مبشور` exactly
+  match two of the 15 products from the earlier phase, by name
+
+**Flagging, not acting on, likely duplicates the exact-name idempotency
+check can't catch** (different Arabic spelling/formatting of the same
+product, so both a pre-existing row and a freshly-imported row now
+exist side by side) — high confidence, same English name both places:
+`أوفالتين` (new) / `افلتين` (existing #41) — Ovaltine;
+`صمغ عربي` (new) / `الصمغ العربي` (existing #32) — Gum Arabic;
+`شاي الغزالتين — رطل` (new) / `شاي الغزالتين رطل` (existing #35);
+`شاي الغزالتين — نص رطل` (new) / `شاي الغزالتين نص رطل` (existing #36);
+`بخور شاف` (new) / `شاف` (existing #29) — both "Shaf Incense". Lower
+confidence, possibly just a different form of the same ingredient:
+`قنقليز` (new, "Baobab Fruit") / `قنقليز بدرة` (existing #34,
+"GNGALEZ Powder"); `كركديه النصر فتلة` (new, branded tea bags) /
+`كركديه فتلة` (existing #38, "Hibiscus (Loose)"). Didn't merge or
+delete either side of any of these — that's a real judgment call
+outside what was asked, so it's reported here instead of decided
+silently.
+
+The source CSV and the one-off import script were both deleted after a
+successful, verified run — the data lives in the DB now, not as a
+script coupled to one seller id and one file in the repo.
+
+**Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
+no difference ✅ (data-only, no schema change).
