@@ -3672,3 +3672,72 @@ something this cleanup should decide what to do with.
 
 **Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
 no difference ✅ (data-only, no schema change).
+
+## Wiring up the 12 staged product photos — found they don't match their filenames
+
+Confirmed the dev DB endpoint again first. Checked storage: existing
+product images are Cloudinary URLs (`res.cloudinary.com/daokjvwfl/...`)
+uploaded via `lib/cloudinary.js`'s `uploadImage()` — `POST /api/upload`
+streams a buffer into the `wasla/products` folder with a
+`{width:1200, height:1200, crop:'limit', quality:'auto'}` transform,
+same as every seller-uploaded photo already in the DB. Went the same
+route rather than `public/` — a one-off script calling `uploadImage()`
+directly with each local file's buffer, same reasoning as every prior
+script in this log that mirrored a route's exact write shape instead
+of scripting authenticated HTTP calls.
+
+**Before attaching anything, opened all 12 PNGs and found the content
+doesn't match the filenames** — not a minor labeling slip, a real mix-up
+that would have put a customer-visible wrong photo on most of these
+products: `dilka.png` (meant to be a scrub paste) is a photo of braided
+white cheese; `sandalwood-oil.png` (meant to be an oil bottle) is a dry
+clove/spice mix with no bottle at all; `sandalwood.png` and `khumra.png`
+are both bowls of amber resin beads, near-identical to each other;
+`gum-arabic.png` is a jar of what looks like golden ghee;
+`baobab-powder.png` turned out to be a 4×3 contact-sheet grid of all 12
+photos together, not a single product image. Only `mastic.png` and
+`tahniya.png` plausibly matched their name. Stopped and showed the full
+file-by-file comparison before touching the DB — this is exactly the
+"افلتين described as a fragrance" class of bug from two entries above,
+just at a larger scale, and repeating it silently would have undone
+that fix's whole point. Given the choice to hold or proceed, the user
+confirmed **attach as-is, real photos to follow later** — so the 5
+where a real match existed and nothing already had a photo went ahead;
+the contact sheet did not (uploading a 12-cell collage as one product's
+photo isn't "the wrong photo," it's not a product photo, so it was
+treated as no photo supplied rather than folded into the "attach
+anyway" decision).
+
+**Resolved against the current (post-dedup) product names**, per the
+task's own warning that names changed in the merge pass:
+
+| file | attached to | why / why not |
+|---|---|---|
+| `cheese.png` | #27 `جبنة` | clean match, no prior image |
+| `talh-honey.png` | #28 `طلح` | clean match, no prior image |
+| `shaf.png` | #29 `شاف` | clean match, no prior image (`بخور شاف` no longer exists — deleted in the dedup) |
+| `sandalwood.png` | #30 `الصندل` | picked over `#83 صندل دبوس` (also imageless) since "sandalwood" alone is the more direct match — flagged the ambiguity, didn't just assume |
+| `sandalwood-oil.png` | #84 `دهن الصندل` | clean match, no prior image |
+| `gum-arabic.png` | *(not attached)* | `#32 الصمغ العربي` **already has an image** — not overwritten, task said not to |
+| `mastic.png` | *(not attached)* | `#33 مستكة` **already has an image** — not overwritten |
+| `baobab-powder.png` | *(not attached)* | file is the contact sheet, not a usable photo |
+| `dilka.png` | *(not attached)* | no product named `دلكة سودانية معطرة` (or similar) exists on seller #8 |
+| `khumra.png` | *(not attached)* | no product named `خمرة بخور سودانية` exists on seller #8 |
+| `ghee.png` | *(not attached)* | no product named `سمن بلدي سوداني` exists on seller #8 |
+| `tahniya.png` | *(not attached)* | no product named `طحنية` exists — closest is `#65 طحينة سوداني`, which is tahini paste, a different product |
+
+The 4 "no such product" misses all turn out to be names from the
+*original demo shops* (Bayt Al Sudan Heritage Store, Masr El Gedida) —
+different sellers entirely, not seller #8's CSV-imported catalog.
+
+Deleted the 5 PNGs that were actually placed. Left the other 7 in the
+project root — they're either reference material worth keeping
+(the contact sheet) or still need a real answer (resupply the 4
+missing-product photos, or a decision on the 2 already-imaged
+products) before there's anything to delete.
+
+**Final: 11 of 58 products for seller #8 now have an image** (6 already
+did; +5 from this pass).
+
+**Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
+no difference ✅ (data-only, no schema change).
