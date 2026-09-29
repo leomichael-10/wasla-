@@ -3803,3 +3803,71 @@ don't change the count).
 
 **Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
 no difference ✅ (data-only, no schema change).
+
+## Finishing the product images — content matching, not filename matching
+
+The task was explicit that filenames in the project root had proven
+unreliable, so every decision here came from downloading and looking at
+the actual image (Cloudinary URL → local file → viewed), never from a
+filename or a remembered description.
+
+**صمغ عربي (#32) and مستكة (#33)** — both already had an image from
+before this whole image-wiring effort started. Downloaded and looked at
+each rather than assuming: #32 is genuinely translucent amber/orange
+resin lumps in a white ceramic bowl, #33 is genuinely small pale-yellow
+resin tears in a wooden bowl — both already exactly match what they're
+supposed to show. Left untouched, per the task's explicit
+check-before-replacing instruction.
+
+**بودرة تبلدي (#68)** — also re-verified rather than trusting the
+previous pass's own memory of what got attached: still genuinely a bowl
+of cream baobab powder next to a whole baobab pod. No action needed.
+
+**خمرة بخور سودانية (#91)** had no image. None of the 4 leftover
+project-root PNGs matched it by filename — but content, not filename,
+is what mattered: the file literally named `mastic.png` turned out to
+be a dark brown/black blend in a small gold/brass dish, exactly the
+target description, and nothing to do with مستكة (whose real photo was
+already correctly in place under a wooden bowl). Attached that content
+to #91.
+
+**The 4×3 contact sheet** (`baobab-powder.png`) was deleted without
+ever being uploaded, per the explicit instruction — it was never a
+usable single-product photo, just a reference grid.
+
+**Every remaining PNG deleted from the project root** — nothing
+image-related left loose there now; product photography lives in
+Cloudinary, referenced by URL, same as every other seller-uploaded
+photo in this catalog.
+
+### Final report — every seller #8 product with an image (16 of 62), content verified by downloading and viewing each one
+
+| # | Product | What the image actually shows |
+|---|---|---|
+| 27 | جبنة | braided white cheese (halloumi-style) on a white plate |
+| 28 | طلح | jar of dark amber honey with a wooden honey dipper |
+| 29 | شاف | light wood chips/blocks in a wooden bowl |
+| 30 | الصندل | light wood chips/blocks in a wooden bowl |
+| 32 | الصمغ العربي | translucent amber/orange resin lumps in a white ceramic bowl |
+| 33 | مستكة | small pale-yellow resin tears in a wooden bowl |
+| 34 | قنقليز بدرة | chopped baobab/gongolez fruit pieces in a white bowl, surrounded by whole baobab pods |
+| 35 | شاي الغزالتين رطل | branded "Algazaltain Tea" box (red/green, two gazelles) |
+| 39 | كركديه كيلو | loose dried dark-red hibiscus petals |
+| 41 | أوفالتين | branded Ovaltine jar, red lid, "Malt Drink Chocolate Flavour", 400g |
+| 68 | بودرة تبلدي | cream baobab powder in a bowl beside a whole baobab pod |
+| 84 | دهن الصندل | amber glass dropper bottle |
+| 90 | دلكة سودانية معطرة | dark brown paste in a terracotta bowl |
+| 91 | خمرة بخور سودانية | dark brown/black blend in a small gold/brass dish |
+| 92 | سمن بلدي سوداني | golden liquid ghee in a glass jar |
+| 93 | طحنية | mixed brown/tan granular chunks in a wooden bowl |
+
+Worth a note, not an action: #29 شاف and #30 الصندل show what looks
+like the same wood-chip stock photo — both are legitimately wood
+products, so it's plausible rather than wrong, but flagging it since
+it wasn't independently verified as two different sourced photos.
+
+**46 of 62 products still have no image** — everything above is
+what's actually there now, nothing assumed.
+
+**Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
+no difference ✅ (data-only, no schema change).
