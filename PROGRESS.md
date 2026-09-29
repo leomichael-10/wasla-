@@ -3741,3 +3741,65 @@ did; +5 from this pass).
 
 **Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
 no difference ✅ (data-only, no schema change).
+
+## Corrected-photo follow-up: 4 new products, 4 image replacements, 4 more attached
+
+The user followed up with 13 more images and no accompanying text —
+this pass was about figuring out what they meant and confirming before
+writing, in four separate rounds, rather than guessing from image
+content alone:
+
+1. Read all 13 and proposed a per-image mapping. Two products the
+   previous pass couldn't place an image for — `دلكة سودانية معطرة`,
+   `خمرة بخور سودانية`, plus `سمن بلدي سوداني` and `طحنية` — still didn't
+   exist on seller #8 at all (confirmed again: those names belong to
+   the *original demo shops*, ids 14–17, sellers #2/#3 — same
+   never-given-a-real-Arabic-name issue as the very first i18n pass:
+   their `name` column holds English text, `nameEn` is null). Asked
+   whether to create them — confirmed yes.
+2. Needed prices for the 4 new products, which isn't something to
+   invent. Found the equivalent products still exist under their
+   English `name` (ids 14/15/16/17, different sellers) and used their
+   prices as a grounded reference (140/220/260/100 EGP) rather than a
+   guess — proposed it, got confirmation before creating anything.
+3. Two of the new images (a real oil-dropper bottle, real wood chips)
+   were obviously *corrected* versions of the two wrong photos attached
+   last pass (`الصندل`, `دهن الصندل`) — confirmed before overwriting them.
+4. Spotted the same situation for two *more* already-attached products
+   — `جبنة` and `طلح` currently held last pass's wrong photos
+   (baobab-powder content on the cheese listing, a pressed-bar photo on
+   the honey listing) and two of the new 13 were the real thing.
+   Confirmed before replacing those too.
+
+**Created** (Bakhour & Perfumes: دلكة, خمرة; Our Local Products: سمن,
+طحنية), same single-variant/`stockQty: 999` shape as every other
+product in this catalog, Arabic descriptions written fresh (no CSV row
+to draw from this time) in the same short/factual register as the
+rest — e.g. `دلكة سودانية أصلية، معجون معطر تقليدي لتقشير الجسم`.
+
+**Image actions** (upload via the same `uploadImage()` route as
+before): attached fresh to `بودرة تبلدي` (#68), `دلكة سودانية معطرة`
+(#90), `سمن بلدي سوداني` (#92), `طحنية` (#93); **replaced** the wrong
+photo on `طلح` (#28), `جبنة` (#27), `الصندل` (#30), `دهن الصندل` (#84).
+
+**Still unplaced, on purpose** — 5 of the 13 images stayed ambiguous
+even with the other 8 resolved, so none were forced onto a product:
+the contact-sheet grid again; two different bowls of resin beads
+(one could plausibly be `خمرة بخور سودانية`, #91, which still has no
+image — but it's an uncomfortable-enough guess that it was left empty
+rather than assumed); a dark clove/spice mix and a sliced pressed bar
+that don't clearly match anything on the list. Deleted the 3
+project-root PNGs from the previous pass whose target products are now
+created and correctly photographed from this batch instead
+(`dilka.png`, `ghee.png`, `tahniya.png` — now genuinely obsolete, not
+just still-pending). Left `gum-arabic.png`, `mastic.png` (targets
+still already have their original images, untouched), `khumra.png`,
+and `baobab-powder.png` (the contact sheet) in place — still
+unresolved, not this pass's call to make.
+
+**Final: 15 of 62 products for seller #8 now have an image** (11
+before this pass; +4 new products, all imaged, and 4 replacements that
+don't change the count).
+
+**Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
+no difference ✅ (data-only, no schema change).
