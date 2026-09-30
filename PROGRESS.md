@@ -4061,3 +4061,88 @@ an observed run.
 **Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
 no difference ✅ (one additive migration, applied to the dev branch and
 confirmed to match).
+
+## Verifying the Google OAuth resurrection risk, for real this time
+
+The previous entry's "not independently verified" line got called out,
+correctly — reasoning about code isn't the same as running it. This
+pass traced it properly and then proved the answer by executing the
+real production callback, not a mock of it.
+
+**1. What NextAuth actually matches on**: `lib/authOptions.js` has no
+`adapter:` configured, and there's no `Account`/`Session` model
+anywhere in `prisma/schema.prisma` (grepped both to be sure). That
+means there is no persisted OAuth-account-link record at all in this
+setup — NextAuth runs in pure JWT-session mode, and **every** identity
+check is a hand-written `prisma.user.findUnique({ where: { email } })`,
+by email, in exactly two places: `authOptions.js`'s `signIn` callback
+(against `profile.email` — live, straight from Google, on every actual
+sign-in) and `GET /api/auth/token` (against `session.user.email` —
+frozen at whatever it was when that NextAuth session was first
+established, since the `jwt` callback only re-derives it when `account`/
+`profile` are present, which is only true at the initial sign-in
+event). **Answer: matches on email, not a linked account record** —
+there is no linked account record to remove, so task item 2 doesn't
+apply as written; the equivalent risk is entirely about whether a
+stale/frozen email can still resolve to the anonymized row.
+
+**2. Why the placeholder email already closes this**, and why that
+needed a second, explicit layer anyway: `lib/accountDeletion.js`
+overwrites `email` to `deleted-user-{id}@wasla.deleted` in the same
+transaction it sets `deletedAt`, so neither of the two lookups above —
+live `profile.email` from a fresh Google sign-in, or a stale frozen
+`session.user.email` from a pre-deletion NextAuth session hitting
+`/api/auth/token` — can ever resolve back to the anonymized row; the
+row simply isn't at that email anymore. That's a real safety property,
+but it rested entirely on `deleteAccount()` always changing `email`
+and `deletedAt` together, with nothing independently re-checking it.
+Added an explicit `deletedAt` guard in both places anyway (task's own
+"belt and braces, regardless"): `signIn` now rejects outright
+(`return false`, logged with the user id) if a row is ever matched
+*and* has `deletedAt` set, rather than falling through to the
+`!existing` create branch (which would hit `email`'s unique constraint
+if that ever happened anyway); `/api/auth/token` returns 401 the same
+way. Neither is reachable via the current matching logic in normal
+operation — both are independent of it, so a future change to either
+lookup, or a partial write that leaves `deletedAt` set without
+changing `email`, still can't resurrect anything.
+
+**3. Confirmed the login path already rejects `deletedAt`** — both
+halves were already in place from the previous entry:
+`app/api/auth/login/route.js` (password path) and `middleware.js`
+(every authenticated API request, Google or password, once a session
+exists). Nothing new needed there; re-confirmed by reading rather than
+re-added blind.
+
+**4. Simulated the callback for real** — not a mock, the actual
+`authOptions.callbacks.signIn` from `lib/authOptions.js`, run inside a
+genuine Next.js request. It imports `next/headers`' `cookies()`, which
+only resolves inside Next's own runtime (confirmed: importing it from a
+plain Node script fails at module resolution, before even reaching the
+"wrong context" question) — so it can't be unit-tested by importing it
+directly. Routed through a throwaway API route
+(`app/api/tmptestsignin`, deleted immediately after) that calls the
+real callback with a `profile.email` a script controls, letting a plain
+Node script drive it via `fetch` without a real Google OAuth handshake.
+(First attempt named the route `_tmp-test-signin` — Next.js treats any
+`_`-prefixed folder as private and excludes it from routing entirely,
+which 404's silently rather than erroring loudly; renamed and it
+worked.)
+
+Against the real dev DB: created a customer, deleted their account via
+the real API, captured their original real email first. Called the
+real `signIn` callback with that exact email — it returned `true` and
+created a **brand-new** user row (different id, `deletedAt: null`), not
+a resurrection of the deleted one. Separately manufactured the
+defensive "bug" case directly in the DB (a row with `deletedAt` set
+that still carries a real-looking email, simulating what a broken
+future `deleteAccount()` might leave behind) and called the same real
+callback against that email — confirmed the new explicit guard actually
+fires (`signIn` returns `false`), proving the belt-and-braces layer
+isn't just present but functional. `GET /api/auth/token` with no
+session at all returns 401 as a baseline. 10/10 checks passed; every
+fixture (test users, the temporary route) cleaned up afterward —
+confirmed nothing test-related left in the dev DB or the repo.
+
+**Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
+no difference ✅ (code-only this time, no schema change).
