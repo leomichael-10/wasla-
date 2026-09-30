@@ -178,6 +178,7 @@ export default async function RootLayout({ children }) {
                 <Link href="/products"          className="hover:text-accent-400 transition-colors">{t('footer.products', locale)}</Link>
                 <Link href="/terms"             className="hover:text-accent-400 transition-colors">{t('footer.terms', locale)}</Link>
                 <Link href="/privacy"           className="hover:text-accent-400 transition-colors">{t('footer.privacy', locale)}</Link>
+                <Link href="/delete-account"     className="hover:text-accent-400 transition-colors">{t('footer.deleteAccount', locale)}</Link>
                 <Link href="/register?mode=retailer" className="text-gray-400 hover:text-accent-400 transition-colors">{t('footer.sell', locale)}</Link>
               </nav>
               <p className="text-xs text-gray-400">

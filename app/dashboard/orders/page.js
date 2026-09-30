@@ -228,7 +228,9 @@ export default function DashboardOrdersPage() {
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Delivery</p>
 
                     <p className="text-sm font-bold text-gray-900">
-                      {order.customer?.customerProfile?.fullName || 'Customer'}
+                      {order.customer?.deletedAt
+                        ? 'عميل محذوف / Deleted customer'
+                        : order.customer?.customerProfile?.fullName || 'Customer'}
                     </p>
 
                     {order.addressContactPhone && (

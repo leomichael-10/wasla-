@@ -29,6 +29,12 @@ model User {
   // stolen/leaked token stops working the moment the password changes —
   // see app/api/auth/reset-password/route.js.
   passwordChangedAt         DateTime?
+  // Set once by lib/accountDeletion.js when the account owner deletes
+  // their account. The row is never hard-deleted — Order/WalletTransaction
+  // history references it — this just marks it anonymized and permanently
+  // signed out. middleware.js and the login route both reject any request
+  // from a row with this set, even if a still-valid token somehow exists.
+  deletedAt                 DateTime?
   gender                    String?
   createdAt                 DateTime            @default(now())
   customerProfile           CustomerProfile?

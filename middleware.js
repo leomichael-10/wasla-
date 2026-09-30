@@ -105,9 +105,20 @@ export async function middleware(request) {
   // it stopped working.
   const dbUser = await prisma.user.findUnique({
     where:  { id: payload.userId },
-    select: { passwordChangedAt: true },
+    select: { passwordChangedAt: true, deletedAt: true },
   })
   if (dbUser?.passwordChangedAt && payload.iat * 1000 < dbUser.passwordChangedAt.getTime()) {
+    return NextResponse.json(
+      { error: 'Invalid or expired token' },
+      { status: 401 }
+    )
+  }
+
+  // Deleted accounts (see lib/accountDeletion.js) also bump
+  // passwordChangedAt, so this is already covered above for every token
+  // issued before the deletion — this catches the edge case of a token
+  // minted in the same second, and reads the same either way.
+  if (dbUser?.deletedAt) {
     return NextResponse.json(
       { error: 'Invalid or expired token' },
       { status: 401 }

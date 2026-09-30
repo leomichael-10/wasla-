@@ -2,10 +2,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import Navbar from '../../components/Navbar'
 import AddressForm from '../../components/AddressForm'
 import AddressCard from '../../components/AddressCard'
 import ChangePasswordForm from '../../components/ChangePasswordForm'
+import DeleteAccountSection from '../../components/DeleteAccountSection'
 import { useUser } from '../../lib/UserContext'
 import { getLocaleCookie, setLocaleCookie, t } from '../../lib/i18n'
 
@@ -22,6 +24,7 @@ export default function ProfilePage() {
   const [city,           setCity]           = useState('')
   const [email,          setEmail]          = useState('')
   const [emailVerified,  setEmailVerified]  = useState(false)
+  const [hasPassword,    setHasPassword]    = useState(true)
 
   const [addresses,   setAddresses]   = useState([])
   const [zones,       setZones]       = useState([])
@@ -60,6 +63,7 @@ export default function ProfilePage() {
         if (!u) return
         setEmail(u.email ?? '')
         setEmailVerified(Boolean(u.emailVerified))
+        setHasPassword(Boolean(u.hasPassword))
         setPhone(u.phone ?? '')
         setWhatsapp(u.whatsapp ?? '')
         setCity(u.city ?? '')
@@ -127,6 +131,12 @@ export default function ProfilePage() {
   function handleLogout() {
     logout()
     router.push('/login')
+  }
+
+  function handleAccountDeleted() {
+    logout()
+    toast.success(t('deleteAccount.successToast', locale))
+    router.push('/')
   }
 
   function handleToggleLocale() {
@@ -262,7 +272,7 @@ export default function ProfilePage() {
             </section>
 
             {/* Account actions */}
-            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-3">
               <h2 className="font-black text-gray-900 mb-3">{t('account.sectionActions', locale)}</h2>
               <button
                 onClick={handleLogout}
@@ -270,6 +280,12 @@ export default function ProfilePage() {
               >
                 {t('account.logout', locale)}
               </button>
+              <DeleteAccountSection
+                locale={locale}
+                role="customer"
+                hasPassword={hasPassword}
+                onDeleted={handleAccountDeleted}
+              />
             </section>
 
           </div>

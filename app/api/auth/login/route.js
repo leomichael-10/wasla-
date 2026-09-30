@@ -50,6 +50,18 @@ export async function POST(request) {
       )
     }
 
+    // Deleted accounts have passwordHash cleared to null (see
+    // lib/accountDeletion.js) so this would already fail the bcrypt
+    // compare below anyway — checked explicitly first for a clean,
+    // unambiguous rejection rather than falling through to the generic
+    // "Invalid email or password" from a null-hash compare.
+    if (user.deletedAt) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      )
+    }
+
     // Check password
     const passwordMatch = await bcrypt.compare(password, user.passwordHash)
 

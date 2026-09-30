@@ -21,7 +21,7 @@ const ORDER_INCLUDE = {
     },
   },
   seller:   { select: { id: true, businessName: true, city: true, whatsappNumber: true } },
-  customer: { select: { customerProfile: { select: { fullName: true } } } },
+  customer: { select: { deletedAt: true, customerProfile: { select: { fullName: true } } } },
   zone:     { select: { id: true, nameEn: true, nameAr: true } },
 }
 

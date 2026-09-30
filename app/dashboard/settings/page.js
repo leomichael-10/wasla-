@@ -1,8 +1,12 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { getLocaleCookie, t } from '../../../lib/i18n'
 import PhonePreview from '../../../components/PhonePreview'
 import ChangePasswordForm from '../../../components/ChangePasswordForm'
+import DeleteAccountSection from '../../../components/DeleteAccountSection'
+import { useUser } from '../../../lib/UserContext'
 
 function ZoneRow({ entry, onSave }) {
   const { zone, coverage } = entry
@@ -73,6 +77,9 @@ function ZoneRow({ entry, onSave }) {
 }
 
 export default function DashboardSettingsPage() {
+  const router = useRouter()
+  const { logout } = useUser()
+
   const [profile,  setProfile]  = useState(null)
   const [zones,    setZones]    = useState([])
   const [loading,  setLoading]  = useState(true)
@@ -80,6 +87,7 @@ export default function DashboardSettingsPage() {
   const [typeSaving, setTypeSaving] = useState(false)
   const [error,    setError]    = useState('')
   const [locale,   setLocale]   = useState('ar')
+  const [hasPassword, setHasPassword] = useState(true)
 
   useEffect(() => { setLocale(getLocaleCookie()) }, [])
   const [whatsapp,   setWhatsapp]   = useState('')
@@ -102,12 +110,14 @@ export default function DashboardSettingsPage() {
     setLoading(true)
     const token = localStorage.getItem('wasla_token')
     try {
-      const [profRes, zoneRes] = await Promise.all([
+      const [profRes, zoneRes, userRes] = await Promise.all([
         fetch('/api/seller/profile',       { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/seller/zone-coverage', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('/api/profile',              { headers: { Authorization: `Bearer ${token}` } }),
       ])
       const profData = await profRes.json()
       const zoneData = await zoneRes.json()
+      const userData = await userRes.json()
       if (!profRes.ok) throw new Error(profData.error)
       setProfile(profData.profile)
       setWhatsapp(profData.profile?.whatsappNumber ?? '')
@@ -115,12 +125,19 @@ export default function DashboardSettingsPage() {
       setDescriptionAr(profData.profile?.descriptionAr ?? '')
       setDescriptionEn(profData.profile?.descriptionEn ?? '')
       setZones(zoneData.zones ?? [])
+      if (userRes.ok) setHasPassword(Boolean(userData.user?.hasPassword))
     } catch (err) {
       setError(err.message || 'Failed to load settings.')
     } finally {
       setLoading(false)
     }
   }, [])
+
+  function handleAccountDeleted() {
+    logout()
+    toast.success(t('deleteAccount.successToast', locale))
+    router.push('/')
+  }
 
   useEffect(() => { load() }, [load])
 
@@ -510,6 +527,16 @@ export default function DashboardSettingsPage() {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
         <h2 className="font-black text-gray-900 mb-3">{t('changePassword.heading', locale)}</h2>
         <ChangePasswordForm locale={locale} />
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <h2 className="font-black text-gray-900 mb-3">{t('account.sectionActions', locale)}</h2>
+        <DeleteAccountSection
+          locale={locale}
+          role="retailer"
+          hasPassword={hasPassword}
+          onDeleted={handleAccountDeleted}
+        />
       </div>
 
       <div>

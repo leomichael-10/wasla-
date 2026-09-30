@@ -3906,3 +3906,158 @@ photo, untouched).
 
 **Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
 no difference ✅ (data-only, no schema change).
+
+## In-app account deletion (App Store 5.1.1(v) / Play Store requirement)
+
+Confirmed the dev DB endpoint before touching anything. One additive
+migration: `User.deletedAt DateTime?` (`20260930120000_account_deletion`)
+— nothing else in the schema changes; a seller's "shop closed" state
+reuses the existing `SellerProfile.isOpen` flag rather than adding a
+second one.
+
+**Anonymize, never hard-delete.** `Order.customerId` is a required,
+non-nullable FK with no cascade, and `WalletTransaction` cascades from
+`SellerProfile` — hard-deleting either row would either throw an FK
+violation (once any order exists) or silently wipe a shop's commission
+ledger. `lib/accountDeletion.js`'s `deleteAccount()` instead, inside one
+transaction: overwrites `email` with a guaranteed-unique, obviously-fake
+placeholder (`deleted-user-{id}@wasla.deleted` — `email` is `@unique`,
+so this can never collide with a future signup), clears
+`passwordHash`/`phone`/`whatsapp`/`gender`, nulls
+`CustomerProfile.fullName`/`deliveryAddress`, and — the one part that
+needed checking rather than assuming — **saved addresses**: every past
+`Order` already carries its own frozen snapshot of the delivery address
+as plain fields on the `Order` row itself (`deliveryAddress`,
+`addressArea`, `addressBuilding`, …) and never re-reads the live
+`Address` row, so `Order.addressId` gets nulled and the `Address` rows
+themselves are removed outright — no PII left sitting around, no order
+history detail lost. Sets `passwordChangedAt = now()` in the same
+transaction, reusing the exact mechanism `middleware.js` already had for
+password-reset session invalidation, so every existing JWT this user
+holds dies immediately, not just the one that made the request.
+`middleware.js` and the login route both also explicitly reject a
+`deletedAt` row, as a second, independent layer beyond "the token is
+dead" and "the email doesn't match anymore."
+
+**No profile-image field exists for customers** (grepped for one —
+nothing to clear) — noting this rather than silently skipping the
+task's "profile image" line item. `SellerProfile.logoUrl` (shop
+branding, not personal to the owner) is deliberately left alone.
+
+**Sellers can't delete their way out of an obligation.**
+`checkSellerDeletionBlockers()` runs two read-only checks before
+anything is touched: any order in `PLACED`/`SHOP_CONFIRMED`/
+`PREPARING`/`OUT_FOR_DELIVERY` (the same undelivered set
+`app/dashboard/orders/page.js` already treats as "active") blocks with
+the count; a `walletBalance` below zero blocks with the amount owed —
+deliberately *any* negative balance, not `lib/wallet.js`'s more lenient
+`CREDIT_LIMIT` (-100, the threshold for refusing new orders) — a seller
+at -50 still owes commission even though they're not yet blocked from
+selling. Passing both, a seller's own `deleteAccount()` deactivates the
+shop (`isOpen: false`, same mechanism the seller's own "Close Shop"
+toggle already uses — it just disappears from the storefront, nothing
+about it changes), clears `whatsappNumber`/`whatsappVerified` (the
+shop's contact channel, tied to the owner), and anonymizes the owner's
+`User` row exactly like a customer's. Products, orders, and every
+`WalletTransaction` stay exactly as they were, attributed to the
+now-closed shop.
+
+**Re-authentication before deleting anything, matching how the account
+was created**: password accounts confirm with `bcrypt.compare()`, same
+as `POST /api/profile/change-password`. Google-only accounts (no
+`passwordHash`) get a new `POST /api/profile/delete-account/request-code`
+that reuses the existing email-OTP infrastructure
+(`lib/verification/emailOtp.js`, `core.js`'s `issueCode`/`checkCode`)
+under a new `'delete_account'` purpose — same hashed-storage,
+single-use, rate-limited, lockout-after-5-attempts guarantees every
+other code in this app already has. Both paths also require typing a
+confirmation word ("حذف"/"DELETE", either accepted server-side
+regardless of UI locale) — validated again on the server, not just a
+client-side gate on the submit button.
+
+**Seller-blocker checks run before re-authentication is even asked
+for** — a seller who can't delete yet finds out immediately rather than
+typing their password first only to hit a wall.
+
+**UI**: one shared `components/DeleteAccountSection.js` — collapsed to
+a single button by default (no single-tap deletion), expands to the
+irreversible-warning list (Arabic-first: what's kept vs. what's deleted,
+worded differently for `role="retailer"` vs `"customer"`), the
+appropriate re-auth input, and the confirm-word field, disabling submit
+until both are satisfied. Mounted in `app/profile/page.js` (customer)
+and `app/dashboard/settings/page.js` (seller) — `GET /api/profile` grew
+a `hasPassword` boolean (never the hash itself) so this component knows
+which re-auth path to show without a role-specific endpoint; that route
+already worked for both roles, it just didn't expose this yet.
+
+**Orders from a deleted customer show "عميل محذوف / Deleted customer"**,
+not a blank or broken name: `GET /api/orders`'s `customer` select grew
+`deletedAt`, and `app/dashboard/orders/page.js` (a seller's order queue)
+checks it before falling back to the generic "Customer" placeholder a
+merely-nameless (but not deleted) customer already got. Left as one
+combined bilingual string rather than routing through `t()` — this
+whole dashboard page is otherwise English-only (same established
+scope boundary as every other dashboard/admin page), and the task's own
+spec already wrote the label exactly this way.
+
+**Public `/delete-account` page**, for Google's requirement that a web
+link exist separate from the in-app flow: server component reading the
+locale cookie the same way `app/page.js` does, so it's bilingual/RTL
+with no client-side flash. Describes the in-app steps plus a `mailto:`
+contact route (reusing `privacy@wasla.app`, the same address
+`app/privacy/page.js` already gives out) for someone who can't sign in.
+Linked from the footer next to Terms/Privacy for genuine discoverability,
+not just because Google's checklist needs the URL to exist somewhere.
+
+**Confirmation email** (`accountDeletedEmail()` in
+`lib/emailTemplates.js`, same bilingual single-email shell every other
+transactional email here uses) sent to the address the account *used to
+have* — captured before it's overwritten with the placeholder, since
+sending after would go nowhere. A failed send doesn't fail the deletion
+itself; it's logged and swallowed, same reasoning as every other
+best-effort side-effect in this codebase.
+
+**Audit trail**: "timestamp + user id, no personal data" — the
+anonymized `User` row itself already *is* that record (no personal data
+left on it once anonymized), so no separate table; a
+`console.log('[account-deletion] user #… deleted at …')` line is the
+point-in-time log entry alongside it.
+
+**Auth-scoping**: every query in both new routes reads `auth.userId`
+(from the JWT `middleware.js` already verified) — grepped both route
+files to confirm neither ever reads a client-supplied user id from the
+request body. There is no path from either endpoint to deleting
+someone else's account.
+
+**Verified live** against the real dev DB with a throwaway Playwright +
+direct-API test script (created real test users/orders, hit the actual
+running routes over HTTP, deleted every fixture it created afterward —
+confirmed clean): wrong password rejected, wrong confirm-word rejected,
+correct password + confirm succeeds; email became the placeholder,
+`passwordHash`/phone/whatsapp cleared, `deletedAt` set,
+`customerProfile.fullName` cleared, saved addresses gone; login with
+the old email/password now fails; the *old* JWT is rejected on the very
+next request (session invalidation confirmed, not just assumed from
+reading the code); a seller with one `PLACED` order was blocked with
+the right count; a seller at -75.50 EGP was blocked with the right
+amount; a clean seller's deletion succeeded and left `isOpen: false`
+with the `SellerProfile` row intact; a Google-only account's
+request-code → wrong-code-rejected → correct-code-succeeds path all
+worked end to end, including the Arabic confirm word; and
+`GET /api/orders` correctly exposed `customer.deletedAt` for an order
+whose customer had just been deleted. 27/27 checks passed. Also
+screenshotted the actual `/profile` UI in both locales — RTL/LTR both
+correct, the warning list and confirm flow render as designed.
+
+**Not independently verified** (no live Google OAuth flow available in
+this environment): confirmed by reading `authOptions.js`'s `signIn`
+callback rather than exercising it end-to-end — a deleted account's
+placeholder email means `findUnique({where:{email}})` finds nothing on
+a later Google sign-in with the real address, so it takes the
+`!existing` branch and creates a fresh account, exactly the "non-reusable,
+starts clean" behavior wanted, but this is reasoning from the code, not
+an observed run.
+
+**Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
+no difference ✅ (one additive migration, applied to the dev branch and
+confirmed to match).

@@ -70,6 +70,7 @@ export async function GET(request) {
       select: {
         id: true, email: true, role: true, phone: true,
         whatsapp: true, city: true, gender: true, emailVerified: true,
+        passwordHash: true,
         customerProfile: {
           select: { fullName: true, deliveryAddress: true },
         },
@@ -81,7 +82,13 @@ export async function GET(request) {
 
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-    return NextResponse.json({ user })
+    // hasPassword, never the hash itself — lets the client (see
+    // components/DeleteAccountSection.js) know whether to ask for a
+    // password or fall back to an emailed confirmation code for a
+    // Google-only account, same distinction ChangePasswordForm/
+    // change-password already draw from passwordHash server-side.
+    const { passwordHash, ...publicUser } = user
+    return NextResponse.json({ user: { ...publicUser, hasPassword: passwordHash !== null } })
   } catch (error) {
     console.error('GET /api/profile error:', error)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
