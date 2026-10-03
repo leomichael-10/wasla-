@@ -4183,3 +4183,22 @@ no difference ✅ (code-only this time, no schema change).
 - `vercel.json` runs `prisma db push --accept-data-loss` against whichever `DATABASE_URL` Vercel uses on every build. Which database production points at, and whether it is the same as dev, needs confirming before any further deploy.
 
 **Gate**: `npm run build` ✅. `prisma migrate diff` not run (no schema change).
+
+## Home page: Shops section added; section order changed
+
+**New order** (verified in the DOM, both locales): Shops → Restaurants → Shop by Category → Most Popular. The buy-again and origin rails stay below, unchanged.
+
+**Shops section** (`app/page.js`): `getShops()` uses the same filter as `GET /api/shops` (`sellerType: SHOP`, `approvedByAdmin: true`), so the rail and the /shops list can't disagree. Capped at 12, ordered by name, like the Restaurants rail. `ShopTile` copies the restaurant card (logo, name, area/city) and links to `/shops/[id]`. `ShopSection` has a "عرض الكل / View all" link to `/shops` and is hidden when there are zero shops.
+
+**Restaurants**: unchanged, moved below Shops.
+
+**i18n** (`lib/i18n.js`): `home.shops` added in both locales: المتاجر / Shops.
+
+**Fallback check**: لقمة حلوة has no logo and no dish photo. The card renders the standard picture-frame placeholder on the cream background, with name and location readable below. Left as-is, as requested.
+
+**Observed, not changed**:
+- Five of the six approved shops have no logo, so most shop tiles show the placeholder. That is a content gap, not a layout problem.
+- The "View all" link goes to `/shops`, which is hard-coded in English and not localised. In Arabic mode the link lands on an English page. Worth fixing next.
+- The rail doesn't check `isOpen`, matching `/api/shops`. Closed shops still appear, same as the /shops list.
+
+**Gate**: `npx next build` ✅. Playwright checks at 390px in ar and en: section order, six shop tiles, one "View all" link, html `dir` correct per locale.

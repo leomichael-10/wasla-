@@ -25,6 +25,20 @@ async function getCategories() {
   } catch { return [] }
 }
 
+// Same filter as GET /api/shops (the /shops page), so the rail and the full
+// list can't disagree about which shops exist.
+async function getShops() {
+  try {
+    const sellers = await prisma.sellerProfile.findMany({
+      where:   { sellerType: 'SHOP', approvedByAdmin: true },
+      orderBy: { businessName: 'asc' },
+      take:    12,
+      select:  { id: true, businessName: true, logoUrl: true, city: true, area: true },
+    })
+    return JSON.parse(JSON.stringify(sellers))
+  } catch { return [] }
+}
+
 async function getRestaurants() {
   try {
     const sellers = await prisma.sellerProfile.findMany({
@@ -156,6 +170,50 @@ function RestaurantSection({ restaurants, locale }) {
   )
 }
 
+// Same card treatment as RestaurantTile: logo, name, area.
+function ShopTile({ shop, locale }) {
+  const location = [shop.area, shop.city].filter(Boolean).map(p => placeName(p, locale))
+  return (
+    <Link
+      href={`/shops/${shop.id}`}
+      className="group w-40 shrink-0 bg-white rounded-2xl border border-brand-100 shadow-sm hover:shadow-md hover:border-accent-300 transition-all duration-200 overflow-hidden flex flex-col"
+    >
+      <MediaThumb
+        src={shop.logoUrl}
+        alt={shop.businessName}
+        className="aspect-square"
+        imgClassName="group-hover:scale-105 transition-transform duration-500"
+      />
+      <div className="p-2.5">
+        <p dir="auto" className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{shop.businessName}</p>
+        {location.length > 0 && (
+          <p dir="auto" className="text-[11px] text-gray-400 truncate mt-0.5">{location.join(locale === 'ar' ? '، ' : ', ')}</p>
+        )}
+      </div>
+    </Link>
+  )
+}
+
+// Hidden when there are no approved shops, like the Restaurants rail.
+function ShopSection({ shops, locale }) {
+  if (shops.length === 0) return null
+  return (
+    <section className="max-w-7xl mx-auto px-4 pt-6 pb-2">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-lg font-black text-gray-900">{t('home.shops', locale)}</h2>
+        <Link href="/shops" className="text-brand-600 font-semibold text-xs hover:text-brand-800 transition-colors">
+          {t('home.viewAll', locale)}
+        </Link>
+      </div>
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+        {shops.map(shop => (
+          <ShopTile key={shop.id} shop={shop} locale={locale} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function ProductRail({ title, products, viewAllHref, locale }) {
   if (products.length === 0) return null
   return (
@@ -189,7 +247,8 @@ export default async function HomePage() {
     if (raw) zoneId = JSON.parse(decodeURIComponent(raw))?.id ?? null
   } catch { /* ignore malformed cookie */ }
 
-  const [categories, restaurants, popular, originRails] = await Promise.all([
+  const [shops, categories, restaurants, popular, originRails] = await Promise.all([
+    getShops(),
     getCategories(),
     getRestaurants(),
     getPopularProducts(zoneId),
@@ -200,6 +259,9 @@ export default async function HomePage() {
     <div className="bg-[#FBF6EF] pb-20">
       <Navbar />
       <ZoneBar />
+
+      {/* Order: Shops → Restaurants → Categories → Most Popular */}
+      <ShopSection shops={shops} locale={locale} />
 
       {/* Restaurants — separate from product categories; hidden until one exists */}
       <RestaurantSection restaurants={restaurants} locale={locale} />
