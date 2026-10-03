@@ -1,25 +1,46 @@
-// Runs automatically before `npm run dev` (see package.json "predev").
-// Prints which DB endpoint the local app is about to talk to, and
-// hard-refuses to start if it's the known production database — the
-// 2026-08-02 incident (an agent passed the production DATABASE_URL as a
-// --shadow-database-url, which Prisma treats as disposable, wiping every
-// table) happened because nothing caught "local dev is pointed at prod"
-// before a destructive command ran. See CLAUDE.md for the full rule.
-import 'dotenv/config'
+// Runs before `npm run dev` (package.json "predev") and judges the database
+// the app will actually use. It refuses to start if that is production.
+//
+// Production is the Neon endpoint ep-wild-cloud-ax3xihv9 (see CLAUDE.md). The
+// match is on the endpoint id, so the pooled and direct hostnames are both
+// caught. Local dev must use the Neon DEV branch.
+//
+// Deliberately NOT run before `npm run build`: Vercel builds with production's
+// DATABASE_URL in its environment, so a guard there would block every deploy.
+// The build never touches the database anyway.
+import { config } from 'dotenv'
 
-const PRODUCTION_DB_HOST = 'ep-silent-frost-axbvo9ct-pooler.c-4.us-east-2.aws.neon.tech'
+// Next.js precedence: real environment > .env.local > .env. dotenv never
+// overrides a variable that is already set, so loading in this order gives
+// the same answer the app will see.
+config({ path: '.env.local', quiet: true })
+config({ path: '.env', quiet: true })
+
+const PRODUCTION_ENDPOINT_ID = 'ep-wild-cloud-ax3xihv9'
+
+function refuse(reason) {
+  console.error(
+    '\n[check-env] REFUSING TO START.\n' +
+    reason + '\n' +
+    'Local dev must run against the Neon DEV branch, never production.\n' +
+    'Fix DATABASE_URL in .env.local, then re-run `npm run dev`.\n'
+  )
+  process.exit(1)
+}
 
 const url = process.env.DATABASE_URL ?? ''
-const host = url.match(/@([^/]+)\//)?.[1] ?? '(unparseable DATABASE_URL)'
+if (!url) refuse('DATABASE_URL is not set.')
+
+let host
+try {
+  host = new URL(url).hostname.toLowerCase()
+} catch {
+  refuse('DATABASE_URL could not be parsed as a URL.')
+}
+if (!host) refuse('DATABASE_URL has no host.')
 
 console.log(`[check-env] DATABASE_URL host: ${host}`)
 
-if (host === PRODUCTION_DB_HOST) {
-  console.error(
-    '\n[check-env] REFUSING TO START.\n' +
-    `DATABASE_URL points at the production database (${PRODUCTION_DB_HOST}).\n` +
-    'Local dev must run against a Neon DEV branch, never production.\n' +
-    'Fix your .env / .env.local, then re-run `npm run dev`.\n'
-  )
-  process.exit(1)
+if (host.startsWith(PRODUCTION_ENDPOINT_ID)) {
+  refuse(`DATABASE_URL points at the PRODUCTION database (${host}).`)
 }

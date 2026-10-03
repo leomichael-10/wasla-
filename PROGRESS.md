@@ -4283,3 +4283,29 @@ Also fixed in the same route: `productCount` counted every active product row, s
 **Not verified against real data**: the order-history path. No product in the Bakhour category has an order today, so that branch was exercised with mocked previews and the stub only. Three products across the database do have order items.
 
 **Gate**: `npx next build` ✅. No schema change, so no migrate diff.
+
+## Correction: local dev was pointed at production; guard hardened; dev split started
+
+**What was wrong.** `scripts/check-env.mjs` guarded against `ep-silent-frost-axbvo9ct`, and CLAUDE.md and `MIGRATION_REPORT.md` described that endpoint as the dev database. Production is `ep-wild-cloud-ax3xihv9`, per the owner. Both `.env` and `.env.local` point at `ep-wild-cloud-ax3xihv9`, so `npm run dev` ran against production, and the guard would have let it. The stale `.env.vercel.local` pull named `ep-silent-frost` as production, which is how the mistake stayed hidden.
+
+**Consequence.** Work done from this local environment wrote to production. Per the owner's statement, that includes: the seller #8 CSV import; the duplicate cleanup; the product photo attachments; account-deletion and OAuth verification, which created and then deleted test users; and the `deletedAt` migration, applied with `migrate deploy`. Test users from those checks may still exist as deleted rows. The category delete work and the catalogue/shops/home changes ran only read-only queries or mocked requests. Verify the production data after the split.
+
+**Changes in this commit**
+- `scripts/check-env.mjs`: judges the database the app will use, not just prints it. Loads `.env.local` then `.env` (Next.js precedence). Refuses (exit 1) on the production endpoint id `ep-wild-cloud-ax3xihv9`, matched on the endpoint id so pooled and direct hosts are both caught. Refuses if `DATABASE_URL` is unset or unparseable. Still `predev` only: Vercel builds with production's `DATABASE_URL`, so a guard on `build` would block every deploy.
+- `CLAUDE.md`: production and dev hosts section. Production is `ep-wild-cloud-ax3xihv9-pooler`. Dev host is `TBD`, to be recorded once confirmed. `.env.vercel.local` rule replaced.
+- `MIGRATION_REPORT.md`: correction note on the `ep-silent-frost` line.
+- Deleted `.env.vercel.local` (gitignored; not in the repo).
+
+**Verified**
+- `npm run dev` with the current env files: exit 1, "REFUSING TO START", nothing listening on :3000.
+- Guard cases with dummy credentials: production pooled, production direct, production uppercase → refused. Unset, unparseable → refused. A non-production host → passes.
+- `npx next build` ✅.
+
+**Not done**
+- **Step 1 (dev connection string):** the string was not in the message. Nothing was written to `.env`/`.env.local`, so both still point at production. Local dev cannot start until the dev string is in `.env.local`.
+- **Step 6 (`npm run dev` on the dev branch):** depends on step 1.
+- **Step 4, dev host:** `CLAUDE.md` says `TBD`.
+- **Not covered by the guard:** `npm run seed`, ad-hoc scripts, and Prisma CLI commands. They still connect to whatever `DATABASE_URL` says. Do not run them until the dev string is in place.
+- **Deny-list, not allow-list:** the guard refuses only the named production endpoint. Once the dev host is known, it should require that exact host.
+
+**Gate**: `npx next build` ✅. No schema change.

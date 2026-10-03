@@ -44,3 +44,4 @@ Final report for the Phase 0–8 migration. See `MIGRATION_AUDIT.md` for the ori
 4. **Delivery zone polygons** — if you want real geofencing instead of the current flat district-name list, you'll need actual zone boundary data (GeoJSON or similar) and a point-in-polygon check at checkout.
 5. **A decision on the `SellerProfile`→`Shop` rename** — worth doing as a dedicated, reviewed pass rather than folding into more unattended phases, given the blast radius.
 6. **Neon branch cleanup** — this migration ran against a disposable dev database (`ep-silent-frost-axbvo9ct-pooler`); confirm this is the intended long-term database, or point `DATABASE_URL` at production infrastructure when ready.
+   > **Correction:** production is `ep-wild-cloud-ax3xihv9`, not `ep-silent-frost-axbvo9ct`. This report's description of `ep-silent-frost` as the dev database is not reliable, and it is not what local dev uses. See PROGRESS.md.
