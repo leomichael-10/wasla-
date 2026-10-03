@@ -1,17 +1,26 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../lib/prisma'
+import { CATALOGUE_WHERE } from '../../../lib/catalogue'
 
-// GET /api/shops — public list of all approved seller profiles
+// GET /api/shops — public list of approved, open shops. Closed shops are left
+// out: the catalogue already hides their products everywhere, so a listed
+// closed shop would send customers to an empty page.
 export async function GET() {
   try {
     const sellers = await prisma.sellerProfile.findMany({
-      where:   { approvedByAdmin: true, sellerType: 'SHOP' },
+      where:   { approvedByAdmin: true, sellerType: 'SHOP', isOpen: true },
       orderBy: { businessName: 'asc' },
-      include: {
-        reviews:  { select: { rating: true } },
-        products: { where: { isActive: true }, select: { id: true } },
-      },
+      include: { reviews: { select: { rating: true } } },
     })
+
+    // productCount is the catalogue count — the same products /products and
+    // /shops/[id] show — not every active row, so the number matches the page.
+    const visible = await prisma.product.findMany({
+      where:  { ...CATALOGUE_WHERE, sellerId: { in: sellers.map(s => s.id) } },
+      select: { sellerId: true },
+    })
+    const productCounts = {}
+    for (const p of visible) productCounts[p.sellerId] = (productCounts[p.sellerId] ?? 0) + 1
 
     const shops = sellers.map(s => {
       const avg = s.reviews.length
@@ -28,7 +37,7 @@ export async function GET() {
         deliveryAvailable: s.deliveryAvailable,
         warrantyAvailable: s.warrantyAvailable,
         approvedByAdmin:   s.approvedByAdmin,
-        productCount:      s.products.length,
+        productCount:      productCounts[s.id] ?? 0,
         reviewCount:       s.reviews.length,
         averageRating:     Math.round(avg * 10) / 10,
       }

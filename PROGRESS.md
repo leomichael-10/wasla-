@@ -4202,3 +4202,50 @@ no difference ✅ (code-only this time, no schema change).
 - The rail doesn't check `isOpen`, matching `/api/shops`. Closed shops still appear, same as the /shops list.
 
 **Gate**: `npx next build` ✅. Playwright checks at 390px in ar and en: section order, six shop tiles, one "View all" link, html `dir` correct per locale.
+
+## Seller audit before the Shops rail goes live; /shops through i18n; closed shops
+
+**Database**: endpoint printed first (`ep-wild-cloud-ax3xihv9-pooler`, dev). The audit was read-only. Nothing was deleted, closed or edited in the data.
+
+### Seller audit
+
+| id | Name | Type | Approved | Open | Subscription | Products (total / active / catalogue) | Orders (all / non-cancelled) | Logo | User email domain | Account created | Flag |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | Kassala Coffee House | SHOP | Y | Y | PENDING | 7 / 0 / 0 | 1 / 1 | N | wasla.com | 2026-08-02 | **Seed demo** (`scripts/seed.js`) |
+| 2 | Masr El Gedida Sudanese Market | SHOP | Y | Y | PENDING | 8 / 2 / 2 | 0 / 0 | N | wasla.com | 2026-08-02 | **Seed demo** |
+| 3 | Bayt Al Sudan Heritage Store | SHOP | Y | Y | PENDING | 3 / 3 / 3 | 0 / 0 | N | wasla.com | 2026-08-02 | **Seed demo** |
+| 4 | لقمة حلوة | RESTAURANT | Y | Y | ACTIVE | 8 / 8 / 0 | 0 / 0 | N | gmail.com | 2026-08-03 | Real-looking (restaurant, not in Shops rail) |
+| 5 | Karso | SHOP | N | Y | SUSPENDED | 0 / 0 / 0 | 0 / 0 | N | gmail.com | 2026-08-07 | Not approved; hidden everywhere |
+| 7 | ام عبدالله | SHOP | Y | Y | ACTIVE | 0 / 0 / 0 | 0 / 0 | N | gmail.com | 2026-08-10 | Unclear: no products yet |
+| 8 | wasla store | SHOP | Y | Y | ACTIVE | 62 / 62 / 57 | 1 / 1 | Y | uol.eue.edu.eg | 2026-08-12 | Yours (CSV import, dev retailer) |
+| 11 | DR.FRAGRANCES | SHOP | Y | Y | ACTIVE | 0 / 0 / 0 | 0 / 0 | N | gmail.com | 2026-08-12 | Unclear: no products yet |
+
+Seller ids 6, 9 and 10 are absent from the table entirely.
+
+**Read-across:**
+- Of six approved open shops, three have zero catalogue products (ids 1, 7, 11). The rail shows them, and their pages show "no products".
+- Seed demo shops 1–3 have all 62 products' worth of catalogue visibility in the rail: 2 and 3 have live products on `/products`. Shop 1 has one order, so it can only be closed or deactivated, not deleted.
+- Every approved shop is open, so the closed-shop filter changes nothing in the data today.
+
+**Decision needed** (nothing done): whether to close (`isOpen = false`) or delete seed shops 1–3, and whether shops with zero products should be left out of the rail. Closing a shop now hides it from the rail and `/shops`, and hides its products from `/products`, without deleting anything or touching orders.
+
+### Closed shops: filtered out, not marked
+
+`/shops` previously listed closed shops with no marker, so neither option matched it. Chose to filter them out, matching the catalogue, which already hides closed shops' products everywhere. Changed in `GET /api/shops` (`isOpen: true`), so the rail and `/shops` agree. The closed branch is not exercised by current data (see above).
+
+Also fixed in the same route: `productCount` counted every active product row, so shop 8 showed a different number on `/shops` than its own page. It now uses the catalogue count.
+
+### /shops through i18n
+
+- All visible text routed through `t()`: heading, breadcrumb, search, city filter, counts, empty state, error, card badges and buttons.
+- Counts use `countShops()` with Arabic plural forms (متجر واحد / متجران / N متاجر / N متجراً).
+- City names translated (added Alexandria and 6th of October to the Arabic map).
+- Uses `useLocale()` from `LocaleContext`, the same pattern as the navbar, so there's no Arabic-then-English flash.
+- **Bug fixed**: the city filter defaulted to `'All Emirates'` and its "All Cities" button set `'All Cities'`, which matched no sellers, so clicking it showed zero shops. It now uses an `ALL` sentinel.
+
+### Known gaps, not changed
+
+- **The shared navbar is still hard-coded English.** Desktop labels (Home, Products, My Orders, Sign in, Register, Logout) and the hamburger menu are English in Arabic mode, on every page. The mobile tab bar is already Arabic. Only the desktop header and the hamburger menu were checked; the hamburger wasn't inspected in detail. This should be the next fix.
+- `/shops/[id]` (the shop page a card links to) is also still English.
+
+**Gate**: `npx next build` ✅. Playwright at 390px: Arabic and English both show the right heading and count, and the city filter works (Cairo → 3, All cities → 6). Empty state renders in Arabic. No page errors in either locale.
