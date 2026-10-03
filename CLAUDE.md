@@ -29,6 +29,7 @@ real production database wiped every table (`User`, `SellerProfile`,
   `prisma migrate dev` in this environment — `migrate dev`'s interactive
   confirmation prompts don't work here (non-interactive shell), which is
   what pushed the agent toward `migrate diff` in the first place.
+- Never put a destructive Prisma command in a build command (e.g. `db push --accept-data-loss`, `migrate reset`); schema changes go through `prisma migrate deploy` by hand.
 
 ## Environment files
 
