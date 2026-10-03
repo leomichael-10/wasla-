@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
+import { CATALOGUE_WHERE, CATALOGUE_INCLUDE, toCatalogueProducts } from '../../../../lib/catalogue'
 
+// GET /api/shops/[id] — one shop's page. Its product list is the same
+// catalogue /api/products serves (lib/catalogue.js), scoped to this shop,
+// so a shop page and /products can never disagree about what's for sale.
 export async function GET(request, { params }) {
   const { id: rawId } = await params
   const id = parseInt(rawId, 10)
@@ -20,10 +24,6 @@ export async function GET(request, { params }) {
             },
           },
         },
-        orders: {
-          where:  { status: 'DELIVERED' },
-          select: { id: true },
-        },
       },
     })
 
@@ -33,64 +33,43 @@ export async function GET(request, { params }) {
       ? seller.reviews.reduce((s, r) => s + r.rating, 0) / seller.reviews.length
       : 0
 
-    const base = {
-      id:                  seller.id,
-      businessName:        seller.businessName,
-      logoUrl:             seller.logoUrl,
-      city:                seller.city,
-      area:                seller.area,
-      deliveryAvailable:   seller.deliveryAvailable,
-      warrantyAvailable:   seller.warrantyAvailable,
-      warrantyDuration:    seller.warrantyDuration,
-      workingDays:         seller.workingDays,
-      workingHours:        seller.workingHours,
-      maintenanceAvailable:seller.maintenanceAvailable,
-      approvedByAdmin:     seller.approvedByAdmin,
-      subscriptionStatus:  seller.subscriptionStatus,
-      isOpen:              seller.isOpen,
-      averageRating:       Math.round(avg * 10) / 10,
-      reviewCount:         seller.reviews.length,
-      completedOrders:     seller.orders.length,
-      reviews:             seller.reviews,
-      trackingPixel:       seller.trackingPixel,
-    }
-
-    if (seller.subscriptionStatus !== 'ACTIVE') {
-      return NextResponse.json({ shop: { ...base, comingSoon: true, products: [], productCount: 0 } })
-    }
-
-    const retailerProducts = await prisma.retailerProduct.findMany({
-      where:   { retailerId: seller.id, status: 'APPROVED' },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        masterProduct: {
-          include: { category: { select: { id: true, name: true } } },
-        },
-      },
+    // Every order placed at this shop that wasn't cancelled — i.e. one the
+    // shop has actually received. (Counting DELIVERED alone read as "0
+    // orders" for a shop with a live order in flight.)
+    const orderCount = await prisma.order.count({
+      where: { sellerId: seller.id, status: { not: 'CANCELLED' } },
     })
 
-    const products = retailerProducts.map(rp => ({
-      id:          rp.id,
-      name:        rp.masterProduct.name,
-      description: rp.masterProduct.description,
-      images:      rp.masterProduct.images,
-      category:    rp.masterProduct.category,
-      seller:      { id: seller.id, businessName: seller.businessName, city: seller.city, isOpen: seller.isOpen },
-      variants: [{
-        id:       rp.id,
-        price: rp.price,
-        label:    null,
-        inStock:  rp.stockQty > 0,
-      }],
-      _isRetailerProduct: true,
-    }))
+    const rows = await prisma.product.findMany({
+      where:   { ...CATALOGUE_WHERE, sellerId: seller.id },
+      include: CATALOGUE_INCLUDE,
+      orderBy: { createdAt: 'desc' },
+    })
+    const products = toCatalogueProducts(rows)
 
     return NextResponse.json({
       shop: JSON.parse(JSON.stringify({
-        ...base,
-        comingSoon:   false,
+        id:                   seller.id,
+        businessName:         seller.businessName,
+        logoUrl:              seller.logoUrl,
+        city:                 seller.city,
+        area:                 seller.area,
+        deliveryAvailable:    seller.deliveryAvailable,
+        warrantyAvailable:    seller.warrantyAvailable,
+        warrantyDuration:     seller.warrantyDuration,
+        workingDays:          seller.workingDays,
+        workingHours:         seller.workingHours,
+        maintenanceAvailable: seller.maintenanceAvailable,
+        approvedByAdmin:      seller.approvedByAdmin,
+        subscriptionStatus:   seller.subscriptionStatus,
+        isOpen:               seller.isOpen,
+        averageRating:        Math.round(avg * 10) / 10,
+        reviewCount:          seller.reviews.length,
+        orderCount,
+        reviews:              seller.reviews,
+        trackingPixel:        seller.trackingPixel,
         products,
-        productCount: products.length,
+        productCount:         products.length,
       })),
     })
   } catch (error) {

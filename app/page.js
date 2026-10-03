@@ -8,6 +8,7 @@ import BuyAgainRail from '../components/BuyAgainRail'
 import CategoryIcon from '../components/CategoryIcon'
 import MediaThumb from '../components/MediaThumb'
 import { DEFAULT_LOCALE, LOCALE_COOKIE, t, categoryName, placeName } from '../lib/i18n'
+import { CATALOGUE_WHERE, CATALOGUE_INCLUDE, toCatalogueProducts } from '../lib/catalogue'
 
 async function getCategories() {
   try {
@@ -16,9 +17,9 @@ async function getCategories() {
       // auto-filed under) never appear in "Shop by Category".
       where:   { isInternal: false },
       orderBy: { name: 'asc' },
-      // Restaurant dishes never count toward category totals — they live
-      // only in the Restaurants section, not "Shop by Category".
-      include: { _count: { select: { products: { where: { isActive: true, seller: { sellerType: 'SHOP' } } } } } },
+      // Counts use the same catalogue definition as /products, so a tile's
+      // number always matches what the category page actually lists.
+      include: { _count: { select: { products: { where: CATALOGUE_WHERE } } } },
     })
     return JSON.parse(JSON.stringify(cats))
   } catch { return [] }
@@ -62,33 +63,25 @@ async function annotateWithZone(rawProducts, zoneId) {
   }))
 }
 
-// sellerType: 'SHOP' keeps restaurant dishes out of these general product
-// rails — restaurants surface only in the Restaurants section + their pages.
-const PRODUCT_SELECT = {
-  variants: {
-    select: { id: true, label: true, price: true, stockQty: true },
-    orderBy: { label: 'asc' },
-  },
-  seller:   { select: { id: true, businessName: true, city: true, isOpen: true } },
-  category: { select: { id: true, name: true } },
-}
-
+// Rails read the shared catalogue definition (lib/catalogue.js) — the same
+// one /products and /shops/[id] use — so a product shown on the home page is
+// always one the browse page will also show.
 async function getPopularProducts(zoneId) {
   try {
     const raw = await prisma.product.findMany({
-      where:   { isActive: true, seller: { isOpen: true, sellerType: 'SHOP' } },
+      where:   CATALOGUE_WHERE,
       orderBy: { createdAt: 'desc' },
       take:    10,
-      include: PRODUCT_SELECT,
+      include: CATALOGUE_INCLUDE,
     })
-    return JSON.parse(JSON.stringify(await annotateWithZone(raw, zoneId)))
+    return JSON.parse(JSON.stringify(await annotateWithZone(toCatalogueProducts(raw), zoneId)))
   } catch { return [] }
 }
 
 async function getOriginRails(zoneId) {
   try {
     const regions = await prisma.product.findMany({
-      where:    { isActive: true, seller: { isOpen: true, sellerType: 'SHOP' }, originRegion: { not: null } },
+      where:    { ...CATALOGUE_WHERE, originRegion: { not: null } },
       distinct: ['originRegion'],
       select:   { originRegion: true },
       take:     4,
@@ -97,11 +90,11 @@ async function getOriginRails(zoneId) {
     const rails = []
     for (const { originRegion } of regions) {
       const raw = await prisma.product.findMany({
-        where:   { isActive: true, seller: { isOpen: true, sellerType: 'SHOP' }, originRegion },
+        where:   { ...CATALOGUE_WHERE, originRegion },
         take:    10,
-        include: PRODUCT_SELECT,
+        include: CATALOGUE_INCLUDE,
       })
-      rails.push({ originRegion, products: await annotateWithZone(raw, zoneId) })
+      rails.push({ originRegion, products: await annotateWithZone(toCatalogueProducts(raw), zoneId) })
     }
     return JSON.parse(JSON.stringify(rails))
   } catch { return [] }

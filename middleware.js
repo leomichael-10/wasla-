@@ -26,7 +26,12 @@ const PUBLIC_PREFIXES = [
   '/api/waitlist',
 ]
 
-// Route prefixes where GET requests are public (token optional, verified if present)
+// Route prefixes where GET requests are public. A token is verified if
+// present, but a missing, stale, banned or unverifiable token never blocks
+// the read — the request simply proceeds as anonymous. The catalogue is the
+// same for everyone, so an auth problem must not blank it (it used to: a
+// returning browser with an expired token got 401 on /api/products and the
+// page rendered empty).
 const OPTIONAL_AUTH_PREFIXES = [
   '/api/products',
   '/api/reviews',
@@ -47,6 +52,54 @@ const ROLE_RESTRICTED = {
 
 function getSecret() {
   return new TextEncoder().encode(process.env.JWT_SECRET)
+}
+
+// Anonymous pass-through. Drops any x-user-* header the client sent itself,
+// so nothing downstream can mistake a spoofed header for a verified identity.
+function passAnonymous(request) {
+  const headers = new Headers(request.headers)
+  headers.delete('x-user-id')
+  headers.delete('x-user-email')
+  headers.delete('x-user-role')
+  return NextResponse.next({ request: { headers } })
+}
+
+// Resolves a token to { payload } when it's usable, or { status, error } when
+// it must be refused. Throws only if the DB lookup itself fails.
+async function checkToken(token) {
+  let payload
+  try {
+    ({ payload } = await jwtVerify(token, getSecret()))
+  } catch {
+    return { status: 401, error: 'Invalid or expired token' }
+  }
+
+  // Reject tokens issued before the account's last password reset — same
+  // "Invalid or expired token" response as a bad signature, so a stolen
+  // token doesn't get a distinguishable error telling an attacker *why*
+  // it stopped working.
+  const dbUser = await prisma.user.findUnique({
+    where:  { id: payload.userId },
+    select: { passwordChangedAt: true, deletedAt: true },
+  })
+  if (dbUser?.passwordChangedAt && payload.iat * 1000 < dbUser.passwordChangedAt.getTime()) {
+    return { status: 401, error: 'Invalid or expired token' }
+  }
+
+  // Deleted accounts (see lib/accountDeletion.js) also bump
+  // passwordChangedAt, so this is already covered above for every token
+  // issued before the deletion — this catches the edge case of a token
+  // minted in the same second, and reads the same either way.
+  if (dbUser?.deletedAt) {
+    return { status: 401, error: 'Invalid or expired token' }
+  }
+
+  // Check if account is banned
+  if (payload.isBanned) {
+    return { status: 403, error: 'Your account has been suspended. Please contact support.' }
+  }
+
+  return { payload }
 }
 
 export const runtime = 'nodejs'
@@ -80,7 +133,7 @@ export async function middleware(request) {
 
   if (!token) {
     if (isOptionalAuth) {
-      return NextResponse.next()
+      return passAnonymous(request)
     }
     return NextResponse.json(
       { error: 'Authentication required' },
@@ -88,50 +141,22 @@ export async function middleware(request) {
     )
   }
 
-  let payload
+  let result
   try {
-    const { payload: verified } = await jwtVerify(token, getSecret())
-    payload = verified
-  } catch {
-    return NextResponse.json(
-      { error: 'Invalid or expired token' },
-      { status: 401 }
-    )
+    result = await checkToken(token)
+  } catch (error) {
+    if (isOptionalAuth) return passAnonymous(request)
+    throw error
   }
 
-  // Reject tokens issued before the account's last password reset — same
-  // "Invalid or expired token" response as a bad signature, so a stolen
-  // token doesn't get a distinguishable error telling an attacker *why*
-  // it stopped working.
-  const dbUser = await prisma.user.findUnique({
-    where:  { id: payload.userId },
-    select: { passwordChangedAt: true, deletedAt: true },
-  })
-  if (dbUser?.passwordChangedAt && payload.iat * 1000 < dbUser.passwordChangedAt.getTime()) {
+  if (result.error) {
+    if (isOptionalAuth) return passAnonymous(request)
     return NextResponse.json(
-      { error: 'Invalid or expired token' },
-      { status: 401 }
+      { error: result.error },
+      { status: result.status }
     )
   }
-
-  // Deleted accounts (see lib/accountDeletion.js) also bump
-  // passwordChangedAt, so this is already covered above for every token
-  // issued before the deletion — this catches the edge case of a token
-  // minted in the same second, and reads the same either way.
-  if (dbUser?.deletedAt) {
-    return NextResponse.json(
-      { error: 'Invalid or expired token' },
-      { status: 401 }
-    )
-  }
-
-  // Check if account is banned
-  if (payload.isBanned) {
-    return NextResponse.json(
-      { error: 'Your account has been suspended. Please contact support.' },
-      { status: 403 }
-    )
-  }
+  const { payload } = result
 
   // Check role-based access
   for (const [prefix, allowedRoles] of Object.entries(ROLE_RESTRICTED)) {

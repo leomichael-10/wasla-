@@ -3,22 +3,10 @@ import { prisma } from '../../../lib/prisma'
 import { getUser } from '../../../lib/auth'
 import { sanitizeString } from '../../../lib/sanitize'
 import { getInternalFoodCategoryId } from '../../../lib/internalCategory'
+import { CATALOGUE_WHERE, CATALOGUE_INCLUDE, toCatalogueProducts } from '../../../lib/catalogue'
 
-const PRODUCT_SELECT = {
-  variants: {
-    select: { id: true, label: true, price: true, stockQty: true, image: true },
-    orderBy: { price: 'asc' },
-  },
-  seller:   { select: { id: true, businessName: true, city: true, area: true, isOpen: true, deliveryAvailable: true } },
-  category: { select: { id: true, name: true, icon: true } },
-}
-
-// GET /api/products — public listing.
-// Reads Product + ProductVariant directly — the same model
-// GET/PATCH/DELETE /api/products/[id] and the homepage rails already use.
-// (Previously read from a separate MasterProduct/RetailerProduct catalog
-// that sellers could never actually populate via a working create flow;
-// see PROGRESS.md.)
+// GET /api/products — public listing (browse + search). Reads the same
+// catalogue definition as /api/shops/[id] and the homepage (lib/catalogue.js).
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const category = searchParams.get('category')
@@ -28,12 +16,10 @@ export async function GET(request) {
   const sort     = searchParams.get('sort') ?? 'az'
   const zoneId   = parseInt(searchParams.get('zoneId'), 10) || null
 
-  // Restaurant dishes live only in the Restaurants section + their own
-  // pages (see /api/restaurants), never in the shop/category product browse.
-  const where = { isActive: true, seller: { isOpen: true, sellerType: 'SHOP' } }
+  const where = { ...CATALOGUE_WHERE }
   if (category) where.category = { name: { contains: category, mode: 'insensitive' } }
   if (brand)     where.brand = { contains: brand, mode: 'insensitive' }
-  if (city)      where.seller = { ...where.seller, city: { contains: city, mode: 'insensitive' } }
+  if (city)      where.seller = { ...CATALOGUE_WHERE.seller, city: { contains: city, mode: 'insensitive' } }
   if (search) {
     where.OR = [
       { name:        { contains: search, mode: 'insensitive' } },
@@ -45,7 +31,7 @@ export async function GET(request) {
   try {
     const raw = await prisma.product.findMany({
       where,
-      include: PRODUCT_SELECT,
+      include: CATALOGUE_INCLUDE,
     })
 
     // If the visitor has a selected delivery zone, annotate each product
@@ -61,13 +47,10 @@ export async function GET(request) {
       coverageMap = Object.fromEntries(coverage.map(c => [c.sellerId, true]))
     }
 
-    let products = raw
-      .filter(p => p.variants.length > 0)
-      .map(p => ({
-        ...p,
-        variants: p.variants.map(v => ({ ...v, inStock: v.stockQty > 0 })),
-        seller:   { ...p.seller, deliversToZone: zoneId ? Boolean(coverageMap[p.sellerId]) : undefined },
-      }))
+    let products = toCatalogueProducts(raw).map(p => ({
+      ...p,
+      seller: { ...p.seller, deliversToZone: zoneId ? Boolean(coverageMap[p.sellerId]) : undefined },
+    }))
 
     if (sort === 'az') products.sort((a, b) => a.name.localeCompare(b.name))
     else if (sort === 'za') products.sort((a, b) => b.name.localeCompare(a.name))

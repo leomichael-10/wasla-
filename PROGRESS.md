@@ -4146,3 +4146,40 @@ confirmed nothing test-related left in the dev DB or the repo.
 
 **Gate**: `npm run build` ✅, `prisma migrate diff --exit-code` reports
 no difference ✅ (code-only this time, no schema change).
+
+## Making /products and the shop page read one catalogue
+
+**Reported**: customers and retailers saw an empty `/products` and an empty `/shops/8` ("0 PRODUCTS, 0 ORDERS"). The home page showed products, and logged-out browsing worked a few days earlier.
+
+**Database**: endpoint printed first with `scripts/check-env.mjs` (`ep-wild-cloud-ax3xihv9-pooler`, the local dev branch). No schema or data changes in this batch.
+
+**Root causes**
+
+1. **Three catalogue definitions.** `/api/products`, the home rails and category counts, and `/api/shops/[id]` each had their own `where`. The shop route read the retired `RetailerProduct`/`MasterProduct` tables and gated on `subscriptionStatus`, so its product list disagreed with everything else. Shop 8 showed 0 products. Its "Orders" stat counted DELIVERED only, so a shop with a live order showed 0.
+2. **Stale tokens blanked public pages.** `middleware.js` verified any Bearer token sent to a public GET, and returned 401/403 when it failed. A browser holding an expired token got 401 from `/api/products`, and the page treats a failed fetch as an empty list. Reproduced with curl on dev before the fix.
+
+**Changes**
+
+- `lib/catalogue.js` (new): `CATALOGUE_WHERE`, `CATALOGUE_INCLUDE`, `toCatalogueProducts`. The one definition of "a product a customer can see": active, open SHOP seller, at least one variant.
+- `app/api/products/route.js`: uses it.
+- `app/api/shops/[id]/route.js`: the product list is the same definition scoped to the shop. Retired-model reads and the subscription "Coming Soon" gate removed. `orderCount` = non-cancelled orders.
+- `app/page.js`: category counts, popular rail and origin rails use it.
+- `app/shops/[id]/page.js`: Orders stat reads `orderCount`. The Coming-Soon branch is removed, since the API no longer returns it.
+- `middleware.js`: on optional-auth GETs, an invalid, expired, banned or deleted token, or a DB error during that check, now proceeds as anonymous. Any client-sent `x-user-*` headers are stripped on that path. Protected routes are unchanged (still 401/403).
+
+**Verification (dev, after build)**
+
+- `npm run build` ✅
+- curl with a bogus Bearer on `/api/products`, `/api/categories`, `/api/shops/8`: 200 (these returned 401 before the change). Fresh valid token on `/api/orders` and `/api/profile`: 200. Wrong-signature and expired tokens: catalogue 200; `/api/orders` and `/api/profile` 401.
+- Playwright, four states (logged out, customer, retailer, retailer with expired token): `/products` shows 62 products in every state, with identical sets. `/shops/8` shows the same 57 products in every state, stats 57 PRODUCTS / 1 ORDERS.
+- 57 + 3 + 2 = 62: shop 8's list is exactly its subset of `/products`.
+
+**Not verified / open**
+
+- The live blank page was not reproduced on dev before the fix (dev rendered 62 for logged-in and logged-out). The stale-token path is the one plausible live cause that reproduces, and this fix addresses it. It still needs confirming on wasla-249.com: the network tab should show a 401 from `/api/products` for a returning visitor before the deploy.
+- Policy: `/products` shows products from sellers that are not admin-approved, since `approvedByAdmin` is not part of the catalogue definition. Left unchanged, needs a decision.
+- The public Orders stat now counts all non-cancelled orders; it was DELIVERED only. Confirm that is what you want shown publicly.
+- The admin-only `RetailerProduct`/`MasterProduct` routes and `/dashboard/catalog` still read the retired tables. Left as-is.
+- `vercel.json` runs `prisma db push --accept-data-loss` against whichever `DATABASE_URL` Vercel uses on every build. Which database production points at, and whether it is the same as dev, needs confirming before any further deploy.
+
+**Gate**: `npm run build` ✅. `prisma migrate diff` not run (no schema change).
