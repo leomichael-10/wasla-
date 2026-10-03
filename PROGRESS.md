@@ -4249,3 +4249,37 @@ Also fixed in the same route: `productCount` counted every active product row, s
 - `/shops/[id]` (the shop page a card links to) is also still English.
 
 **Gate**: `npx next build` ✅. Playwright at 390px: Arabic and English both show the right heading and count, and the city filter works (Cairo → 3, All cities → 6). Empty state renders in Arabic. No page errors in either locale.
+
+## Admin category deletion: confirmation flow, safe destinations, Food protected
+
+**Database**: endpoint printed first (`ep-wild-cloud-ax3xihv9-pooler`). Dev and production currently share this database, so **nothing destructive was run against it**. The delete rules were tested against an in-memory stub that enforces the same foreign keys and rolls back like an interactive transaction. The admin dialog was tested in Playwright with the DELETE request intercepted. The GET preview is read-only and was called for real.
+
+**Rules** (`lib/categoryDeletion.js`, one transaction via `$transaction` in the route):
+- Every product ends up with a valid category: moved to the chosen destination, or hard-deleted. Never orphaned.
+- Products with order or stock history (`OrderItem` or `StockMovement` on any variant) are never hard-deleted. They are hidden (`isActive = false`) and moved, and the response lists them.
+- `action: move` (default in the dialog) moves every product and deletes nothing.
+- `action: delete` requires `confirmCount` equal to the current product count. A stale count returns `COUNT_MISMATCH`, so the admin re-confirms rather than deleting a different set.
+- Destination must exist, must not be the category itself, and must not be internal (Food).
+- Retired `MasterProduct` rows (required category reference, no cascade) are re-pointed to the destination rather than blocking.
+- Subcategories are removed; moved products have `subCategoryId` cleared, since it belonged to the old category.
+- Food (`isInternal`) is protected: the server refuses with `PROTECTED`, and the UI shows a Protected badge with no Delete button. Chosen over a second confirmation because deleting it breaks restaurant menus.
+- A product added between the check and the delete makes the foreign key refuse the category delete. The transaction rolls back and the route returns `COUNT_MISMATCH`.
+- Admin-only, server-side, on both GET (preview) and DELETE.
+
+**UI**:
+- `components/admin/DeleteCategoryDialog.js`: loads the preview from the server (counts are never guessed client-side). Step 1 is move (default) or delete, with a destination dropdown. Step 2 (delete only) is a separate red confirmation that names the number deleted: "سيتم حذف N منتج" / "This will delete N products", and says how many are hidden instead. Empty categories get a simple confirm.
+- Escape closes, unless a delete is in flight.
+- `app/admin/page.js`: the old one-click delete (which showed "Cannot delete — 17 product(s)") is replaced. After success the category list is refetched so destination counts are right.
+
+**Minor fix**: the category row rendered `cat.icon` as text, so "bakhour" appeared as large grey text. It now renders the illustrated `CategoryIcon`, the same as the customer grid.
+
+**Bilingual**: all new strings are in both locales under `admin.cat.*`, with key parity checked. The rest of the admin page is still English, as before.
+
+**Verification**:
+- 39 rule checks against the stub: Food protected; empty delete; move all; delete with history split; wrong count refused with no change; destination validation; rollback when the category delete fails mid-transaction; master rows; preview read-only. All pass.
+- 31 browser checks on the admin Categories tab: Protected badge and no Delete on Food; no raw slug text; move default and destination options; the request body sent for move, delete (with count) and empty; second-step count text; Back; COUNT_MISMATCH handling; history path (mocked preview with one ordered product: confirm says delete 16, hide 1); all-history path (nothing deleted); Escape. All pass, no page errors.
+- `npx next build` ✅.
+
+**Not verified against real data**: the order-history path. No product in the Bakhour category has an order today, so that branch was exercised with mocked previews and the stub only. Three products across the database do have order items.
+
+**Gate**: `npx next build` ✅. No schema change, so no migrate diff.

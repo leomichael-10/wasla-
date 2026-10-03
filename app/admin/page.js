@@ -5,6 +5,10 @@ import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 import MasterProductForm from '../../components/MasterProductForm'
 import WalletsTab from '../../components/admin/WalletsTab'
+import DeleteCategoryDialog from '../../components/admin/DeleteCategoryDialog'
+import CategoryIcon from '../../components/CategoryIcon'
+import { useLocale } from '../../lib/LocaleContext'
+import { t } from '../../lib/i18n'
 
 const SUB_STATUS = {
   pending:  'bg-yellow-100 text-yellow-700',
@@ -17,6 +21,7 @@ const TABS = ['Overview', 'Sellers', 'Users', 'Products', 'Categories', 'Commiss
 
 export default function AdminPage() {
   const router = useRouter()
+  const { locale } = useLocale()
 
   const [activeTab,     setActiveTab]     = useState('Overview')
   const [sellers,       setSellers]       = useState([])
@@ -53,7 +58,7 @@ export default function AdminPage() {
   const [catForm,          setCatForm]          = useState({ name: '', icon: '' })
   const [catSaving,        setCatSaving]        = useState(false)
   const [editingCat,       setEditingCat]       = useState(null)   // { id, name, icon }
-  const [deletingCat,      setDeletingCat]      = useState(null)
+  const [deleteTarget,     setDeleteTarget]     = useState(null)   // category whose delete dialog is open
   const [subForms,         setSubForms]         = useState({})     // { [catId]: string }
   const [subSaving,        setSubSaving]        = useState(null)   // catId
   const [editingSub,       setEditingSub]       = useState(null)   // { id, name }
@@ -264,19 +269,16 @@ export default function AdminPage() {
     finally { setCatSaving(false) }
   }
 
-  async function handleDeleteCategory(id) {
-    setDeletingCat(id); setCatError('')
+  // Runs after DeleteCategoryDialog reports the server has deleted the category.
+  // Refetches the list so the destination's product count is current.
+  async function handleCategoryDeleted() {
+    setDeleteTarget(null); setCatError('')
     const token = localStorage.getItem('wasla_token')
     try {
-      const res  = await fetch(`/api/admin/categories/${id}`, {
-        method:  'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res  = await fetch('/api/admin/categories', { headers: { Authorization: `Bearer ${token}` } })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setCategories(prev => prev.filter(c => c.id !== id))
-    } catch (err) { setCatError(err.message) }
-    finally { setDeletingCat(null) }
+      if (res.ok) setCategories(data.categories ?? [])
+    } catch { /* best-effort refresh; the delete itself already succeeded */ }
   }
 
   async function handleAddSubcategory(catId) {
@@ -1119,9 +1121,12 @@ export default function AdminPage() {
                         </form>
                       ) : (
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          {cat.icon && <span className="text-2xl leading-none">{cat.icon}</span>}
+                          {cat.icon && <CategoryIcon slug={cat.icon} name={cat.name} locale={locale} className="w-10 h-10 shrink-0" />}
                           <div>
                             <span className="font-black text-gray-900 text-base">{cat.name}</span>
+                            {cat.isInternal && (
+                              <span className="ms-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{t('admin.cat.protected', locale)}</span>
+                            )}
                             <span className="ml-2 text-xs text-gray-400">{cat._count?.products ?? 0} products · {cat.subCategories?.length ?? 0} subcategories</span>
                           </div>
                         </div>
@@ -1134,13 +1139,21 @@ export default function AdminPage() {
                           >
                             Edit
                           </button>
-                          <button
-                            onClick={() => handleDeleteCategory(cat.id)}
-                            disabled={deletingCat === cat.id}
-                            className="text-xs font-bold px-3 py-1.5 rounded-full border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
-                          >
-                            {deletingCat === cat.id ? '…' : 'Delete'}
-                          </button>
+                          {cat.isInternal ? (
+                            <span
+                              title={t('admin.cat.protectedNote', locale)}
+                              className="text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 text-gray-400 cursor-not-allowed"
+                            >
+                              {t('admin.cat.protected', locale)}
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => setDeleteTarget(cat)}
+                              className="text-xs font-bold px-3 py-1.5 rounded-full border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+                            >
+                              Delete
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1212,6 +1225,14 @@ export default function AdminPage() {
               </div>
             )}
           </div>
+        )}
+
+        {deleteTarget && (
+          <DeleteCategoryDialog
+            category={deleteTarget}
+            onClose={() => setDeleteTarget(null)}
+            onDeleted={handleCategoryDeleted}
+          />
         )}
 
         {/* ── COMMISSION TAB ── */}
