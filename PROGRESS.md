@@ -4224,7 +4224,7 @@ Seller ids 6, 9 and 10 are absent from the table entirely.
 
 **Read-across:**
 - Of six approved open shops, three have zero catalogue products (ids 1, 7, 11). The rail shows them, and their pages show "no products".
-- Seed demo shops 1–3 have all 62 products' worth of catalogue visibility in the rail: 2 and 3 have live products on `/products`. Shop 1 has one order, so it can only be closed or deactivated, not deleted.
+- Seed demo shops 1–3 are in the rail. Shops 2 and 3 have five live products between them on `/products`; shop 1 has none live but one order, so it can be closed or deactivated, not deleted.
 - Every approved shop is open, so the closed-shop filter changes nothing in the data today.
 
 **Decision needed** (nothing done): whether to close (`isOpen = false`) or delete seed shops 1–3, and whether shops with zero products should be left out of the rail. Closing a shop now hides it from the rail and `/shops`, and hides its products from `/products`, without deleting anything or touching orders.
@@ -4245,7 +4245,7 @@ Also fixed in the same route: `productCount` counted every active product row, s
 
 ### Known gaps, not changed
 
-- **The shared navbar is still hard-coded English.** Desktop labels (Home, Products, My Orders, Sign in, Register, Logout) and the hamburger menu are English in Arabic mode, on every page. The mobile tab bar is already Arabic. Only the desktop header and the hamburger menu were checked; the hamburger wasn't inspected in detail. This should be the next fix.
+- **The shared navbar is still hard-coded English.** The desktop labels (Home, Products, My Orders, Sign in, Register, Logout) in `components/Navbar.js` are English in Arabic mode, on every page. `components/MobileMenu.js` was not checked. The mobile tab bar is already Arabic. This should be the next fix.
 - `/shops/[id]` (the shop page a card links to) is also still English.
 
 **Gate**: `npx next build` ✅. Playwright at 390px: Arabic and English both show the right heading and count, and the city filter works (Cairo → 3, All cities → 6). Empty state renders in Arabic. No page errors in either locale.
