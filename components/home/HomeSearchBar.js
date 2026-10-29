@@ -2,7 +2,7 @@ import { t } from '../../lib/i18n'
 
 export default function HomeSearchBar({ locale }) {
   return (
-    <form action="/products" method="get" className="px-4 pb-3">
+    <form action="/products" method="get" className="lg:hidden px-4 pb-3">
       <div className="relative">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
           className="absolute inset-s-4 top-1/2 -translate-y-1/2 w-4 h-4 text-wasla-orange-deep pointer-events-none">

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 import MediaThumb from '../../components/MediaThumb'
 import { useLocale } from '../../lib/LocaleContext'
-import { t, placeName } from '../../lib/i18n'
+import { t, placeName, countDishes } from '../../lib/i18n'
 
 function RestaurantCard({ restaurant, locale }) {
   const location = [restaurant.area, restaurant.city].filter(Boolean).map(p => placeName(p, locale))
@@ -19,7 +19,7 @@ function RestaurantCard({ restaurant, locale }) {
           <h3 dir="auto" className="font-black text-gray-900 text-base truncate group-hover:underline"><bdi>{restaurant.businessName}</bdi></h3>
           {!restaurant.isOpen && (
             <span className="shrink-0 bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-full">
-              {locale === 'ar' ? 'مغلق' : 'Closed'}
+              {t('restaurants.closed', locale)}
             </span>
           )}
         </div>
@@ -27,7 +27,7 @@ function RestaurantCard({ restaurant, locale }) {
           <p dir="auto" className="text-xs text-gray-400 truncate">{location.join(locale === 'ar' ? '، ' : ', ')}</p>
         )}
         <p className="text-xs text-gray-400 mt-auto">
-          {restaurant.dishCount} {locale === 'ar' ? 'طبق' : restaurant.dishCount === 1 ? 'dish' : 'dishes'}
+          {countDishes(restaurant.dishCount, locale)}
         </p>
       </div>
     </Link>
