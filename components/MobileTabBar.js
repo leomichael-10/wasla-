@@ -58,7 +58,7 @@ export default function MobileTabBar() {
   return (
     <nav
       dir={dir}
-      className="fixed bottom-0 inset-x-0 z-30 lg:hidden bg-white rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.08)] pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 inset-x-0 z-30 lg:hidden bg-white rounded-t-3xl shadow-[0_-4px_20px_rgba(120,65,30,0.12)] pb-[env(safe-area-inset-bottom)]"
     >
       <div className="grid grid-cols-5 h-16">
         {tabs.map(tab => {
