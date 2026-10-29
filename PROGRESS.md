@@ -4340,4 +4340,18 @@ Frontend-only redesign of the customer home page (`app/page.js`) and the global 
 
 **Verified** (Playwright, 390px and 1280px, both locales): header/search/hero/mode-cards/placeholder-tiles copy and RTL↔LTR mirroring; tab bar order, labels, active/raised styling, and hide-on-auth/dashboard/admin rules; `/account` → `/profile` redirect; desktop keeps `Navbar`/`ZoneBar` and hides the bottom tab bar; `npm run build` after every task. 27/27 scored checks passed; 3 checks skipped (noted above) due to the dev DB outage.
 
+**Fresh-context final review** (opus, whole branch) found no Critical issues but 3 real Important bugs, all fixed same session:
+- Desktop was showing **two headers that disagreed**: the new mobile `HomeHeader`/`HomeSearchBar` had no `lg:hidden`, so they rendered stacked under the existing desktop `Navbar`/`ZoneBar` instead of being replaced by them — two Wasla wordmarks, two search bars, and two location indicators showing different values. Fixed by adding `lg:hidden` to both.
+- The redesign had **silently removed the only way to change delivery zone on mobile**: `ZoneBar` became desktop-only, and the new header's location pill was a hardcoded, non-functional "Cairo" label. Fixed with a new `components/home/LocationPicker.js` client component that shows the real selected zone and reproduces `ZoneBar`'s own change-zone action.
+- `app/restaurants/page.js` had two inline `locale === 'ar' ? ... : ...` ternaries instead of `t()` (one of them also had the Arabic dish count pluralized wrong — "5 طبق" instead of "5 أطباق"). Fixed with a new `countDishes()` helper in `lib/i18n.js`, mirroring the existing `countShops()` pattern.
+
+**Minor findings, deferred (not fixed) per the review process:**
+- `components/MobileTabBar.js`: the Account tab never shows as visually active — it matches `pathname.startsWith('/account')`, but `/account` always redirects to `/profile`.
+- `app/categories/page.js` / `app/restaurants/page.js`: a fetch error renders the same copy as a genuinely-empty list — no distinct error message (`app/shops/page.js` has a separate `shops.error` for this).
+- No language toggle is reachable from the mobile home page for guests (still reachable from `Navbar` on every other page).
+- The "PWA install already has its own independent global banner, so nothing was lost" line above slightly overstates it — the old account sheet's manual install trigger is gone; only the passive banner remains.
+- `components/home/PlaceholderTiles.js` tiles are `<a href="#">` (jumps to top on tap) on `bg-wasla-cream`, the same color as the page background, so they show no visible card edge.
+- `components/home/HomeHeader.js`'s notification bell has a hardcoded English `aria-label`, not routed through `t()`.
+- The plan's own Goal line still reads "Arabic-first/RTL design" after the bilingual revision (stale wording, not a code issue).
+
 **Gate**: `npx next build` ✅. No schema change. Dev-branch DB connectivity needs attention before the three skipped checks can run.
