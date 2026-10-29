@@ -11,6 +11,12 @@ const nextConfig = {
     ],
   },
 
+  async redirects() {
+    return [
+      { source: '/account', destination: '/profile', permanent: false },
+    ]
+  },
+
   async headers() {
     return [
       {
