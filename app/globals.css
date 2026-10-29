@@ -47,12 +47,9 @@
   --color-sand-50:  #FBF6EF;
   --color-sand-100: #F5EBDD;
 
-  /* Wasla-branded home redesign palette (bottom tab bar + new home page).
-     Warm, muted, earthy — terracotta/honey, not a bright/neon orange — so
-     these reuse the same family as the existing --color-accent-400/600
-     terracotta tones above rather than inventing a louder one. */
-  --wasla-orange:      #C1502E;
-  --wasla-orange-deep: #8F331B;
+  /* Wasla-branded home redesign palette (bottom tab bar + new home page). */
+  --wasla-orange:      #F26522;
+  --wasla-orange-deep: #D94F12;
   --wasla-cream:       #FDF4E7;
   --wasla-card:        #FFFFFF;
 
