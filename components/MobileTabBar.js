@@ -50,7 +50,7 @@ export default function MobileTabBar() {
     { key: 'categories', href: '/categories', labelKey: 'tab.categories', icon: 'categories' },
     { key: 'home',       href: '/',           labelKey: 'tab.home',       icon: 'home',       center: true },
     { key: 'orders',     href: '/orders',     labelKey: 'tab.orders',     icon: 'orders' },
-    { key: 'account',    href: '/account',    labelKey: 'tab.account',    icon: 'account' },
+    { key: 'account',    href: '/account',    labelKey: 'tab.account',    icon: 'account', match: ['/account', '/profile'] },
   ]
 
   const dir = locale === 'ar' ? 'rtl' : 'ltr'
@@ -62,7 +62,9 @@ export default function MobileTabBar() {
     >
       <div className="grid grid-cols-5 h-16">
         {tabs.map(tab => {
-          const active = tab.href === '/' ? pathname === '/' : pathname?.startsWith(tab.href)
+          const active = tab.href === '/'
+            ? pathname === '/'
+            : (tab.match ?? [tab.href]).some(p => pathname?.startsWith(p))
           return (
             <Link
               key={tab.key}
