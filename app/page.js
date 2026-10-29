@@ -59,12 +59,14 @@ export default async function HomePage() {
         <Navbar />
         <ZoneBar />
       </div>
-      <HomeHeader locale={locale} />
-      <HomeSearchBar locale={locale} />
-      <HeroBanner locale={locale} />
-      <ModeCards locale={locale} />
-      <BestSellerRail products={popular} locale={locale} />
-      <PlaceholderTiles locale={locale} />
+      <div className="lg:max-w-xl lg:mx-auto">
+        <HomeHeader locale={locale} />
+        <HomeSearchBar locale={locale} />
+        <HeroBanner locale={locale} />
+        <ModeCards locale={locale} />
+        <BestSellerRail products={popular} locale={locale} />
+        <PlaceholderTiles locale={locale} />
+      </div>
     </div>
   )
 }
