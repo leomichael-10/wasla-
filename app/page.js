@@ -1,66 +1,15 @@
-import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { prisma } from '../lib/prisma'
 import Navbar from '../components/Navbar'
 import ZoneBar from '../components/ZoneBar'
-import ProductTile from '../components/ProductTile'
-import BuyAgainRail from '../components/BuyAgainRail'
-import CategoryIcon from '../components/CategoryIcon'
-import MediaThumb from '../components/MediaThumb'
-import { DEFAULT_LOCALE, LOCALE_COOKIE, t, categoryName, placeName } from '../lib/i18n'
+import HomeHeader from '../components/home/HomeHeader'
+import HomeSearchBar from '../components/home/HomeSearchBar'
+import HeroBanner from '../components/home/HeroBanner'
+import ModeCards from '../components/home/ModeCards'
+import BestSellerRail from '../components/home/BestSellerRail'
+import PlaceholderTiles from '../components/home/PlaceholderTiles'
+import { DEFAULT_LOCALE, LOCALE_COOKIE } from '../lib/i18n'
 import { CATALOGUE_WHERE, CATALOGUE_INCLUDE, toCatalogueProducts } from '../lib/catalogue'
-
-async function getCategories() {
-  try {
-    const cats = await prisma.category.findMany({
-      // Internal-only categories (the "Food" bucket restaurant dishes are
-      // auto-filed under) never appear in "Shop by Category".
-      where:   { isInternal: false },
-      orderBy: { name: 'asc' },
-      // Counts use the same catalogue definition as /products, so a tile's
-      // number always matches what the category page actually lists.
-      include: { _count: { select: { products: { where: CATALOGUE_WHERE } } } },
-    })
-    return JSON.parse(JSON.stringify(cats))
-  } catch { return [] }
-}
-
-// Same filter as GET /api/shops (the /shops page), so the rail and the full
-// list can't disagree about which shops exist.
-async function getShops() {
-  try {
-    const sellers = await prisma.sellerProfile.findMany({
-      where:   { sellerType: 'SHOP', approvedByAdmin: true },
-      orderBy: { businessName: 'asc' },
-      take:    12,
-      select:  { id: true, businessName: true, logoUrl: true, city: true, area: true },
-    })
-    return JSON.parse(JSON.stringify(sellers))
-  } catch { return [] }
-}
-
-async function getRestaurants() {
-  try {
-    const sellers = await prisma.sellerProfile.findMany({
-      where:   { sellerType: 'RESTAURANT', approvedByAdmin: true },
-      orderBy: { businessName: 'asc' },
-      take:    12,
-      include: { products: { where: { isActive: true }, select: { images: true } } },
-    })
-    const restaurants = sellers.map(s => ({
-      id:           s.id,
-      businessName: s.businessName,
-      city:         s.city,
-      area:         s.area,
-      isOpen:       s.isOpen,
-      // Prefer the shop's own logo; fall back to a dish photo so
-      // restaurants that haven't uploaded one yet still show something
-      // besides the initial-letter placeholder.
-      image:        s.logoUrl ?? s.products.find(p => p.images?.length)?.images?.[0] ?? null,
-    }))
-    return JSON.parse(JSON.stringify(restaurants))
-  } catch { return [] }
-}
 
 async function annotateWithZone(rawProducts, zoneId) {
   let coverageMap = {}
@@ -92,151 +41,6 @@ async function getPopularProducts(zoneId) {
   } catch { return [] }
 }
 
-async function getOriginRails(zoneId) {
-  try {
-    const regions = await prisma.product.findMany({
-      where:    { ...CATALOGUE_WHERE, originRegion: { not: null } },
-      distinct: ['originRegion'],
-      select:   { originRegion: true },
-      take:     4,
-    })
-
-    const rails = []
-    for (const { originRegion } of regions) {
-      const raw = await prisma.product.findMany({
-        where:   { ...CATALOGUE_WHERE, originRegion },
-        take:    10,
-        include: CATALOGUE_INCLUDE,
-      })
-      rails.push({ originRegion, products: await annotateWithZone(toCatalogueProducts(raw), zoneId) })
-    }
-    return JSON.parse(JSON.stringify(rails))
-  } catch { return [] }
-}
-
-function CategoryTile({ category, locale }) {
-  return (
-    <Link
-      href={`/products?category=${encodeURIComponent(category.name)}`}
-      className="group flex flex-col items-center gap-2 bg-white rounded-2xl border border-brand-100 shadow-sm hover:shadow-md hover:border-accent-300 hover:bg-accent-50 transition-all duration-200 py-4 px-2"
-    >
-      <span className="w-16 h-16 rounded-full bg-[#FBF6EF] flex items-center justify-center overflow-hidden">
-        <CategoryIcon slug={category.icon} name={category.name} locale={locale} className="w-14 h-14" />
-      </span>
-      <span className="text-xs font-bold text-brand-800 text-center leading-tight group-hover:text-accent-500 transition-colors">
-        {categoryName(category.name, locale)}
-      </span>
-      {category._count?.products > 0 && (
-        <span className="text-[10px] text-gray-400">{category._count.products}</span>
-      )}
-    </Link>
-  )
-}
-
-function RestaurantTile({ restaurant, locale }) {
-  const location = [restaurant.area, restaurant.city].filter(Boolean).map(p => placeName(p, locale))
-  return (
-    <Link
-      href={`/restaurant/${restaurant.id}`}
-      className="group w-40 shrink-0 bg-white rounded-2xl border border-brand-100 shadow-sm hover:shadow-md hover:border-accent-300 transition-all duration-200 overflow-hidden flex flex-col"
-    >
-      <MediaThumb
-        src={restaurant.image}
-        alt={restaurant.businessName}
-        className="aspect-square"
-        imgClassName="group-hover:scale-105 transition-transform duration-500"
-      />
-      <div className="p-2.5">
-        <p dir="auto" className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{restaurant.businessName}</p>
-        {location.length > 0 && (
-          <p dir="auto" className="text-[11px] text-gray-400 truncate mt-0.5">{location.join(locale === 'ar' ? '، ' : ', ')}</p>
-        )}
-      </div>
-    </Link>
-  )
-}
-
-function RestaurantSection({ restaurants, locale }) {
-  if (restaurants.length === 0) return null
-  return (
-    <section className="max-w-7xl mx-auto px-4 pt-6 pb-2">
-      <h2 className="text-lg font-black text-gray-900 mb-3">{t('home.restaurants', locale)}</h2>
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-        {restaurants.map(restaurant => (
-          <RestaurantTile key={restaurant.id} restaurant={restaurant} locale={locale} />
-        ))}
-      </div>
-    </section>
-  )
-}
-
-// Same card treatment as RestaurantTile: logo, name, area.
-function ShopTile({ shop, locale }) {
-  const location = [shop.area, shop.city].filter(Boolean).map(p => placeName(p, locale))
-  return (
-    <Link
-      href={`/shops/${shop.id}`}
-      className="group w-40 shrink-0 bg-white rounded-2xl border border-brand-100 shadow-sm hover:shadow-md hover:border-accent-300 transition-all duration-200 overflow-hidden flex flex-col"
-    >
-      <MediaThumb
-        src={shop.logoUrl}
-        alt={shop.businessName}
-        className="aspect-square"
-        imgClassName="group-hover:scale-105 transition-transform duration-500"
-      />
-      <div className="p-2.5">
-        <p dir="auto" className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{shop.businessName}</p>
-        {location.length > 0 && (
-          <p dir="auto" className="text-[11px] text-gray-400 truncate mt-0.5">{location.join(locale === 'ar' ? '، ' : ', ')}</p>
-        )}
-      </div>
-    </Link>
-  )
-}
-
-// Hidden when there are no approved shops, like the Restaurants rail.
-function ShopSection({ shops, locale }) {
-  if (shops.length === 0) return null
-  return (
-    <section className="max-w-7xl mx-auto px-4 pt-6 pb-2">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-black text-gray-900">{t('home.shops', locale)}</h2>
-        <Link href="/shops" className="text-brand-600 font-semibold text-xs hover:text-brand-800 transition-colors">
-          {t('home.viewAll', locale)}
-        </Link>
-      </div>
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-        {shops.map(shop => (
-          <ShopTile key={shop.id} shop={shop} locale={locale} />
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function ProductRail({ title, products, viewAllHref, locale }) {
-  if (products.length === 0) return null
-  return (
-    <section className="max-w-7xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-black text-gray-900">{title}</h2>
-        {viewAllHref && (
-          <Link href={viewAllHref} className="text-brand-600 font-semibold text-xs hover:text-brand-800 transition-colors">
-            {t('home.viewAll', locale)}
-          </Link>
-        )}
-      </div>
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-        {products.map(product => (
-          <div key={product.id} className="w-36 shrink-0">
-            <ProductTile product={product} locale={locale} />
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
 export default async function HomePage() {
   const cookieStore = await cookies()
   const locale = cookieStore.get(LOCALE_COOKIE)?.value ?? DEFAULT_LOCALE
@@ -247,50 +51,20 @@ export default async function HomePage() {
     if (raw) zoneId = JSON.parse(decodeURIComponent(raw))?.id ?? null
   } catch { /* ignore malformed cookie */ }
 
-  const [shops, categories, restaurants, popular, originRails] = await Promise.all([
-    getShops(),
-    getCategories(),
-    getRestaurants(),
-    getPopularProducts(zoneId),
-    getOriginRails(zoneId),
-  ])
+  const popular = await getPopularProducts(zoneId)
 
   return (
-    <div className="bg-[#FBF6EF] pb-20">
-      <Navbar />
-      <ZoneBar />
-
-      {/* Order: Shops → Restaurants → Categories → Most Popular */}
-      <ShopSection shops={shops} locale={locale} />
-
-      {/* Restaurants — separate from product categories; hidden until one exists */}
-      <RestaurantSection restaurants={restaurants} locale={locale} />
-
-      {/* Category grid — the primary navigation surface */}
-      {categories.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 pt-6 pb-2">
-          <h2 className="text-lg font-black text-gray-900 mb-3">{t('home.categories', locale)}</h2>
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-            {categories.map(cat => (
-              <CategoryTile key={cat.id} category={cat} locale={locale} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      <ProductRail title={t('home.mostPopular', locale)} products={popular} viewAllHref="/products" locale={locale} />
-
-      <BuyAgainRail />
-
-      {originRails.map(rail => (
-        <ProductRail
-          key={rail.originRegion}
-          title={`${t('home.fromOrigin', locale)} ${rail.originRegion}`}
-          products={rail.products}
-          locale={locale}
-        />
-      ))}
-
+    <div className="bg-wasla-cream pb-20">
+      <div className="hidden lg:block">
+        <Navbar />
+        <ZoneBar />
+      </div>
+      <HomeHeader locale={locale} />
+      <HomeSearchBar locale={locale} />
+      <HeroBanner locale={locale} />
+      <ModeCards locale={locale} />
+      <BestSellerRail products={popular} locale={locale} />
+      <PlaceholderTiles locale={locale} />
     </div>
   )
 }
