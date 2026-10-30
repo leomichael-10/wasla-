@@ -5,10 +5,9 @@ import Navbar from '../../components/Navbar'
 import BrowseProductTile from '../../components/BrowseProductTile'
 import CategoryIcon from '../../components/CategoryIcon'
 import { getZoneCookie } from '../../lib/zone'
-import { getLocaleCookie, t, categoryName } from '../../lib/i18n'
+import { getLocaleCookie, t, categoryName, interpolate } from '../../lib/i18n'
 
 const BRANDS = ['Kassala', 'Gedaref', 'El Obeid']
-const CITIES = ['Cairo', 'Giza', '6th of October', 'Alexandria']
 
 const SORT_KEYS = [
   { value: 'az',         key: 'browse.sortAz'        },
@@ -67,7 +66,7 @@ function CategoryRail({ categories, active, onSelect, locale }) {
             {isAll ? (
               <AllIcon className="w-6 h-6 shrink-0" />
             ) : (
-              <span className="w-12 h-12 rounded-xl bg-[#FBF6EF] flex items-center justify-center overflow-hidden shrink-0">
+              <span className="w-12 h-12 rounded-xl bg-sand-50 flex items-center justify-center overflow-hidden shrink-0">
                 <CategoryIcon slug={cat.icon} name={cat.name} locale={locale} className="w-10 h-10" />
               </span>
             )}
@@ -106,8 +105,8 @@ function MobileCategoryRail({ categories, active, onSelect, locale }) {
             style={{ scrollSnapAlign: 'start' }}
             className="flex flex-col items-center gap-1.5 shrink-0 w-16 active:scale-95 transition-transform duration-150 motion-reduce:transition-none motion-reduce:active:scale-100"
           >
-            <span className={`w-14 h-14 rounded-full bg-[#FBF6EF] flex items-center justify-center overflow-hidden shrink-0 transition-all duration-150 ${
-              isActive ? 'ring-2 ring-accent-400 ring-offset-2 ring-offset-[#FBF6EF]' : ''
+            <span className={`w-14 h-14 rounded-full bg-sand-50 flex items-center justify-center overflow-hidden shrink-0 transition-all duration-150 ${
+              isActive ? 'ring-2 ring-accent-400 ring-offset-2 ring-offset-sand-50' : ''
             }`}>
               {isAll ? (
                 <AllIcon className="w-6 h-6 text-brand-600" />
@@ -125,7 +124,7 @@ function MobileCategoryRail({ categories, active, onSelect, locale }) {
   )
 }
 
-function FilterPanel({ brand, setBrand, city, setCity, locale, onClose }) {
+function FilterPanel({ brand, setBrand, locale, onClose }) {
   return (
     <div className="space-y-6">
       <div>
@@ -134,19 +133,7 @@ function FilterPanel({ brand, setBrand, city, setCity, locale, onClose }) {
           {BRANDS.map(b => (
             <label key={b} className="flex items-center gap-2.5 cursor-pointer group">
               <input type="radio" name="brand" checked={brand === b} onChange={() => setBrand(brand === b ? '' : b)} className="accent-accent-500 w-4 h-4" />
-              <span className="text-sm text-gray-700 group-hover:text-brand-600 transition-colors">{b}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <p className="text-xs font-bold text-brand-400 uppercase tracking-wide mb-3">{t('browse.city', locale)}</p>
-        <div className="space-y-2.5">
-          {CITIES.map(c => (
-            <label key={c} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="radio" name="city" checked={city === c} onChange={() => setCity(city === c ? '' : c)} className="accent-accent-500 w-4 h-4" />
-              <span className="text-sm text-gray-700 group-hover:text-brand-600 transition-colors">{c}</span>
+              <span className="text-sm text-brand-700 group-hover:text-brand-900 transition-colors">{b}</span>
             </label>
           ))}
         </div>
@@ -173,13 +160,14 @@ function ProductsBrowser() {
   const [search,   setSearch]   = useState(searchParams.get('search')   ?? '')
   const [brand,    setBrand]    = useState(searchParams.get('brand')    ?? '')
   const [category, setCategory] = useState(searchParams.get('category') ?? '')
-  const [city,     setCity]     = useState(searchParams.get('city')     ?? '')
   const [sort,     setSort]     = useState(searchParams.get('sort')     ?? 'az')
+  const [zone,     setZone]     = useState(null)
 
-  const hasFilters = search || brand || category || city
+  const hasFilters = search || brand || category
   const dir = locale === 'ar' ? 'rtl' : 'ltr'
 
   useEffect(() => { setLocale(getLocaleCookie()) }, [])
+  useEffect(() => { setZone(getZoneCookie()) }, [])
 
   useEffect(() => {
     fetch('/api/categories')
@@ -194,10 +182,9 @@ function ProductsBrowser() {
     if (search)   params.set('search',   search)
     if (brand)    params.set('brand',    brand)
     if (category) params.set('category', category)
-    if (city)     params.set('city',     city)
     params.set('sort', sort)
-    const zone = getZoneCookie()
-    if (zone) params.set('zoneId', zone.id)
+    const currentZone = getZoneCookie()
+    if (currentZone) params.set('zoneId', currentZone.id)
 
     try {
       const res  = await fetch(`/api/products?${params}`)
@@ -208,50 +195,46 @@ function ProductsBrowser() {
     } finally {
       setLoading(false)
     }
-  }, [search, brand, category, city, sort])
+  }, [search, brand, category, sort])
 
   useEffect(() => { fetchProducts() }, [fetchProducts])
 
-  function clearFilters() { setSearch(''); setBrand(''); setCategory(''); setCity('') }
+  function clearFilters() { setSearch(''); setBrand(''); setCategory('') }
 
-  // Deliverable products first — an out-of-zone product with its add
-  // button removed shouldn't occupy a prime grid slot ahead of ones the
-  // shopper can actually buy. Stable sort, so it only moves the
-  // undeliverable ones down without disturbing the chosen sort order
-  // otherwise.
-  const sortedProducts = [...products].sort((a, b) =>
-    Number(a.seller?.deliversToZone === false) - Number(b.seller?.deliversToZone === false)
-  )
+  function handleChangeZone() {
+    document.cookie = 'wasla_zone=; path=/; max-age=0'
+    window.location.reload()
+  }
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF]" dir={dir}>
+    <div className="min-h-screen bg-sand-50" dir={dir}>
       <Navbar />
 
       {mobileOpen && (
         <div className="fixed inset-0 bg-black/40 z-40 sm:hidden" onClick={() => setMobileOpen(false)} />
       )}
 
-      <div className={`fixed bottom-0 inset-x-0 z-50 bg-white rounded-t-3xl p-6 shadow-2xl transition-transform duration-300 sm:hidden ${mobileOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+      <div className={`fixed bottom-0 inset-x-0 z-50 bg-wasla-card rounded-t-2xl p-6 shadow-2xl transition-transform duration-300 sm:hidden ${mobileOpen ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-black text-gray-900">{t('browse.filters', locale)}</h2>
-          <button onClick={() => setMobileOpen(false)} className="text-gray-400 hover:text-gray-600" aria-label="Close filters">
+          <h2 className="font-black text-brand-900">{t('browse.filters', locale)}</h2>
+          <button onClick={() => setMobileOpen(false)} className="text-brand-400 hover:text-brand-600" aria-label="Close filters">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
         {hasFilters && (
-          <button onClick={clearFilters} className="text-xs text-red-500 hover:text-red-700 font-semibold mb-4 block">{t('browse.clearAll', locale)}</button>
+          <button onClick={clearFilters} className="text-xs text-hibiscus-500 hover:text-hibiscus-600 font-semibold mb-4 block">{t('browse.clearAll', locale)}</button>
         )}
-        <FilterPanel brand={brand} setBrand={setBrand} city={city} setCity={setCity} locale={locale} onClose={() => setMobileOpen(false)} />
+        <FilterPanel brand={brand} setBrand={setBrand} locale={locale} onClose={() => setMobileOpen(false)} />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 pt-6 pb-3">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-black text-gray-900">{t('browse.title', locale)}</h1>
+            <h1 className="text-2xl font-black text-brand-900">{t('browse.title', locale)}</h1>
             {!loading && (
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-sm text-brand-500 mt-0.5">
                 {products.length} {t('browse.products', locale)}
                 {category && <span> {t('browse.inCategory', locale)} <span className="font-semibold text-accent-600">{categoryName(category, locale)}</span></span>}
               </p>
@@ -262,7 +245,7 @@ function ProductsBrowser() {
             <select
               value={sort}
               onChange={e => setSort(e.target.value)}
-              className="border border-brand-100 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-300 bg-white text-brand-800 font-semibold"
+              className="border border-brand-100 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-300 bg-wasla-card text-brand-800 font-semibold"
             >
               {SORT_KEYS.map(o => (
                 <option key={o.value} value={o.value}>{t(o.key, locale)}</option>
@@ -271,7 +254,7 @@ function ProductsBrowser() {
 
             <button
               onClick={() => setMobileOpen(true)}
-              className="sm:hidden flex items-center gap-1.5 bg-white border border-brand-100 rounded-full px-4 py-2 text-sm font-semibold text-brand-700 shadow-sm min-h-11 active:scale-95 transition-all duration-200"
+              className="sm:hidden flex items-center gap-1.5 bg-wasla-card border border-brand-100 rounded-full px-4 py-2 text-sm font-semibold text-brand-700 min-h-11 active:scale-95 transition-all duration-200"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
@@ -290,7 +273,6 @@ function ProductsBrowser() {
               search   && { label: `"${search}"`,              clear: () => setSearch('') },
               brand    && { label: brand,                       clear: () => setBrand('') },
               category && { label: categoryName(category, locale), clear: () => setCategory('') },
-              city     && { label: city,                        clear: () => setCity('') },
             ].filter(Boolean).map(chip => (
               <button key={chip.label} onClick={chip.clear}
                 className="flex items-center gap-1.5 bg-accent-50 text-accent-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-accent-100 active:scale-95 transition-all duration-200">
@@ -300,7 +282,7 @@ function ProductsBrowser() {
                 </svg>
               </button>
             ))}
-            <button onClick={clearFilters} className="text-xs text-gray-400 hover:text-red-500 font-semibold px-2 transition-colors">{t('browse.clearAll', locale)}</button>
+            <button onClick={clearFilters} className="text-xs text-brand-400 hover:text-hibiscus-500 font-semibold px-2 transition-colors">{t('browse.clearAll', locale)}</button>
           </div>
         )}
       </div>
@@ -317,12 +299,12 @@ function ProductsBrowser() {
           )}
 
           <aside className="hidden sm:block w-52 shrink-0">
-            <div className="bg-white rounded-3xl border border-brand-50 shadow-sm p-5 sticky top-24">
+            <div className="bg-wasla-card rounded-2xl border border-brand-100 p-5 sticky top-24">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-black text-gray-900 text-sm">{t('browse.filters', locale)}</h2>
-                {hasFilters && <button onClick={clearFilters} className="text-xs text-red-400 hover:text-red-600 font-semibold">{t('browse.clear', locale)}</button>}
+                <h2 className="font-black text-brand-900 text-sm">{t('browse.filters', locale)}</h2>
+                {hasFilters && <button onClick={clearFilters} className="text-xs text-hibiscus-500 hover:text-hibiscus-600 font-semibold">{t('browse.clear', locale)}</button>}
               </div>
-              <FilterPanel brand={brand} setBrand={setBrand} city={city} setCity={setCity} locale={locale} />
+              <FilterPanel brand={brand} setBrand={setBrand} locale={locale} />
             </div>
           </aside>
 
@@ -343,16 +325,23 @@ function ProductsBrowser() {
                 <p className="text-brand-800 font-bold text-lg">
                   {category ? t('browse.emptyCategoryTitle', locale) : t('browse.emptyTitle', locale)}
                 </p>
-                <p className="text-gray-400 text-sm mt-1">
+                <p className="text-brand-400 text-sm mt-1">
                   {category ? t('browse.emptyCategorySubtitle', locale) : t('browse.emptySubtitle', locale)}
                 </p>
+                {zone && (
+                  <p className="text-nile-500 text-sm font-semibold mt-3">
+                    {interpolate(t('browse.emptyZone', locale), { zone: locale === 'ar' ? zone.nameAr : zone.nameEn })}
+                    {' '}
+                    <button onClick={handleChangeZone} className="underline hover:no-underline">{t('browse.changeZone', locale)}</button>
+                  </p>
+                )}
                 {hasFilters && (
                   <button onClick={clearFilters} className="mt-4 text-accent-500 font-bold hover:underline text-sm">{t('browse.clearAll', locale)}</button>
                 )}
               </div>
             ) : (
               <div className="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-4">
-                {sortedProducts.map(product => (
+                {products.map(product => (
                   <BrowseProductTile key={product.id} product={product} locale={locale} />
                 ))}
               </div>
@@ -368,7 +357,7 @@ function ProductsBrowser() {
 export default function ProductsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#FBF6EF]">
+      <div className="min-h-screen bg-sand-50">
         <div className="h-16 bg-brand-700" />
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-4 mt-10">

@@ -7,7 +7,7 @@ import WaslaLogo from './WaslaLogo'
 // WaslaLogo itself (no animation classes at all, not just a fast one).
 export default function Loader({ className = '' }) {
   return (
-    <div className={`flex items-center justify-center bg-[#FBF6EF] ${className}`}>
+    <div className={`flex items-center justify-center bg-sand-50 ${className}`}>
       <WaslaLogo variant="loader" />
     </div>
   )

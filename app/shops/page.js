@@ -6,17 +6,12 @@ import MediaThumb from '../../components/MediaThumb'
 import { useLocale } from '../../lib/LocaleContext'
 import { t, interpolate, placeName, countShops } from '../../lib/i18n'
 
-// Sentinel for "no city filter" — kept separate from any real city name.
-const ALL = 'ALL'
-// Stored values (match seller profile city). Labels are localised at render.
-const CITIES = ['Cairo', 'Giza', '6th of October', 'Alexandria']
-
 function Stars({ rating }) {
   const rounded = Math.round(rating)
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: 5 }).map((_, i) => (
-        <span key={i} className={`text-xs ${i < rounded ? 'text-accent-400' : 'text-gray-200'}`}>&#9733;</span>
+        <span key={i} className={`text-xs ${i < rounded ? 'text-accent-400' : 'text-brand-100'}`}>&#9733;</span>
       ))}
     </div>
   )
@@ -27,7 +22,7 @@ function ShopCard({ shop, locale }) {
   return (
     <Link
       href={`/shops/${shop.id}`}
-      className="group bg-white rounded-3xl border border-brand-50 shadow-sm hover:shadow-lg hover:border-brand-200 transition-all duration-300 flex flex-col overflow-hidden"
+      className="group bg-wasla-card rounded-2xl border border-brand-100 hover:border-accent-300 transition-colors duration-200 flex flex-col overflow-hidden"
     >
       <div className="h-20 bg-linear-to-br from-brand-700 to-brand-500 flex items-center px-5 gap-4 relative">
         <MediaThumb src={shop.logoUrl} alt={shop.businessName} className="w-12 h-12 rounded-2xl shrink-0" />
@@ -54,14 +49,14 @@ function ShopCard({ shop, locale }) {
             {shop.averageRating > 0 ? (
               <>
                 <Stars rating={shop.averageRating} />
-                <span className="text-xs font-bold text-gray-700">{shop.averageRating.toFixed(1)}</span>
-                <span className="text-[10px] text-gray-400">({shop.reviewCount})</span>
+                <span className="text-xs font-bold text-brand-700">{shop.averageRating.toFixed(1)}</span>
+                <span className="text-[10px] text-brand-400">({shop.reviewCount})</span>
               </>
             ) : (
-              <span className="text-xs text-gray-400">{t('shops.noReviews', locale)}</span>
+              <span className="text-xs text-brand-400">{t('shops.noReviews', locale)}</span>
             )}
           </div>
-          <span className="text-xs text-gray-400 font-medium">{interpolate(t('shops.productsCount', locale), { n: shop.productCount })}</span>
+          <span className="text-xs text-brand-400 font-medium">{interpolate(t('shops.productsCount', locale), { n: shop.productCount })}</span>
         </div>
 
         <div className="flex flex-wrap gap-1.5 mt-auto">
@@ -76,7 +71,7 @@ function ShopCard({ shop, locale }) {
             </span>
           )}
           {shop.workingHours && (
-            <span className="bg-gray-100 text-gray-600 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+            <span className="bg-sand-100 text-brand-600 text-[10px] font-semibold px-2 py-0.5 rounded-full">
               {shop.workingHours}
             </span>
           )}
@@ -99,7 +94,6 @@ export default function ShopsPage() {
   const [loading,  setLoading]  = useState(true)
   const [failed,   setFailed]   = useState(false)
   const [search,   setSearch]   = useState('')
-  const [city,     setCity]     = useState(ALL)
 
   useEffect(() => {
     fetch('/api/shops')
@@ -112,94 +106,74 @@ export default function ShopsPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  const hasFilters = search !== '' || city !== ALL
+  const hasFilters = search !== ''
 
   const filtered = shops.filter(s => {
     const q = search.toLowerCase()
-    const matchSearch = !q || s.businessName.toLowerCase().includes(q) || (s.city ?? '').toLowerCase().includes(q)
-    const matchCity   = city === ALL || s.city === city
-    return matchSearch && matchCity
+    return !q || s.businessName.toLowerCase().includes(q) || (s.city ?? '').toLowerCase().includes(q)
   })
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF]">
+    <div className="min-h-screen bg-sand-50">
       <Navbar />
 
-      <div className="bg-white border-b border-gray-100 shadow-sm">
+      <div className="bg-wasla-card border-b border-brand-100">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-2 text-sm text-gray-400 mb-1">
+          <div className="flex items-center gap-2 text-sm text-brand-400 mb-1">
             <Link href="/" className="hover:text-brand-600 transition-colors">{t('shops.home', locale)}</Link>
             <span>/</span>
-            <span className="text-gray-700 font-medium">{t('shops.title', locale)}</span>
+            <span className="text-brand-700 font-medium">{t('shops.title', locale)}</span>
           </div>
-          <h1 className="text-2xl font-black text-gray-900">{t('shops.title', locale)}</h1>
+          <h1 className="text-2xl font-black text-brand-900">{t('shops.title', locale)}</h1>
           {!loading && (
-            <p className="text-sm text-gray-500 mt-0.5">{countShops(shops.length, locale)}</p>
+            <p className="text-sm text-brand-500 mt-0.5">{countShops(shops.length, locale)}</p>
           )}
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-5">
 
-        <div className="flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-48">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
-              className="absolute inset-s-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-            </svg>
-            <input
-              type="text"
-              placeholder={t('shops.searchPlaceholder', locale)}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full border border-gray-200 rounded-2xl ps-9 pe-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 bg-white"
-            />
-          </div>
-
-          <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
-            {[ALL, ...CITIES].map(c => (
-              <button
-                key={c}
-                onClick={() => setCity(c)}
-                className={`shrink-0 px-4 py-2 rounded-2xl text-sm font-semibold transition-all duration-200 active:scale-95 border ${
-                  city === c
-                    ? 'bg-brand-700 text-white border-brand-700'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-brand-300 hover:text-brand-600'
-                }`}
-              >
-                {c === ALL ? t('shops.allCities', locale) : placeName(c, locale)}
-              </button>
-            ))}
-          </div>
+        <div className="relative max-w-md">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
+            className="absolute inset-s-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-400 pointer-events-none">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+          <input
+            type="text"
+            placeholder={t('shops.searchPlaceholder', locale)}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full border border-brand-100 rounded-2xl ps-9 pe-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent-300 bg-wasla-card"
+          />
         </div>
 
         {!loading && !failed && (
-          <p className="text-sm text-gray-500">{countShops(filtered.length, locale)}</p>
+          <p className="text-sm text-brand-500">{countShops(filtered.length, locale)}</p>
         )}
 
         {failed && (
-          <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl px-4 py-3">{t('shops.error', locale)}</div>
+          <div className="bg-hibiscus-50 text-hibiscus-500 text-sm rounded-2xl px-4 py-3">{t('shops.error', locale)}</div>
         )}
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-3xl border border-brand-50 animate-pulse overflow-hidden">
-                <div className="h-20 bg-brand-50" />
+              <div key={i} className="bg-wasla-card rounded-2xl border border-brand-100 animate-pulse overflow-hidden">
+                <div className="h-20 bg-sand-50" />
                 <div className="p-4 space-y-2">
-                  <div className="h-3 bg-brand-50 rounded w-1/2" />
-                  <div className="h-3 bg-brand-50 rounded w-3/4" />
+                  <div className="h-3 bg-sand-50 rounded w-1/2" />
+                  <div className="h-3 bg-sand-50 rounded w-3/4" />
                 </div>
               </div>
             ))}
           </div>
         ) : failed ? null : filtered.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-brand-50 shadow-sm py-20 text-center">
-            <p className="text-gray-500 font-semibold text-lg">{t('shops.empty', locale)}</p>
-            <p className="text-sm text-gray-400 mt-1">{t('shops.emptyHint', locale)}</p>
+          <div className="bg-wasla-card rounded-2xl border border-brand-100 py-20 text-center">
+            <p className="text-brand-500 font-semibold text-lg">{t('shops.empty', locale)}</p>
+            <p className="text-sm text-brand-400 mt-1">{t('shops.emptyHint', locale)}</p>
             {hasFilters && (
               <button
-                onClick={() => { setSearch(''); setCity(ALL) }}
+                onClick={() => setSearch('')}
                 className="mt-4 text-sm font-bold text-brand-600 hover:underline active:scale-95 transition-all"
               >
                 {t('shops.clearFilters', locale)}

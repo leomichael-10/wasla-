@@ -7,19 +7,27 @@ import { CATALOGUE_WHERE, CATALOGUE_INCLUDE, toCatalogueProducts } from '../../.
 
 // GET /api/products — public listing (browse + search). Reads the same
 // catalogue definition as /api/shops/[id] and the homepage (lib/catalogue.js).
+//
+// Zone is a real filter, not a sort key: when the visitor has a selected
+// delivery zone, only products from sellers who actually cover it are
+// returned at all — not shown-but-greyed, not sorted-to-the-bottom. With
+// no zone set, every visitor-facing page already offers the global
+// ZoneGate picker before this is ever called; ZoneGate is explicitly
+// skippable, and a visitor who skipped it has already said "not now" —
+// a second, page-level prompt here would be redundant, so the catalogue
+// shows unfiltered rather than forcing the choice again.
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const category = searchParams.get('category')
   const search   = searchParams.get('search')
   const brand    = searchParams.get('brand')
-  const city     = searchParams.get('city')
   const sort     = searchParams.get('sort') ?? 'az'
   const zoneId   = parseInt(searchParams.get('zoneId'), 10) || null
 
   const where = { ...CATALOGUE_WHERE }
   if (category) where.category = { name: { contains: category, mode: 'insensitive' } }
   if (brand)     where.brand = { contains: brand, mode: 'insensitive' }
-  if (city)      where.seller = { ...CATALOGUE_WHERE.seller, city: { contains: city, mode: 'insensitive' } }
+  if (zoneId)    where.seller = { ...CATALOGUE_WHERE.seller, zoneCoverage: { some: { zoneId, isActive: true } } }
   if (search) {
     where.OR = [
       { name:        { contains: search, mode: 'insensitive' } },
@@ -34,22 +42,12 @@ export async function GET(request) {
       include: CATALOGUE_INCLUDE,
     })
 
-    // If the visitor has a selected delivery zone, annotate each product
-    // with whether its shop actually covers that zone — the listing shows
-    // it either way (grey, not hide, so a relevant search result doesn't
-    // just vanish).
-    let coverageMap = {}
-    if (zoneId) {
-      const sellerIds = [...new Set(raw.map(p => p.sellerId))]
-      const coverage = await prisma.shopZoneCoverage.findMany({
-        where: { zoneId, sellerId: { in: sellerIds }, isActive: true },
-      })
-      coverageMap = Object.fromEntries(coverage.map(c => [c.sellerId, true]))
-    }
-
+    // The where-clause above already guarantees every returned seller
+    // covers the zone when one is set — no second query needed to find
+    // out what the query itself just enforced.
     let products = toCatalogueProducts(raw).map(p => ({
       ...p,
-      seller: { ...p.seller, deliversToZone: zoneId ? Boolean(coverageMap[p.sellerId]) : undefined },
+      seller: { ...p.seller, deliversToZone: zoneId ? true : undefined },
     }))
 
     if (sort === 'az') products.sort((a, b) => a.name.localeCompare(b.name))

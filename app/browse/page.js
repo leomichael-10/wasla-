@@ -13,16 +13,15 @@ const SORT_OPTIONS = [
 ]
 
 const BRANDS = ['Kassala', 'Gedaref', 'El Obeid']
-const CITIES = ['Cairo', 'Giza', '6th of October', 'Alexandria']
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 animate-pulse overflow-hidden">
-      <div className="aspect-square bg-gray-100" />
+    <div className="bg-wasla-card rounded-2xl border border-brand-100 animate-pulse overflow-hidden">
+      <div className="aspect-square bg-sand-50" />
       <div className="p-3 space-y-2">
-        <div className="h-2.5 bg-gray-100 rounded w-1/3" />
-        <div className="h-4 bg-gray-100 rounded w-3/4" />
-        <div className="h-2.5 bg-gray-100 rounded w-1/2" />
+        <div className="h-2.5 bg-sand-50 rounded w-1/3" />
+        <div className="h-4 bg-sand-50 rounded w-3/4" />
+        <div className="h-2.5 bg-sand-50 rounded w-1/2" />
       </div>
     </div>
   )
@@ -38,7 +37,7 @@ function BrowseProductCard({ product }) {
   return (
     <Link
       href={`/products/${product.id}`}
-      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col h-full"
+      className="bg-wasla-card rounded-2xl border border-brand-100 hover:border-accent-300 transition-colors duration-200 overflow-hidden flex flex-col h-full"
     >
       <div className="bg-linear-to-br from-brand-50 via-brand-100 to-brand-100 aspect-square flex items-center justify-center">
         <span className="text-4xl font-black text-brand-200 select-none tracking-tighter">
@@ -49,19 +48,19 @@ function BrowseProductCard({ product }) {
         {product.brand && (
           <span className="text-[11px] font-bold text-brand-700 uppercase tracking-wide">{product.brand}</span>
         )}
-        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">
-          {product.name}{product.nameEn ? <span className="text-gray-400 font-normal"> ({product.nameEn})</span> : null}
+        <h3 className="text-sm font-bold text-brand-900 leading-snug line-clamp-2">
+          {product.name}{product.nameEn ? <span className="text-brand-400 font-normal"> ({product.nameEn})</span> : null}
         </h3>
         {labels.length > 0 && (
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-brand-400">
             {labels.length} option{labels.length !== 1 ? 's' : ''}
             {' · '}{labels.slice(0, 2).join(', ')}{labels.length > 2 ? '…' : ''}
           </p>
         )}
         {product.seller?.city && (
-          <p className="text-xs text-gray-400">{product.seller.city}</p>
+          <p className="text-xs text-brand-400">{product.seller.city}</p>
         )}
-        <p className="mt-auto pt-2 font-black text-gray-900 text-sm tabular-nums">{priceLabel}</p>
+        <p className="mt-auto pt-2 font-black text-brand-900 text-sm tabular-nums">{priceLabel}</p>
       </div>
     </Link>
   )
@@ -77,7 +76,6 @@ function BrowseBrowser() {
   const [search,      setSearch]      = useState(searchParams.get('search')   ?? '')
   const [brand,       setBrand]       = useState(searchParams.get('brand')    ?? '')
   const [category,    setCategory]    = useState(searchParams.get('category') ?? '')
-  const [city,        setCity]        = useState(searchParams.get('city')     ?? '')
   const [sort,        setSort]        = useState(searchParams.get('sort')     ?? 'az')
   const [mobileOpen,  setMobileOpen]  = useState(false)
 
@@ -95,7 +93,6 @@ function BrowseBrowser() {
     if (search)   params.set('search',   search)
     if (brand)    params.set('brand',    brand)
     if (category) params.set('category', category)
-    if (city)     params.set('city',     city)
     params.set('sort', sort)
     const zone = getZoneCookie()
     if (zone) params.set('zoneId', zone.id)
@@ -108,15 +105,15 @@ function BrowseBrowser() {
     } finally {
       setLoading(false)
     }
-  }, [search, brand, category, city, sort])
+  }, [search, brand, category, sort])
 
   useEffect(() => { fetchProducts() }, [fetchProducts])
 
-  const hasFilters = search || brand || category || city
-  function clearFilters() { setSearch(''); setBrand(''); setCategory(''); setCity('') }
+  const hasFilters = search || brand || category
+  function clearFilters() { setSearch(''); setBrand(''); setCategory('') }
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF]">
+    <div className="min-h-screen bg-sand-50">
       <Navbar />
 
       {/* Read-only banner */}
@@ -138,25 +135,25 @@ function BrowseBrowser() {
       )}
 
       {/* Mobile filter sheet */}
-      <div className={`fixed bottom-0 inset-x-0 z-50 bg-white rounded-t-3xl p-6 shadow-2xl transition-transform duration-300 sm:hidden ${mobileOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+      <div className={`fixed bottom-0 inset-x-0 z-50 bg-wasla-card rounded-t-2xl p-6 shadow-2xl transition-transform duration-300 sm:hidden ${mobileOpen ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-black text-gray-900">Filters</h2>
-          <button onClick={() => setMobileOpen(false)} className="text-gray-400 hover:text-gray-600">
+          <h2 className="font-black text-brand-900">Filters</h2>
+          <button onClick={() => setMobileOpen(false)} className="text-brand-400 hover:text-brand-600">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        <FilterPanel brand={brand} setBrand={setBrand} city={city} setCity={setCity} onClose={() => setMobileOpen(false)} />
+        <FilterPanel brand={brand} setBrand={setBrand} onClose={() => setMobileOpen(false)} />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-black text-gray-900">Browse Products</h1>
+            <h1 className="text-2xl font-black text-brand-900">Browse Products</h1>
             {!loading && (
-              <p className="text-sm text-gray-500 mt-0.5">{products.length} product{products.length !== 1 ? 's' : ''}</p>
+              <p className="text-sm text-brand-500 mt-0.5">{products.length} product{products.length !== 1 ? 's' : ''}</p>
             )}
           </div>
 
@@ -165,7 +162,7 @@ function BrowseBrowser() {
             <select
               value={sort}
               onChange={e => setSort(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 bg-white"
+              className="border border-brand-100 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 bg-wasla-card"
             >
               {SORT_OPTIONS.map(o => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -179,14 +176,14 @@ function BrowseBrowser() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search..."
-                className="border border-gray-200 rounded-xl pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 w-40"
+                className="border border-brand-100 rounded-xl ps-3 pe-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 w-40"
               />
             </div>
 
             {/* Mobile filter toggle */}
             <button
               onClick={() => setMobileOpen(true)}
-              className="sm:hidden flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm"
+              className="sm:hidden flex items-center gap-1.5 bg-wasla-card border border-brand-100 rounded-full px-4 py-2 text-sm font-semibold text-brand-700"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
@@ -203,7 +200,6 @@ function BrowseBrowser() {
               search   && { label: `"${search}"`, clear: () => setSearch('') },
               brand    && { label: brand,          clear: () => setBrand('') },
               category && { label: category,       clear: () => setCategory('') },
-              city     && { label: city,           clear: () => setCity('') },
             ].filter(Boolean).map(chip => (
               <button key={chip.label} onClick={chip.clear}
                 className="flex items-center gap-1.5 bg-brand-50 text-brand-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-brand-100 transition-colors">
@@ -213,19 +209,19 @@ function BrowseBrowser() {
                 </svg>
               </button>
             ))}
-            <button onClick={clearFilters} className="text-xs text-gray-400 hover:text-red-500 font-semibold px-2 transition-colors">Clear all</button>
+            <button onClick={clearFilters} className="text-xs text-brand-400 hover:text-hibiscus-500 font-semibold px-2 transition-colors">Clear all</button>
           </div>
         )}
 
         <div className="flex gap-6">
           {/* Desktop sidebar */}
           <aside className="hidden sm:block w-52 shrink-0">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-24">
+            <div className="bg-wasla-card rounded-2xl border border-brand-100 p-5 sticky top-24">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-black text-gray-900 text-sm">Filters</h2>
-                {hasFilters && <button onClick={clearFilters} className="text-xs text-red-400 hover:text-red-600 font-semibold">Clear</button>}
+                <h2 className="font-black text-brand-900 text-sm">Filters</h2>
+                {hasFilters && <button onClick={clearFilters} className="text-xs text-hibiscus-500 hover:text-hibiscus-600 font-semibold">Clear</button>}
               </div>
-              <FilterPanel brand={brand} setBrand={setBrand} city={city} setCity={setCity} />
+              <FilterPanel brand={brand} setBrand={setBrand} />
             </div>
           </aside>
 
@@ -240,7 +236,7 @@ function BrowseBrowser() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 8c3-2 6 0 5 3-.7 2-3 2.5-4.5 1.5C8 11.3 7.5 9.3 9 8ZM4 20l6-6M14 14l6 6M4 4l16 16" />
                 </svg>
                 <p className="text-brand-800 font-bold text-lg">لسه مفيش منتجات هنا</p>
-                <p className="text-gray-400 text-sm mt-1">جرّب تغيّر الفلاتر</p>
+                <p className="text-brand-400 text-sm mt-1">جرّب تغيّر الفلاتر</p>
                 {hasFilters && (
                   <button onClick={clearFilters} className="mt-4 text-accent-500 font-bold hover:underline text-sm">مسح الفلاتر</button>
                 )}
@@ -259,27 +255,16 @@ function BrowseBrowser() {
   )
 }
 
-function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
+function FilterPanel({ brand, setBrand, onClose }) {
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Brand</p>
+        <p className="text-xs font-bold text-brand-400 uppercase tracking-wide mb-2">Brand</p>
         <div className="space-y-1.5">
           {BRANDS.map(b => (
             <label key={b} className="flex items-center gap-2.5 cursor-pointer group">
               <input type="radio" name="browse-brand" checked={brand === b} onChange={() => setBrand(brand === b ? '' : b)} className="accent-brand-600 w-4 h-4" />
-              <span className="text-sm text-gray-700 group-hover:text-brand-700 transition-colors">{b}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-      <div>
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">City</p>
-        <div className="space-y-1.5">
-          {CITIES.map(c => (
-            <label key={c} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="radio" name="browse-city" checked={city === c} onChange={() => setCity(city === c ? '' : c)} className="accent-brand-600 w-4 h-4" />
-              <span className="text-sm text-gray-700 group-hover:text-brand-700 transition-colors">{c}</span>
+              <span className="text-sm text-brand-700 group-hover:text-brand-900 transition-colors">{b}</span>
             </label>
           ))}
         </div>
@@ -296,7 +281,7 @@ function FilterPanel({ brand, setBrand, city, setCity, onClose }) {
 export default function BrowsePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#FBF6EF]">
+      <div className="min-h-screen bg-sand-50">
         <div className="h-16 bg-brand-700" />
         <div className="h-10 bg-yellow-50 border-b border-yellow-200" />
         <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">

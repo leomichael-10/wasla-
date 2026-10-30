@@ -9,15 +9,19 @@ import { t, productName, formatPrice } from '../lib/i18n'
 // name, price, and a round "+" add-to-cart button pinned to the tile's
 // bottom inline-end corner. Once in cart it becomes a −/qty/+ stepper in
 // the same spot — quick-commerce pattern, no detail-page hop needed.
+//
+// No out-of-zone branch here on purpose: /api/products excludes
+// non-covering sellers' products from the result set entirely when a zone
+// is set (and annotates nothing when it isn't), so `deliversToZone` is
+// never `false` for anything this component receives.
 export default function BrowseProductTile({ product, locale }) {
   const displayName = productName(product, locale)
   const [userId, setUserId] = useState('guest')
   const [qty,    setQty]    = useState(0)
 
   const variant     = product.variants?.[0] ?? null
-  const outOfZone   = product.seller?.deliversToZone === false
   const inStock     = variant?.inStock !== false
-  const canAdd      = variant && inStock && !outOfZone
+  const canAdd      = variant && inStock
   const mainImage   = product.images?.[0] || null
   const price       = Number(variant?.price ?? 0)
 
@@ -78,8 +82,8 @@ export default function BrowseProductTile({ product, locale }) {
         </Link>
         <p className="text-sm font-black text-gray-900">{formatPrice(price, locale)}</p>
         {!canAdd && (
-          <p className="text-[10px] text-red-500 font-bold">
-            {outOfZone ? t('browse.outOfZone', locale) : t('browse.outOfStock', locale)}
+          <p className="text-[10px] text-hibiscus-500 font-bold">
+            {t('browse.outOfStock', locale)}
           </p>
         )}
       </div>
