@@ -47,10 +47,14 @@
   --color-sand-50:  #FBF6EF;
   --color-sand-100: #F5EBDD;
 
-  /* Wasla-branded home redesign palette (bottom tab bar + new home page). */
-  --wasla-orange:      #F26522;
-  --wasla-orange-deep: #D94F12;
-  --wasla-cream:       #FDF4E7;
+  /* Wasla-branded home redesign palette (bottom tab bar + new home page).
+     Reverted to the original brown/beige brand palette: the #F26522 orange
+     read as a Talabat clone and broke from the jabana/terracotta/sand system
+     documented above. These stay as aliases so the home components keep their
+     existing class names while rendering in the real brand colours. */
+  --wasla-orange:      #C1502E;
+  --wasla-orange-deep: #8F331B;
+  --wasla-cream:       #F5EBDD;
   --wasla-card:        #FFFFFF;
 
   /* Shared motion vocabulary — extend these, don't invent parallel curves. */
