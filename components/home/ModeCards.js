@@ -1,23 +1,28 @@
 import Link from 'next/link'
 import { t } from '../../lib/i18n'
 
-function ModeCard({ href, icon, title, subtitle }) {
+function ModeCard({ href, icon, title, subtitle, tone }) {
+  const toneClass = tone === 'dark'
+    ? 'bg-brand-700 border border-black/10'
+    : 'bg-wasla-orange border border-black/10'
+  const iconToneClass = tone === 'dark' ? 'text-brand-700' : 'text-wasla-orange-deep'
+
   return (
     <Link
       href={href}
-      className="flex flex-col gap-2 rounded-3xl bg-wasla-orange text-white p-4"
+      className={`flex flex-col gap-2 rounded-2xl p-4 text-white ${toneClass}`}
     >
       <div className="flex items-center justify-between">
-        <span className="flex items-center justify-center w-10 h-10 rounded-full bg-white text-wasla-orange-deep shrink-0">
+        <span className={`flex items-center justify-center w-10 h-10 rounded-full bg-white shrink-0 ${iconToneClass}`}>
           {icon}
         </span>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 rtl:-scale-x-100">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 rtl:-scale-x-100 opacity-80">
           <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
         </svg>
       </div>
       <div>
         <p className="font-black text-sm leading-snug"><bdi>{title}</bdi></p>
-        <p className="text-xs text-white/85 leading-snug mt-0.5">{subtitle}</p>
+        <p className="text-xs text-white/80 leading-snug mt-0.5">{subtitle}</p>
       </div>
     </Link>
   )
@@ -43,12 +48,14 @@ export default function ModeCards({ locale }) {
         icon={forkKnifeIcon}
         title={t('home.modeRestaurantTitle', locale)}
         subtitle={t('home.modeRestaurantSubtitle', locale)}
+        tone="orange"
       />
       <ModeCard
         href="/shops"
         icon={storefrontIcon}
         title={t('home.modeShopTitle', locale)}
         subtitle={t('home.modeShopSubtitle', locale)}
+        tone="dark"
       />
     </div>
   )

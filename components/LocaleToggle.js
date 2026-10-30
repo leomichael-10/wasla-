@@ -8,7 +8,7 @@ import { setLocaleCookie } from '../lib/i18n'
 export default function LocaleToggle({ locale, variant = 'light' }) {
   const target = locale === 'ar' ? 'EN' : 'AR'
   const tone = variant === 'light'
-    ? 'bg-wasla-card text-brand-700 shadow-sm'
+    ? 'bg-wasla-card text-brand-700 border border-brand-900/10'
     : 'text-white/90 hover:text-white hover:bg-white/10'
 
   return (

@@ -58,7 +58,7 @@ export default function MobileTabBar() {
   return (
     <nav
       dir={dir}
-      className="fixed bottom-0 inset-x-0 z-30 lg:hidden bg-white rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.08)] pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 inset-x-0 z-30 lg:hidden bg-white rounded-t-2xl shadow-[0_-4px_20px_rgba(120,65,30,0.12)] pb-[env(safe-area-inset-bottom)]"
     >
       <div className="grid grid-cols-5 h-16">
         {tabs.map(tab => {
@@ -74,7 +74,7 @@ export default function MobileTabBar() {
               <span className="relative">
                 <TabIcon name={tab.icon} active={active} size={tab.center ? 'w-7 h-7' : 'w-6 h-6'} />
                 {tab.badge > 0 && (
-                  <span className="absolute -top-1.5 -end-2 min-w-4 h-4 px-1 bg-wasla-orange text-white text-[9px] font-black rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1.5 -end-2 min-w-4 h-4 px-1 bg-hibiscus-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
                     {tab.badge > 9 ? '9+' : tab.badge}
                   </span>
                 )}

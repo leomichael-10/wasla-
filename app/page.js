@@ -54,7 +54,7 @@ export default async function HomePage() {
   const popular = await getPopularProducts(zoneId)
 
   return (
-    <div className="bg-wasla-cream pb-20">
+    <div className="bg-sand-50 pb-20">
       <div className="hidden lg:block">
         <Navbar />
         <ZoneBar />

@@ -50,7 +50,7 @@ export default function BestSellerCard({ product, locale }) {
     : null
 
   return (
-    <div className="bg-wasla-card rounded-2xl border border-brand-50 shadow-sm overflow-hidden flex flex-col h-full">
+    <div className="bg-wasla-card rounded-xl border border-brand-100 overflow-hidden flex flex-col h-full">
       <Link href={`/products/${product.id}`} className="block">
         <MediaThumb src={mainImage} alt={displayName} className="aspect-square bg-wasla-cream" />
       </Link>

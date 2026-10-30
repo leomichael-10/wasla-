@@ -2,12 +2,12 @@ import { t } from '../../lib/i18n'
 
 function PlaceholderTile({ icon, title, subtitle }) {
   return (
-    <a href="#" className="flex flex-col gap-2 rounded-3xl bg-wasla-cream p-4">
-      <span className="flex items-center justify-center w-10 h-10 rounded-full bg-white text-wasla-orange-deep shadow-sm shrink-0">
+    <a href="#" className="flex flex-col gap-2 rounded-2xl bg-wasla-card border border-brand-100 p-4">
+      <span className="flex items-center justify-center w-10 h-10 rounded-full bg-sand-50 text-wasla-orange-deep shrink-0">
         {icon}
       </span>
       <div>
-        <p className="font-black text-sm text-brand-900 leading-snug"><bdi>{title}</bdi></p>
+        <p className="font-bold text-sm text-brand-900 leading-snug"><bdi>{title}</bdi></p>
         <p className="text-xs text-brand-500 leading-snug mt-0.5">{subtitle}</p>
       </div>
     </a>
