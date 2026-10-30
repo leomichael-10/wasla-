@@ -5,10 +5,10 @@ import { useState, useEffect } from 'react'
 import { getCartCount } from '../lib/cart'
 import { useUser } from '../lib/UserContext'
 import { useLocale } from '../lib/LocaleContext'
-import { setLocaleCookie } from '../lib/i18n'
 import MobileMenu from './MobileMenu'
 import SearchAutocomplete from './SearchAutocomplete'
 import Wordmark from './Wordmark'
+import LocaleToggle from './LocaleToggle'
 
 function navLinksFor(user) {
   if (!user) return []
@@ -144,13 +144,7 @@ export default function Navbar() {
               </>
             )}
 
-            <button
-              onClick={() => setLocaleCookie(locale === 'ar' ? 'en' : 'ar')}
-              className="text-white/90 hover:text-white text-xs font-bold px-2 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
-              aria-label="Toggle language"
-            >
-              {locale === 'ar' ? 'EN' : 'AR'}
-            </button>
+            <LocaleToggle locale={locale} variant="dark" />
 
             <button
               onClick={() => setSearchOpen(v => !v)}

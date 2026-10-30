@@ -1,17 +1,19 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import WaslaLogo from './WaslaLogo'
 
 const SPLASH_SEEN_KEY = 'wasla_splash_seen_v1'
 const AUTO_DISMISS_MS = 2400
 
 // Full-screen first-open splash — cream background covering the entire
 // viewport edge to edge (100dvh/100vw, no gaps, nothing visible behind
-// it), the rider mark filling the screen via object-fit: cover (the
-// source is 404x370, near-square, so on a tall phone it's scaled up and
-// center-cropped horizontally rather than left small and centered).
+// it), the drawn jabana mark + wordmark centered and letterboxed (never
+// cropped — unlike the old rider GIF, this is a centered mark with
+// breathing room, not a full-bleed photo, so contain-style centering is
+// the right fit here, not object-fit: cover).
 //
 // The critical sizing/positioning (fixed, inset 0, 100dvh/100vw,
-// z-index, background, object-fit) is set as INLINE styles here rather
+// z-index, background, centering) is set as INLINE styles here rather
 // than through app/globals.css's #wasla-splash rule (which still only
 // carries the one thing that has to react to an attribute change —
 // html[data-splash-seen="1"] #wasla-splash { display:none }). Inline
@@ -31,8 +33,9 @@ const AUTO_DISMISS_MS = 2400
 // two cases (new vs. returning visitor) every time. This component
 // always renders the markup (no conditional return null) so the
 // pre-paint CSS attribute has something to hide/show; React only owns
-// what happens AFTER mount — the auto-dismiss timer, tap-to-skip, the
-// reduced-motion swap, and locking body scroll while it's up.
+// what happens AFTER mount — the auto-dismiss timer, tap-to-skip, and
+// locking body scroll while it's up. The draw-animation / reduced-motion
+// swap now lives in WaslaLogo itself, not here.
 // No `display` here on purpose — it needs to react to the
 // `data-splash-seen` attribute (see app/globals.css), and inline styles
 // always beat external-stylesheet rules regardless of specificity, so
@@ -51,22 +54,24 @@ const OVERLAY_STYLE = {
   cursor: 'pointer',
 }
 
-const IMG_STYLE = {
+// Centers the mark inside the overlay. This is a NESTED element, not
+// OVERLAY_STYLE itself — #wasla-splash (the div OVERLAY_STYLE is on)
+// must keep `display` unset so app/globals.css's
+// `html[data-splash-seen="1"] #wasla-splash { display: none }` rule can
+// still hide it (see the comment above: inline styles always win, so
+// `display` can never be set inline on that element without permanently
+// breaking the hide rule). This wrapper is free to use flex because
+// nothing ever needs to override its display.
+const CENTER_STYLE = {
   width: '100%',
   height: '100%',
-  objectFit: 'cover',
-  objectPosition: 'center',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 }
 
 export default function SplashScreen() {
-  const [reducedMotion, setReducedMotion] = useState(false)
-
   useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReducedMotion(query.matches)
-    const onChange = e => setReducedMotion(e.matches)
-    query.addEventListener('change', onChange)
-
     // The inline head script already set this before we ever mounted —
     // if it says "seen", there's nothing left for this effect to do
     // (no timer, no scroll lock).
@@ -77,10 +82,7 @@ export default function SplashScreen() {
       timer = setTimeout(dismiss, AUTO_DISMISS_MS)
     }
 
-    return () => {
-      query.removeEventListener('change', onChange)
-      clearTimeout(timer)
-    }
+    return () => clearTimeout(timer)
   }, [])
 
   function lockBodyScroll() {
@@ -110,13 +112,9 @@ export default function SplashScreen() {
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') dismiss() }}
       style={OVERLAY_STYLE}
     >
-      <img
-        src={reducedMotion ? '/wasla-splash-static.png' : '/wasla-splash.gif'}
-        alt="Wasla — وصلة"
-        className="select-none pointer-events-none"
-        style={IMG_STYLE}
-        draggable={false}
-      />
+      <div style={CENTER_STYLE} className="select-none pointer-events-none">
+        <WaslaLogo variant="splash" />
+      </div>
     </div>
   )
 }
