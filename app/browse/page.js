@@ -109,6 +109,12 @@ function BrowseBrowser() {
 
   useEffect(() => { fetchProducts() }, [fetchProducts])
 
+  // Changing zone no longer reloads the page — re-fetch this listing in place.
+  useEffect(() => {
+    window.addEventListener('zoneUpdated', fetchProducts)
+    return () => window.removeEventListener('zoneUpdated', fetchProducts)
+  }, [fetchProducts])
+
   const hasFilters = search || brand || category
   function clearFilters() { setSearch(''); setBrand(''); setCategory('') }
 

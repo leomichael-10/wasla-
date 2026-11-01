@@ -19,7 +19,12 @@ export default function CartBar() {
   const [pulse,   setPulse]   = useState(false)
   const prevCount = useRef(0)
 
-  useEffect(() => { setLocale(getLocaleCookie()) }, [])
+  useEffect(() => {
+    setLocale(getLocaleCookie())
+    function sync() { setLocale(getLocaleCookie()) }
+    window.addEventListener('localeUpdated', sync)
+    return () => window.removeEventListener('localeUpdated', sync)
+  }, [])
 
   useEffect(() => {
     const uid = user?.id ?? 'guest'

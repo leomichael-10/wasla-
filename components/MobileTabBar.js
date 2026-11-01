@@ -32,7 +32,12 @@ export default function MobileTabBar() {
   const [cartCount, setCartCount] = useState(0)
   const [locale,    setLocale]    = useState('ar')
 
-  useEffect(() => { setLocale(getLocaleCookie()) }, [])
+  useEffect(() => {
+    setLocale(getLocaleCookie())
+    function sync() { setLocale(getLocaleCookie()) }
+    window.addEventListener('localeUpdated', sync)
+    return () => window.removeEventListener('localeUpdated', sync)
+  }, [])
 
   useEffect(() => {
     const uid = user?.id ?? 'guest'

@@ -167,7 +167,12 @@ function ProductsBrowser() {
   const dir = locale === 'ar' ? 'rtl' : 'ltr'
 
   useEffect(() => { setLocale(getLocaleCookie()) }, [])
-  useEffect(() => { setZone(getZoneCookie()) }, [])
+  useEffect(() => {
+    setZone(getZoneCookie())
+    function sync() { setZone(getZoneCookie()) }
+    window.addEventListener('zoneUpdated', sync)
+    return () => window.removeEventListener('zoneUpdated', sync)
+  }, [])
 
   useEffect(() => {
     fetch('/api/categories')
@@ -198,6 +203,13 @@ function ProductsBrowser() {
   }, [search, brand, category, sort])
 
   useEffect(() => { fetchProducts() }, [fetchProducts])
+
+  // Changing zone (components/ZoneGate.js, opened via ZoneBar/LocationPicker)
+  // no longer reloads the page — re-fetch this listing in place instead.
+  useEffect(() => {
+    window.addEventListener('zoneUpdated', fetchProducts)
+    return () => window.removeEventListener('zoneUpdated', fetchProducts)
+  }, [fetchProducts])
 
   function clearFilters() { setSearch(''); setBrand(''); setCategory('') }
 

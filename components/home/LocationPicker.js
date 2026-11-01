@@ -1,26 +1,24 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { getZoneCookie } from '../../lib/zone'
+import { getZoneCookie, openZonePicker } from '../../lib/zone'
 import { placeName } from '../../lib/i18n'
-
-const ZONE_COOKIE_NAME = 'wasla_zone'
 
 export default function LocationPicker({ locale }) {
   const [zone, setZone] = useState(null)
 
-  useEffect(() => { setZone(getZoneCookie()) }, [])
-
-  function handleChange() {
-    document.cookie = `${ZONE_COOKIE_NAME}=; path=/; max-age=0`
-    window.location.reload()
-  }
+  useEffect(() => {
+    setZone(getZoneCookie())
+    function sync() { setZone(getZoneCookie()) }
+    window.addEventListener('zoneUpdated', sync)
+    return () => window.removeEventListener('zoneUpdated', sync)
+  }, [])
 
   const name = zone ? (locale === 'ar' ? zone.nameAr : zone.nameEn) : placeName('Cairo', locale)
 
   return (
     <button
       type="button"
-      onClick={handleChange}
+      onClick={openZonePicker}
       className="flex items-center gap-1 h-11 px-3 rounded-full bg-wasla-card border border-brand-900/10 shrink-0 text-xs font-bold text-wasla-orange-deep"
     >
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.6} stroke="currentColor" className="w-4 h-4">

@@ -1,6 +1,7 @@
 'use client'
 import { useEffect } from 'react'
 import WaslaLogo from './WaslaLogo'
+import { isNativeApp } from '../lib/capacitor'
 
 const SPLASH_SEEN_KEY = 'wasla_splash_seen_v1'
 const AUTO_DISMISS_MS = 2400
@@ -72,6 +73,23 @@ const CENTER_STYLE = {
 
 export default function SplashScreen() {
   useEffect(() => {
+    // Capacitor shows its own native splash before the WebView's content
+    // (this page) ever paints — by the time this effect can run, that one
+    // has already done its job. Two splashes back to back (native, then
+    // this 2.4s animated one) would look broken, so the native app wins:
+    // dismiss immediately via the same path a real skip-tap uses, rather
+    // than a separate code path. The blocking head script (see the big
+    // comment above) can't make this same check — it runs synchronously
+    // before Capacitor's own bridge is guaranteed ready — so it still
+    // shows this overlay for that first instant; this is the earliest
+    // point a reliable check can run, at the cost of a possible brief
+    // flash before it disappears, which is accepted as the trade-off for
+    // not touching that already-fragile blocking script.
+    if (isNativeApp()) {
+      dismiss()
+      return
+    }
+
     // The inline head script already set this before we ever mounted —
     // if it says "seen", there's nothing left for this effect to do
     // (no timer, no scroll lock).

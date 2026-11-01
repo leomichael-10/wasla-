@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { getLocaleCookie, t } from '../lib/i18n'
 import { onPromptAvailable, triggerInstall, isStandalone, isIos } from '../lib/pwaInstall'
+import { isNativeApp } from '../lib/capacitor'
 
 const DISMISS_KEY = 'wasla_pwa_dismissed_at'
 const DISMISS_DAYS = 7
@@ -20,7 +21,18 @@ export default function PWAInstall() {
   const [showIosHint,  setShowIosHint]  = useState(false)
 
   useEffect(() => {
-    setLocale(getLocaleCookie())
+    function sync() { setLocale(getLocaleCookie()) }
+    sync()
+    window.addEventListener('localeUpdated', sync)
+    return () => window.removeEventListener('localeUpdated', sync)
+  }, [])
+
+  useEffect(() => {
+    // Already a native app shell — no "install to home screen" banner to
+    // show, and no service worker needed (a WebView's own network stack
+    // handles requests directly; a browser-oriented SW here would only add
+    // a layer of caching behavior nobody asked for inside the wrapper).
+    if (isNativeApp()) return
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {})

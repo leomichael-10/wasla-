@@ -1,4 +1,5 @@
 'use client'
+import { useRouter } from 'next/navigation'
 import { setLocaleCookie } from '../lib/i18n'
 
 // Shared AR/EN switch — used by Navbar (desktop) and HomeHeader (mobile),
@@ -6,15 +7,21 @@ import { setLocaleCookie } from '../lib/i18n'
 // button: the two-letter-only version is exactly what made the toggle a
 // "mystery button" invisible on mobile until this component existed.
 export default function LocaleToggle({ locale, variant = 'light' }) {
+  const router = useRouter()
   const target = locale === 'ar' ? 'EN' : 'AR'
   const tone = variant === 'light'
     ? 'bg-wasla-card text-brand-700 border border-brand-900/10'
     : 'text-white/90 hover:text-white hover:bg-white/10'
 
+  function handleToggle() {
+    setLocaleCookie(locale === 'ar' ? 'en' : 'ar')
+    router.refresh()
+  }
+
   return (
     <button
       type="button"
-      onClick={() => setLocaleCookie(locale === 'ar' ? 'en' : 'ar')}
+      onClick={handleToggle}
       aria-label={locale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
       className={`relative flex items-center justify-center w-11 h-11 rounded-full shrink-0 transition-colors ${tone}`}
     >

@@ -36,7 +36,12 @@ export default function ProfilePage() {
   const [success,  setSuccess]  = useState(false)
   const [locale,   setLocale]   = useState('ar')
 
-  useEffect(() => { setLocale(getLocaleCookie()) }, [])
+  useEffect(() => {
+    setLocale(getLocaleCookie())
+    function sync() { setLocale(getLocaleCookie()) }
+    window.addEventListener('localeUpdated', sync)
+    return () => window.removeEventListener('localeUpdated', sync)
+  }, [])
 
   const loadAddresses = useCallback(() => {
     const token = localStorage.getItem('wasla_token')
@@ -141,6 +146,7 @@ export default function ProfilePage() {
 
   function handleToggleLocale() {
     setLocaleCookie(locale === 'ar' ? 'en' : 'ar')
+    router.refresh()
   }
 
   const dir = locale === 'ar' ? 'rtl' : 'ltr'
