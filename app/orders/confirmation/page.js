@@ -41,7 +41,7 @@ export default function OrderConfirmationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF]">
+    <div className="min-h-screen bg-sand-50">
       <Navbar />
 
       <div className="max-w-2xl mx-auto px-4 py-12">
@@ -52,8 +52,8 @@ export default function OrderConfirmationPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-black text-gray-900">Order Placed Successfully</h1>
-          <p className="text-gray-500 text-sm mt-2">
+          <h1 className="text-2xl font-black text-brand-900">Order Placed Successfully</h1>
+          <p className="text-brand-500 text-sm mt-2">
             Your order has been received and will be confirmed by the seller shortly.
           </p>
         </div>
@@ -62,23 +62,23 @@ export default function OrderConfirmationPage() {
         {orders.length > 0 ? (
           <div className="space-y-4 mb-8">
             {orders.map((order, idx) => (
-              <div key={idx} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-                  <span className="font-black text-gray-900">Order #{order.id}</span>
-                  <span className="font-black text-gray-900 tabular-nums">{formatPrice(order.total, locale, { decimals: 2 })}</span>
+              <div key={idx} className="bg-wasla-card rounded-2xl border border-brand-100 overflow-hidden">
+                <div className="px-5 py-4 border-b border-brand-50 flex items-center justify-between">
+                  <span className="font-black text-brand-900">Order #{order.id}</span>
+                  <span className="font-black text-brand-900 tabular-nums">{formatPrice(order.total, locale, { decimals: 2 })}</span>
                 </div>
                 <div className="px-5 py-4 space-y-2">
                   {order.items?.map((item, i) => (
                     <div key={i} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-700">
+                      <span className="text-brand-700">
                         {item.productVariant?.product ? productName(item.productVariant.product, locale) : 'Product'}
                         {item.productVariant?.label ? ` · ${item.productVariant.label}` : ''}
                       </span>
-                      <span className="text-gray-500">×{item.quantity}</span>
+                      <span className="text-brand-500">×{item.quantity}</span>
                     </div>
                   ))}
                 </div>
-                <div className="px-5 py-3 bg-[#FBF6EF] border-t border-gray-100 grid grid-cols-3 text-xs text-gray-500 gap-2">
+                <div className="px-5 py-3 bg-sand-50 border-t border-brand-100 grid grid-cols-3 text-xs text-brand-500 gap-2">
                   <span>Payment: {order.paymentMethod ?? 'cod'}</span>
                   <span className="text-center text-green-600 font-semibold">Status: Placed</span>
                   <span className="text-right">Delivery: {order.promisedEta ? new Date(order.promisedEta).toLocaleString('en-EG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : 'TBD'}</span>
@@ -87,7 +87,7 @@ export default function OrderConfirmationPage() {
                 {(() => {
                   const waUrl = buildWaMeUrl(order, order.seller)
                   return (
-                    <div className="px-5 py-3 border-t border-gray-100">
+                    <div className="px-5 py-3 border-t border-brand-100">
                       {waUrl ? (
                         <a
                           href={waUrl}
@@ -101,19 +101,19 @@ export default function OrderConfirmationPage() {
                           إبلاغ المتجر عبر واتساب
                         </a>
                       ) : (
-                        <p className="text-xs text-gray-400">لا يمكن إبلاغ المتجر — لا يوجد رقم واتساب مسجل.</p>
+                        <p className="text-xs text-brand-400">لا يمكن إبلاغ المتجر — لا يوجد رقم واتساب مسجل.</p>
                       )}
                     </div>
                   )
                 })()}
 
                 {order.paymentMethod === 'manual_transfer' && (
-                  <div className="px-5 py-4 border-t border-gray-100">
+                  <div className="px-5 py-4 border-t border-brand-100">
                     {uploaded[order.id] ? (
                       <p className="text-xs text-green-600 font-semibold">Receipt uploaded — awaiting admin confirmation.</p>
                     ) : (
                       <>
-                        <p className="text-xs text-gray-500 mb-2">
+                        <p className="text-xs text-brand-500 mb-2">
                           Send payment via InstaPay or Vodafone Cash, then upload your receipt to confirm this order.
                         </p>
                         <label className={`inline-block cursor-pointer bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-bold px-4 py-2 rounded-xl transition-colors ${uploading === order.id ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -131,9 +131,9 @@ export default function OrderConfirmationPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center mb-8">
-            <p className="text-gray-500 font-semibold">Your order has been placed.</p>
-            <p className="text-sm text-gray-400 mt-1">Check My Orders for details.</p>
+          <div className="bg-wasla-card rounded-2xl border border-brand-100 p-8 text-center mb-8">
+            <p className="text-brand-500 font-semibold">Your order has been placed.</p>
+            <p className="text-sm text-brand-400 mt-1">Check My Orders for details.</p>
           </div>
         )}
 
@@ -147,7 +147,7 @@ export default function OrderConfirmationPage() {
           </Link>
           <Link
             href="/products"
-            className="text-sm font-semibold text-gray-500 hover:text-gray-700"
+            className="text-sm font-semibold text-brand-500 hover:text-brand-700"
           >
             Continue Shopping
           </Link>

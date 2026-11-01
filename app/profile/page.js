@@ -11,8 +11,8 @@ import DeleteAccountSection from '../../components/DeleteAccountSection'
 import { useUser } from '../../lib/UserContext'
 import { getLocaleCookie, setLocaleCookie, t } from '../../lib/i18n'
 
-const inputCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition bg-white'
-const labelCls = 'block text-sm font-semibold text-gray-700 mb-1.5'
+const inputCls = 'w-full border border-brand-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition bg-wasla-card'
+const labelCls = 'block text-sm font-semibold text-brand-700 mb-1.5'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -152,37 +152,37 @@ export default function ProfilePage() {
   const dir = locale === 'ar' ? 'rtl' : 'ltr'
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF] pb-20" dir={dir}>
+    <div className="min-h-screen bg-sand-50 pb-20" dir={dir}>
       <Navbar />
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-black text-gray-900 mb-6">{t('account.title', locale)}</h1>
+        <h1 className="text-2xl font-black text-brand-900 mb-6">{t('account.title', locale)}</h1>
 
-        {error   && <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-4 py-3 mb-4">{error}</div>}
+        {error   && <div className="bg-hibiscus-50 text-hibiscus-500 text-sm rounded-xl px-4 py-3 mb-4">{error}</div>}
         {success && <div className="bg-green-50 border border-green-200 text-green-700 text-sm font-semibold rounded-xl px-4 py-3 mb-4">{t('account.saved', locale)}</div>}
 
         {loading ? (
           <div className="space-y-4 animate-pulse">
-            {[1, 2, 3].map(i => <div key={i} className="h-24 bg-white rounded-2xl border border-gray-100" />)}
+            {[1, 2, 3].map(i => <div key={i} className="h-24 bg-wasla-card rounded-2xl border border-brand-100" />)}
           </div>
         ) : (
           <div className="space-y-5">
 
             {/* Profile */}
-            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-              <h2 className="font-black text-gray-900">{t('account.sectionProfile', locale)}</h2>
+            <section className="bg-wasla-card rounded-2xl border border-brand-100 shadow-sm p-6 space-y-4">
+              <h2 className="font-black text-brand-900">{t('account.sectionProfile', locale)}</h2>
 
               <div>
                 <label className={labelCls}>{t('account.email', locale)}</label>
                 <div className="flex items-center gap-2">
                   <input type="email" value={email} disabled
-                    className={`${inputCls} opacity-60 cursor-not-allowed bg-[#FBF6EF]`} />
+                    className={`${inputCls} opacity-60 cursor-not-allowed bg-sand-50`} />
                   <span className={`shrink-0 text-xs font-bold px-2.5 py-1 rounded-full ${
                     emailVerified ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                   }`}>
                     {emailVerified ? t('account.emailVerified', locale) : t('account.emailUnverified', locale)}
                   </span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">{t('account.emailLocked', locale)}</p>
+                <p className="text-xs text-brand-400 mt-1">{t('account.emailLocked', locale)}</p>
               </div>
 
               <form onSubmit={handleSave} className="space-y-4">
@@ -212,9 +212,9 @@ export default function ProfilePage() {
             </section>
 
             {/* Addresses */}
-            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+            <section className="bg-wasla-card rounded-2xl border border-brand-100 shadow-sm p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="font-black text-gray-900">{t('account.sectionAddresses', locale)}</h2>
+                <h2 className="font-black text-brand-900">{t('account.sectionAddresses', locale)}</h2>
                 {addressForm === null && (
                   <button
                     onClick={() => setAddressForm('new')}
@@ -234,7 +234,7 @@ export default function ProfilePage() {
                   onCancel={() => setAddressForm(null)}
                 />
               ) : addresses.length === 0 ? (
-                <p className="text-sm text-gray-400">{t('account.noAddresses', locale)}</p>
+                <p className="text-sm text-brand-400">{t('account.noAddresses', locale)}</p>
               ) : (
                 <div className="space-y-3">
                   {addresses.map(a => (
@@ -252,34 +252,34 @@ export default function ProfilePage() {
             </section>
 
             {/* Orders */}
-            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center justify-between">
-              <h2 className="font-black text-gray-900">{t('account.sectionOrders', locale)}</h2>
+            <section className="bg-wasla-card rounded-2xl border border-brand-100 shadow-sm p-6 flex items-center justify-between">
+              <h2 className="font-black text-brand-900">{t('account.sectionOrders', locale)}</h2>
               <Link href="/orders" className="text-sm font-bold text-brand-600 hover:text-brand-800 transition-colors">
                 {t('account.viewOrders', locale)} →
               </Link>
             </section>
 
             {/* Preferences */}
-            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-3">
-              <h2 className="font-black text-gray-900">{t('account.sectionPrefs', locale)}</h2>
+            <section className="bg-wasla-card rounded-2xl border border-brand-100 shadow-sm p-6 space-y-3">
+              <h2 className="font-black text-brand-900">{t('account.sectionPrefs', locale)}</h2>
               <button
                 onClick={handleToggleLocale}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-gray-100 hover:bg-[#FBF6EF] transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-brand-100 hover:bg-sand-50 transition-colors"
               >
-                <span className="text-sm font-semibold text-gray-700">{t('account.language', locale)}</span>
+                <span className="text-sm font-semibold text-brand-700">{t('account.language', locale)}</span>
                 <span className="text-sm font-bold text-accent-600">{locale === 'ar' ? 'العربية' : 'English'}</span>
               </button>
             </section>
 
             {/* Security */}
-            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-              <h2 className="font-black text-gray-900">{t('changePassword.heading', locale)}</h2>
+            <section className="bg-wasla-card rounded-2xl border border-brand-100 shadow-sm p-6 space-y-4">
+              <h2 className="font-black text-brand-900">{t('changePassword.heading', locale)}</h2>
               <ChangePasswordForm locale={locale} />
             </section>
 
             {/* Account actions */}
-            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-3">
-              <h2 className="font-black text-gray-900 mb-3">{t('account.sectionActions', locale)}</h2>
+            <section className="bg-wasla-card rounded-2xl border border-brand-100 shadow-sm p-6 space-y-3">
+              <h2 className="font-black text-brand-900 mb-3">{t('account.sectionActions', locale)}</h2>
               <button
                 onClick={handleLogout}
                 className="w-full bg-red-50 hover:bg-red-100 active:scale-95 text-red-600 font-bold py-3 rounded-2xl text-sm transition-all duration-200"

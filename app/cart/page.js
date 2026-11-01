@@ -178,16 +178,16 @@ export default function CartPage() {
   const canCheckout = !placing && Boolean(addressId) && Boolean(zone) && !anyUncovered
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF] pb-20 lg:pb-0" dir={dir}>
+    <div className="min-h-screen bg-sand-50 pb-20 lg:pb-0" dir={dir}>
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-5 sm:mb-7">{t('cart.title', locale)}</h1>
+        <h1 className="text-2xl sm:text-3xl font-black text-brand-900 mb-5 sm:mb-7">{t('cart.title', locale)}</h1>
 
         {cartItems.length === 0 ? (
           <div className="bg-white rounded-3xl border border-brand-50 shadow-sm py-20 text-center px-4">
-            <p className="text-gray-500 font-semibold text-lg">{t('cart.empty', locale)}</p>
-            <p className="text-sm text-gray-400 mt-1">{t('cart.emptyHint', locale)}</p>
+            <p className="text-brand-500 font-semibold text-lg">{t('cart.empty', locale)}</p>
+            <p className="text-sm text-brand-400 mt-1">{t('cart.emptyHint', locale)}</p>
             <Link
               href="/products"
               className="inline-block mt-5 bg-brand-700 hover:bg-brand-800 active:scale-95 text-white text-sm font-bold px-6 py-2.5 rounded-2xl transition-all duration-200"
@@ -212,7 +212,7 @@ export default function CartPage() {
                       <MediaThumb src={item.image} alt={productName(item, locale)} className="w-16 h-16 rounded-2xl shrink-0" />
                       <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
                         <div className="min-w-0 flex-1">
-                          <p className="font-bold text-gray-900 text-sm leading-snug">
+                          <p className="font-bold text-brand-900 text-sm leading-snug">
                             {productName(item, locale)}
                             {item.brand ? ` · ${item.brand}` : ''}
                           </p>
@@ -222,15 +222,15 @@ export default function CartPage() {
                             )}
                           </div>
                           {item.sellerName && (
-                            <p className="text-xs text-gray-400 mt-1">{t('cart.soldBy', locale)} {item.sellerName}</p>
+                            <p className="text-xs text-brand-400 mt-1">{t('cart.soldBy', locale)} {item.sellerName}</p>
                           )}
                         </div>
 
                         <div className="shrink-0 text-end">
-                          <p className="font-black text-gray-900 text-sm tabular-nums">
+                          <p className="font-black text-brand-900 text-sm tabular-nums">
                             {formatPrice(item.price * item.quantity, locale, { decimals: 2 })}
                           </p>
-                          <p className="text-xs text-gray-400 mt-0.5">{formatPrice(item.price, locale, { decimals: 2 })} {t('cart.each', locale)}</p>
+                          <p className="text-xs text-brand-400 mt-0.5">{formatPrice(item.price, locale, { decimals: 2 })} {t('cart.each', locale)}</p>
                           <button
                             onClick={() => removeFromCart(item.productVariantId, userId)}
                             className="mt-2 text-xs text-red-400 hover:text-red-600 font-semibold transition-colors"
@@ -245,20 +245,20 @@ export default function CartPage() {
                       <div className="flex items-center border border-brand-100 rounded-2xl overflow-hidden">
                         <button
                           onClick={() => updateQuantity(item.productVariantId, item.quantity - 1, userId)}
-                          className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-brand-50 active:scale-95 transition-[background-color,transform] duration-120 font-bold text-lg"
+                          className="w-9 h-9 flex items-center justify-center text-brand-600 hover:bg-brand-50 active:scale-95 transition-[background-color,transform] duration-120 font-bold text-lg"
                         >
                           −
                         </button>
-                        <span className="w-10 text-center text-sm font-black text-gray-900 tabular-nums">{item.quantity}</span>
+                        <span className="w-10 text-center text-sm font-black text-brand-900 tabular-nums">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.productVariantId, item.quantity + 1, userId)}
                           disabled={item.quantity >= 10}
-                          className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-brand-50 active:scale-95 disabled:opacity-30 disabled:active:scale-100 transition-[background-color,transform] duration-120 font-bold text-lg"
+                          className="w-9 h-9 flex items-center justify-center text-brand-600 hover:bg-brand-50 active:scale-95 disabled:opacity-30 disabled:active:scale-100 transition-[background-color,transform] duration-120 font-bold text-lg"
                         >
                           +
                         </button>
                       </div>
-                      <span className="text-xs text-gray-400">{t('cart.maxPerItem', locale)}</span>
+                      <span className="text-xs text-brand-400">{t('cart.maxPerItem', locale)}</span>
                     </div>
                   </div>
                 ))}
@@ -268,7 +268,7 @@ export default function CartPage() {
             {/* Side: sticky order summary card */}
             <div className="w-full lg:w-96 shrink-0 space-y-4 lg:sticky lg:top-24">
               <div className="bg-white rounded-3xl border border-brand-50 shadow-sm p-5 sm:p-6 space-y-5">
-                <h2 className="text-lg font-black text-gray-900">{t('checkout.orderSummary', locale)}</h2>
+                <h2 className="text-lg font-black text-brand-900">{t('checkout.orderSummary', locale)}</h2>
 
                 {/* Out-of-zone alert — elevated to a proper banner, not fine print */}
                 {anyUncovered && (
@@ -300,10 +300,10 @@ export default function CartPage() {
                       const name  = items[0]?.sellerName || t('checkout.shopFallbackName', locale)
                       if (!q) return null
                       return (
-                        <div key={id} className={`text-xs rounded-xl px-3 py-2 ${q.covered ? 'bg-[#FBF6EF]' : 'bg-hibiscus-50'}`}>
-                          <p className="font-bold text-gray-800">{name}</p>
+                        <div key={id} className={`text-xs rounded-xl px-3 py-2 ${q.covered ? 'bg-sand-50' : 'bg-hibiscus-50'}`}>
+                          <p className="font-bold text-brand-800">{name}</p>
                           {q.covered ? (
-                            <p className="text-gray-500 mt-0.5">
+                            <p className="text-brand-500 mt-0.5">
                               {formatPrice(q.fee, locale, { decimals: 2 })} · {q.sameDay ? t('checkout.sameDay', locale) : t('checkout.nextDay', locale)}
                               {q.minOrderValue > 0 && ` · ${t('checkout.minOrder', locale)} ${formatPrice(q.minOrderValue, locale)}`}
                             </p>
@@ -317,24 +317,24 @@ export default function CartPage() {
                 )}
 
                 <div className="space-y-2 text-sm border-t border-brand-50 pt-4">
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-brand-600">
                     <span>{t('cart.subtotal', locale)}</span>
                     <span className="font-semibold tabular-nums">{formatPrice(subtotal, locale, { decimals: 2 })}</span>
                   </div>
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-brand-600">
                     <span>{t('cart.delivery', locale)}</span>
                     <span className="font-semibold tabular-nums">{formatPrice(deliveryFee, locale, { decimals: 2 })}</span>
                   </div>
                   <div className="border-t border-brand-100 pt-3 flex justify-between items-baseline">
-                    <span className="font-bold text-gray-900">{t('cart.total', locale)}</span>
-                    <span className="text-xl font-black text-gray-900 tabular-nums">{formatPrice(total, locale, { decimals: 2 })}</span>
+                    <span className="font-bold text-brand-900">{t('cart.total', locale)}</span>
+                    <span className="text-xl font-black text-brand-900 tabular-nums">{formatPrice(total, locale, { decimals: 2 })}</span>
                   </div>
                 </div>
 
                 {user?.role === 'customer' ? (
                   <>
                     <div className="border-t border-brand-50 pt-4">
-                      <h3 className="text-sm font-bold text-gray-900 mb-2.5">
+                      <h3 className="text-sm font-bold text-brand-900 mb-2.5">
                         {t('checkout.selectAddress', locale)} <span className="text-red-400">*</span>
                       </h3>
 
@@ -352,7 +352,7 @@ export default function CartPage() {
                       ) : (
                         <div className="space-y-2.5">
                           {addresses.length === 0 && (
-                            <p className="text-xs text-gray-400">{t('checkout.noAddresses', locale)}</p>
+                            <p className="text-xs text-brand-400">{t('checkout.noAddresses', locale)}</p>
                           )}
                           {addresses.map(a => (
                             <AddressCard
@@ -376,31 +376,31 @@ export default function CartPage() {
                     </div>
 
                     <div className="border-t border-brand-50 pt-4">
-                      <h3 className="text-sm font-bold text-gray-900 mb-2.5">{t('checkout.paymentMethod', locale)}</h3>
+                      <h3 className="text-sm font-bold text-brand-900 mb-2.5">{t('checkout.paymentMethod', locale)}</h3>
                       <div className="space-y-2">
                         <label className={`flex items-center gap-3 cursor-pointer border-2 rounded-2xl px-3.5 py-3 transition-colors ${
-                          paymentMethod === 'cod' ? 'border-brand-500 bg-brand-50/60' : 'border-gray-200 hover:border-brand-200'
+                          paymentMethod === 'cod' ? 'border-brand-500 bg-brand-50/60' : 'border-brand-100 hover:border-brand-200'
                         }`}>
                           <input
                             type="radio" checked={paymentMethod === 'cod'}
                             onChange={() => setPaymentMethod('cod')}
                             className="accent-brand-600 w-4 h-4 shrink-0"
                           />
-                          <span className="text-sm font-semibold text-gray-700">{t('checkout.cod', locale)}</span>
+                          <span className="text-sm font-semibold text-brand-700">{t('checkout.cod', locale)}</span>
                         </label>
                         <label className={`flex items-center gap-3 cursor-pointer border-2 rounded-2xl px-3.5 py-3 transition-colors ${
-                          paymentMethod === 'manual_transfer' ? 'border-brand-500 bg-brand-50/60' : 'border-gray-200 hover:border-brand-200'
+                          paymentMethod === 'manual_transfer' ? 'border-brand-500 bg-brand-50/60' : 'border-brand-100 hover:border-brand-200'
                         }`}>
                           <input
                             type="radio" checked={paymentMethod === 'manual_transfer'}
                             onChange={() => setPaymentMethod('manual_transfer')}
                             className="accent-brand-600 w-4 h-4 shrink-0"
                           />
-                          <span className="text-sm font-semibold text-gray-700">{t('checkout.instapay', locale)}</span>
+                          <span className="text-sm font-semibold text-brand-700">{t('checkout.instapay', locale)}</span>
                         </label>
-                        <label className="flex items-center gap-3 opacity-40 cursor-not-allowed border-2 border-gray-100 rounded-2xl px-3.5 py-3">
+                        <label className="flex items-center gap-3 opacity-40 cursor-not-allowed border-2 border-brand-100 rounded-2xl px-3.5 py-3">
                           <input type="radio" disabled className="accent-brand-600 w-4 h-4 shrink-0" />
-                          <span className="text-sm font-semibold text-gray-500">{t('checkout.paymobSoon', locale)}</span>
+                          <span className="text-sm font-semibold text-brand-500">{t('checkout.paymobSoon', locale)}</span>
                         </label>
                       </div>
                     </div>
@@ -418,7 +418,7 @@ export default function CartPage() {
                         {placing ? t('checkout.placingOrder', locale) : t('cart.checkout', locale)}
                       </button>
                       {!placing && !error && !addressId && (
-                        <p className="text-xs text-center text-gray-400 mt-2">{t('checkout.selectAddressHint', locale)}</p>
+                        <p className="text-xs text-center text-brand-400 mt-2">{t('checkout.selectAddressHint', locale)}</p>
                       )}
                     </div>
                   </>
@@ -437,7 +437,7 @@ export default function CartPage() {
 
               <Link
                 href="/products"
-                className="block text-center text-sm font-semibold text-gray-500 hover:text-brand-600 transition-colors"
+                className="block text-center text-sm font-semibold text-brand-500 hover:text-brand-600 transition-colors"
               >
                 {t('checkout.continueShopping', locale)}
               </Link>

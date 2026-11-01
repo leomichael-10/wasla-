@@ -94,38 +94,38 @@ export default function OrdersPage() {
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-[#FBF6EF] flex items-center justify-center">
+      <div className="min-h-screen bg-sand-50 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF]">
+    <div className="min-h-screen bg-sand-50">
       <Navbar />
 
       <div className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-black text-gray-900">My Orders</h1>
+          <h1 className="text-2xl font-black text-brand-900">My Orders</h1>
           {!loading && (
-            <p className="text-sm text-gray-500">{orders.length} order{orders.length !== 1 ? 's' : ''}</p>
+            <p className="text-sm text-brand-500">{orders.length} order{orders.length !== 1 ? 's' : ''}</p>
           )}
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-4 py-3 mb-4">
+          <div className="bg-hibiscus-50 text-hibiscus-500 text-sm rounded-xl px-4 py-3 mb-4">
             {error}
           </div>
         )}
 
         {loading ? (
           <div className="space-y-4 animate-pulse">
-            {[1, 2, 3].map(i => <div key={i} className="bg-white rounded-2xl border border-gray-100 h-32" />)}
+            {[1, 2, 3].map(i => <div key={i} className="bg-wasla-card rounded-2xl border border-brand-100 h-32" />)}
           </div>
         ) : orders.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-20 text-center">
-            <p className="text-gray-500 font-semibold text-lg">No orders yet</p>
-            <p className="text-sm text-gray-400 mt-1">Start shopping to place your first order.</p>
+          <div className="bg-wasla-card rounded-2xl border border-brand-100 py-20 text-center">
+            <p className="text-brand-500 font-semibold text-lg">No orders yet</p>
+            <p className="text-sm text-brand-400 mt-1">Start shopping to place your first order.</p>
             <Link
               href="/products"
               className="inline-block mt-5 bg-brand-700 hover:bg-brand-800 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors"
@@ -136,18 +136,18 @@ export default function OrdersPage() {
         ) : (
           <div className="space-y-4">
             {orders.map(order => (
-              <div key={order.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div key={order.id} className="bg-wasla-card rounded-2xl border border-brand-100 overflow-hidden">
                 {/* Header */}
-                <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between flex-wrap gap-3">
+                <div className="px-5 py-4 border-b border-brand-50 flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-3">
-                    <span className="font-black text-gray-900">Order #{order.id}</span>
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${STATUS_STYLES[order.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                    <span className="font-black text-brand-900">Order #{order.id}</span>
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${STATUS_STYLES[order.status] ?? 'bg-sand-100 text-brand-600'}`}>
                       {order.status?.replaceAll('_', ' ')}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="font-black text-gray-900 tabular-nums">{formatPrice(order.total, locale, { decimals: 2 })}</span>
-                    <span className="text-gray-400">
+                    <span className="font-black text-brand-900 tabular-nums">{formatPrice(order.total, locale, { decimals: 2 })}</span>
+                    <span className="text-brand-400">
                       {new Date(order.createdAt).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   </div>
@@ -155,25 +155,25 @@ export default function OrdersPage() {
 
                 {/* Items */}
                 <div className="px-5 py-4">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Items</p>
+                  <p className="text-xs font-bold text-brand-400 uppercase tracking-wide mb-2">Items</p>
                   <div className="space-y-1">
                     {order.items?.map(item => (
                       <div key={item.id} className="flex items-center justify-between text-sm gap-2">
-                        <span className="text-gray-700 truncate">
+                        <span className="text-brand-700 truncate">
                           {item.productVariant?.product ? productName(item.productVariant.product, locale) : 'Product'}
                           {item.productVariant?.label ? ` · ${item.productVariant.label}` : ''}
                         </span>
-                        <span className="shrink-0 text-gray-500 font-medium">×{item.quantity}</span>
+                        <span className="shrink-0 text-brand-500 font-medium">×{item.quantity}</span>
                       </div>
                     ))}
                   </div>
                   {order.seller?.businessName && (
-                    <p className="text-xs text-gray-400 mt-2">Seller: {order.seller.businessName}</p>
+                    <p className="text-xs text-brand-400 mt-2">Seller: {order.seller.businessName}</p>
                   )}
                 </div>
 
                 {/* Footer */}
-                <div className="px-5 py-3 bg-[#FBF6EF] border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 gap-2 flex-wrap">
+                <div className="px-5 py-3 bg-sand-50 border-t border-brand-100 flex items-center justify-between text-xs text-brand-500 gap-2 flex-wrap">
                   <span className="capitalize">Payment: {order.paymentMethod ?? 'cash'}</span>
                   {order.status === 'DELIVERED' && (
                     <button
