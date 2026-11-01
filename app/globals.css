@@ -29,7 +29,7 @@
   --color-accent-100: #F5CBB8;
   --color-accent-200: #E9A182;
   --color-accent-300: #D97952;
-  --color-accent-400: #C1502E;
+  --color-accent-400: #B65336;
   --color-accent-500: #A83E22;
   --color-accent-600: #8F331B;
   --color-accent-700: #732715;
@@ -52,7 +52,7 @@
      read as a Talabat clone and broke from the jabana/terracotta/sand system
      documented above. These stay as aliases so the home components keep their
      existing class names while rendering in the real brand colours. */
-  --wasla-orange:      #C1502E;
+  --wasla-orange:      #B65336;
   --wasla-orange-deep: #8F331B;
   --wasla-cream:       #F5EBDD;
   --wasla-card:        #FFFFFF;
