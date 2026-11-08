@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
 import { addToCart } from '../../lib/cart'
-import { getLocaleCookie, productName, formatPrice } from '../../lib/i18n'
+import { getLocaleCookie, productName, formatPrice, t } from '../../lib/i18n'
 
 const STATUS_STYLES = {
   PLACED:           'bg-yellow-100 text-yellow-700',
@@ -43,7 +43,7 @@ export default function OrdersPage() {
       addToCart({
         productVariantId: v.id,
         productId:        v.product?.id ?? 0,
-        productName:      v.product?.name ?? 'Product',
+        productName:      v.product?.name ?? t('orders.product', locale),
         productNameEn:    v.product?.nameEn ?? '',
         image:            v.product?.images?.[0] ?? null,
         brand:            v.product?.brand ?? '',
@@ -84,7 +84,7 @@ export default function OrdersPage() {
       if (!res.ok) throw new Error(data.error)
       setOrders(data.orders ?? [])
     } catch (err) {
-      setError(err.message || 'Failed to load orders.')
+      setError(err.message || t('orders.loadFailed', locale))
     } finally {
       setLoading(false)
     }
@@ -106,7 +106,7 @@ export default function OrdersPage() {
 
       <div className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-black text-brand-900">My Orders</h1>
+          <h1 className="text-2xl font-black text-brand-900">{t('orders.myOrders', locale)}</h1>
           {!loading && (
             <p className="text-sm text-brand-500">{orders.length} order{orders.length !== 1 ? 's' : ''}</p>
           )}
@@ -124,8 +124,8 @@ export default function OrdersPage() {
           </div>
         ) : orders.length === 0 ? (
           <div className="bg-wasla-card rounded-2xl border border-brand-100 py-20 text-center">
-            <p className="text-brand-500 font-semibold text-lg">No orders yet</p>
-            <p className="text-sm text-brand-400 mt-1">Start shopping to place your first order.</p>
+            <p className="text-brand-500 font-semibold text-lg">{t('orders.noOrders', locale)}</p>
+            <p className="text-sm text-brand-400 mt-1">{t('orders.startShopping', locale)}</p>
             <Link
               href="/products"
               className="inline-block mt-5 bg-brand-700 hover:bg-brand-800 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors"
@@ -155,12 +155,12 @@ export default function OrdersPage() {
 
                 {/* Items */}
                 <div className="px-5 py-4">
-                  <p className="text-xs font-bold text-brand-400 uppercase tracking-wide mb-2">Items</p>
+                  <p className="text-xs font-bold text-brand-400 uppercase tracking-wide mb-2">{t('orders.items', locale)}</p>
                   <div className="space-y-1">
                     {order.items?.map(item => (
                       <div key={item.id} className="flex items-center justify-between text-sm gap-2">
                         <span className="text-brand-700 truncate">
-                          {item.productVariant?.product ? productName(item.productVariant.product, locale) : 'Product'}
+                          {item.productVariant?.product ? productName(item.productVariant.product, locale) : t('orders.product', locale)}
                           {item.productVariant?.label ? ` · ${item.productVariant.label}` : ''}
                         </span>
                         <span className="shrink-0 text-brand-500 font-medium">×{item.quantity}</span>
@@ -174,13 +174,13 @@ export default function OrdersPage() {
 
                 {/* Footer */}
                 <div className="px-5 py-3 bg-sand-50 border-t border-brand-100 flex items-center justify-between text-xs text-brand-500 gap-2 flex-wrap">
-                  <span className="capitalize">Payment: {order.paymentMethod ?? 'cash'}</span>
+                  <span className="capitalize">{t('orders.payment', locale)}: {order.paymentMethod ?? 'cash'}</span>
                   {order.status === 'DELIVERED' && (
                     <button
                       onClick={() => handleReorder(order)}
                       className="text-xs font-bold text-brand-700 hover:text-brand-800 transition-colors"
                     >
-                      Reorder
+                      {t('orders.reorder', locale)}
                     </button>
                   )}
                 </div>

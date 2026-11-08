@@ -9,16 +9,17 @@ import MobileMenu from './MobileMenu'
 import SearchAutocomplete from './SearchAutocomplete'
 import Wordmark from './Wordmark'
 import LocaleToggle from './LocaleToggle'
+import { t } from '../lib/i18n'
 
-function navLinksFor(user) {
+function navLinksFor(user, locale) {
   if (!user) return []
   if (user.role === 'admin') return [
     { href: '/admin', label: 'Admin Panel' },
   ]
   if (user.role === 'customer') return [
-    { href: '/',         label: 'Home'      },
-    { href: '/products', label: 'Products'  },
-    { href: '/orders',   label: 'My Orders' },
+    { href: '/',         label: t('nav.home', locale)     },
+    { href: '/products', label: t('nav.products', locale) },
+    { href: '/orders',   label: t('nav.orders', locale)   },
   ]
   return [
     { href: '/dashboard',          label: 'Dashboard'   },
@@ -28,10 +29,10 @@ function navLinksFor(user) {
   ]
 }
 
-function guestLinks() {
+function guestLinks(locale) {
   return [
-    { href: '/',         label: 'Home'     },
-    { href: '/products', label: 'Products' },
+    { href: '/',         label: t('nav.home', locale)     },
+    { href: '/products', label: t('nav.products', locale) },
   ]
 }
 
@@ -59,7 +60,7 @@ export default function Navbar() {
     router.push('/login')
   }
 
-  const navLinks   = user ? navLinksFor(user) : guestLinks()
+  const navLinks   = user ? navLinksFor(user, locale) : guestLinks(locale)
   const showCart   = !user || user.role === 'customer'
   const showBrowse = isSellerOrAdmin(user)
   // Customers/guests get the bottom tab bar (Home/Categories/Cart/Orders/
@@ -139,8 +140,8 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link href="/login"    className="hidden lg:inline-flex items-center text-white text-sm font-semibold hover:text-accent-300 transition-colors px-2 min-h-11">Sign in</Link>
-                <Link href="/register" className="hidden lg:block bg-accent-400 hover:bg-accent-500 active:scale-95 text-brand-900 text-sm font-black px-4 py-1.5 rounded-full transition-all duration-200">Register</Link>
+                <Link href="/login"    className="hidden lg:inline-flex items-center text-white text-sm font-semibold hover:text-accent-300 transition-colors px-2 min-h-11">{t('nav.login', locale)}</Link>
+                <Link href="/register" className="hidden lg:block bg-accent-400 hover:bg-accent-500 active:scale-95 text-brand-900 text-sm font-black px-4 py-1.5 rounded-full transition-all duration-200">{t('nav.register', locale)}</Link>
               </>
             )}
 

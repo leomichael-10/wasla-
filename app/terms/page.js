@@ -1,17 +1,23 @@
+import { cookies } from 'next/headers'
 import Link from 'next/link'
 import Navbar from '../../components/Navbar'
+import { DEFAULT_LOCALE, LOCALE_COOKIE, t } from '../../lib/i18n'
 
 export const metadata = {
   title:       'Terms of Service — Wasla',
   description: 'Wasla terms of service for buyers and Sudanese shops selling on the platform in Cairo and Giza.',
 }
 
-export default function TermsPage() {
+// The legal body below is intentionally left in English only — translating
+// liability and acceptable-use clauses accurately needs a legal review, not
+// a mechanical pass. Only the page's own chrome is localized.
+export default async function TermsPage() {
+  const locale = (await cookies()).get(LOCALE_COOKIE)?.value ?? DEFAULT_LOCALE
   return (
     <div className="min-h-screen bg-sand-50">
       <Navbar />
       <div className="max-w-3xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-black text-brand-900 mb-2">Terms of Service</h1>
+        <h1 className="text-3xl font-black text-brand-900 mb-2">{t('terms.heading', locale)}</h1>
         <p className="text-sm text-brand-300 mb-10">Last updated: July 2026</p>
 
         <div className="bg-white rounded-2xl border border-brand-100 shadow-sm p-8 space-y-8 text-sm text-brand-700 leading-relaxed">
@@ -109,7 +115,7 @@ export default function TermsPage() {
 
         <div className="mt-8 text-center">
           <Link href="/privacy" className="text-sm font-semibold text-brand-700 hover:underline">
-            Read our Privacy Policy
+            {t('privacy.readOurs', locale)}
           </Link>
         </div>
       </div>

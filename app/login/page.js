@@ -33,7 +33,7 @@ export default function LoginPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error ?? 'Login failed. Please try again.')
+        setError(data.error ?? t('login.failed', locale))
         return
       }
 
@@ -50,7 +50,7 @@ export default function LoginPage() {
         router.push('/')
       }
     } catch {
-      setError('Unable to connect. Check your internet connection.')
+      setError(t('auth.connectionError', locale))
     } finally {
       setLoading(false)
     }
@@ -69,8 +69,8 @@ export default function LoginPage() {
         <div className="bg-white rounded-3xl shadow-lg border border-brand-50 w-full max-w-md p-8">
 
           <div className="mb-8 text-center">
-            <h1 className="text-2xl font-black text-brand-900">Welcome back</h1>
-            <p className="text-brand-400 text-sm mt-1">Sign in to your Wasla account</p>
+            <h1 className="text-2xl font-black text-brand-900">{t('login.heading', locale)}</h1>
+            <p className="text-brand-400 text-sm mt-1">{t('login.subheading', locale)}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -83,7 +83,7 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-brand-700 mb-1.5">
-                Email address
+                {t('auth.emailAddress', locale)}
               </label>
               <input
                 id="email"
@@ -92,7 +92,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={t('auth.emailPlaceholder', locale)}
                 className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition"
               />
             </div>
@@ -100,7 +100,7 @@ export default function LoginPage() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label htmlFor="password" className="block text-sm font-semibold text-brand-700">
-                  Password
+                  {t('auth.password', locale)}
                 </label>
                 <Link href="/forgot-password" className="text-xs font-semibold text-brand-600 hover:underline">
                   {t('login.forgotPassword', locale)}
@@ -123,14 +123,14 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-brand-700 hover:bg-brand-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200 mt-2"
             >
-              {loading ? 'Signing in…' : 'Sign in'}
+              {loading ? t('login.signingIn', locale) : t('login.signIn', locale)}
             </button>
 
           </form>
 
           <div className="flex items-center gap-3 mt-6">
             <div className="flex-1 h-px bg-brand-100" />
-            <span className="text-xs text-brand-300 font-medium">or</span>
+            <span className="text-xs text-brand-300 font-medium">{t('auth.or', locale)}</span>
             <div className="flex-1 h-px bg-brand-100" />
           </div>
 
@@ -145,13 +145,13 @@ export default function LoginPage() {
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
-            Continue with Google
+            {t('login.continueGoogle', locale)}
           </button>
 
           <p className="text-center text-sm text-brand-400 mt-6">
-            Don&apos;t have an account?{' '}
+            {t('login.noAccount', locale)}{' '}
             <Link href="/register" className="text-brand-600 font-semibold hover:underline">
-              Register
+              {t('login.register', locale)}
             </Link>
           </p>
 

@@ -1,17 +1,23 @@
-﻿import Link from 'next/link'
+﻿import { cookies } from 'next/headers'
+import Link from 'next/link'
 import Navbar from '../../components/Navbar'
+import { DEFAULT_LOCALE, LOCALE_COOKIE, t } from '../../lib/i18n'
 
 export const metadata = {
   title:       'Privacy Policy — Wasla',
   description: 'How Wasla collects, uses, and protects your personal data.',
 }
 
-export default function PrivacyPage() {
+// The legal body below is intentionally left in English only — translating
+// data-retention and legal-rights clauses accurately needs a legal review,
+// not a mechanical pass. Only the page's own chrome is localized.
+export default async function PrivacyPage() {
+  const locale = (await cookies()).get(LOCALE_COOKIE)?.value ?? DEFAULT_LOCALE
   return (
     <div className="min-h-screen bg-sand-50">
       <Navbar />
       <div className="max-w-3xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-black text-brand-900 mb-2">Privacy Policy</h1>
+        <h1 className="text-3xl font-black text-brand-900 mb-2">{t('privacy.heading', locale)}</h1>
         <p className="text-sm text-brand-300 mb-10">Last updated: January 2025</p>
 
         <div className="bg-white rounded-2xl border border-brand-100 shadow-sm p-8 space-y-8 text-sm text-brand-700 leading-relaxed">
@@ -103,7 +109,7 @@ export default function PrivacyPage() {
 
         <div className="mt-8 text-center">
           <Link href="/terms" className="text-sm font-semibold text-brand-700 hover:underline">
-            Read our Terms of Service
+            {t('terms.readOurs', locale)}
           </Link>
         </div>
       </div>

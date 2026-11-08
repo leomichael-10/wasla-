@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { isValidPhone, toE164 } from '../../lib/phone'
-import { getLocaleCookie, t } from '../../lib/i18n'
+import { getLocaleCookie, t, placeName, formatPrice } from '../../lib/i18n'
 import { setGoogleSignupIntent } from '../../lib/googleSignupIntent'
 import Wordmark from '../../components/Wordmark'
 import PhonePreview from '../../components/PhonePreview'
@@ -18,18 +18,20 @@ const EGYPT_CITIES = [
   'Cairo', 'Giza', '6th of October', 'Alexandria',
 ]
 
-const PAYMENT_METHODS = [
-  {
-    value:    'bank_transfer',
-    label:    'Bank Transfer',
-    detail:   'Transfer EGP 500 to: Wasla, IBAN: EG00 0000 0000 0000 0000 000',
-  },
-  {
-    value:    'cash',
-    label:    'Cash',
-    detail:   'Pay in person at our Cairo office.',
-  },
-]
+function getPaymentMethods(locale) {
+  return [
+    {
+      value:  'bank_transfer',
+      label:  t('register.bankTransfer', locale),
+      detail: t('register.bankTransferDetail', locale),
+    },
+    {
+      value:  'cash',
+      label:  t('register.cash', locale),
+      detail: t('register.cashDetail', locale),
+    },
+  ]
+}
 
 const SUBSCRIPTIONS_ENABLED = process.env.NEXT_PUBLIC_SUBSCRIPTIONS_ENABLED === 'true'
 
@@ -136,11 +138,11 @@ function RegisterForm() {
     setStep1Error('')
 
     if (form.phone && !isValidPhone(form.phone)) {
-      setStep1Error('Please enter a valid phone number, e.g. 01012345678 or +249912345678.')
+      setStep1Error(t('register.invalidPhone', locale))
       return
     }
     if (isSeller && !isValidPhone(form.whatsappNumber)) {
-      setStep1Error('A valid WhatsApp number is required to receive orders, e.g. 01012345678 or +249912345678.')
+      setStep1Error(t('register.whatsappRequired', locale))
       return
     }
 
@@ -167,7 +169,7 @@ function RegisterForm() {
       })
       const regData = await regRes.json()
       if (!regRes.ok) {
-        setStep1Error(regData.error ?? 'Registration failed. Please try again.')
+        setStep1Error(regData.error ?? t('register.registerFailed', locale))
         return
       }
 
@@ -195,7 +197,7 @@ function RegisterForm() {
         router.push(`/verify-email?email=${encodeURIComponent(form.email)}`)
       }
     } catch {
-      setStep1Error('Unable to connect. Check your internet connection.')
+      setStep1Error(t('auth.connectionError', locale))
     } finally {
       setStep1Loading(false)
     }
@@ -206,7 +208,7 @@ function RegisterForm() {
     setStep2Error('')
 
     if (!termsAccepted) {
-      setStep2Error('Please accept Wasla terms and conditions.')
+      setStep2Error(t('register.acceptTerms', locale))
       return
     }
 
@@ -221,7 +223,7 @@ function RegisterForm() {
       if (!res.ok) throw new Error(data.error)
       setSubmitted(true)
     } catch (err) {
-      setStep2Error(err.message || 'Failed to submit subscription. Please try again.')
+      setStep2Error(err.message || t('register.submitFailed', locale))
     } finally {
       setStep2Loading(false)
     }
@@ -242,15 +244,15 @@ function RegisterForm() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
               </svg>
             </div>
-            <h2 className="text-xl font-black text-brand-900">Registration Submitted</h2>
+            <h2 className="text-xl font-black text-brand-900">{t('register.submitted', locale)}</h2>
             <p className="text-brand-400 text-sm mt-3 leading-relaxed">
-              Our team will verify your payment and activate your account within <span className="font-semibold">24 hours</span>.
+              {t('register.submittedBody', locale)}
             </p>
             <Link
               href="/"
               className="inline-block mt-6 bg-brand-700 hover:bg-brand-800 active:scale-95 text-white font-black px-6 py-2.5 rounded-2xl text-sm transition-all duration-200"
             >
-              Back to Wasla
+              {t('register.backHome', locale)}
             </Link>
           </div>
         </div>
@@ -285,12 +287,12 @@ function RegisterForm() {
               )}
               <div className="mb-8 text-center">
                 <h1 className="text-2xl font-black text-brand-900">
-                  {isSeller ? 'Register Your Shop' : 'Create an account'}
+                  {isSeller ? t('register.sellerHeading', locale) : t('register.customerHeading', locale)}
                 </h1>
                 <p className="text-brand-400 text-sm mt-1">
                   {isSeller
-                    ? 'Join Wasla as a Sudanese shop in Cairo'
-                    : 'Join Wasla — Sudanese products, delivered in Cairo'}
+                    ? t('register.sellerSubheading', locale)
+                    : t('register.customerSubheading', locale)}
                 </p>
               </div>
 
@@ -303,16 +305,16 @@ function RegisterForm() {
                 )}
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-brand-700 mb-1.5">Email address</label>
+                  <label htmlFor="email" className="block text-sm font-semibold text-brand-700 mb-1.5">{t('auth.emailAddress', locale)}</label>
                   <input id="email" type="email" autoComplete="email" required value={form.email} onChange={set('email')}
-                    placeholder="you@example.com"
+                    placeholder={t('auth.emailPlaceholder', locale)}
                     className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-semibold text-brand-700 mb-1.5">Password</label>
+                  <label htmlFor="password" className="block text-sm font-semibold text-brand-700 mb-1.5">{t('auth.password', locale)}</label>
                   <input id="password" type="password" autoComplete="new-password" required minLength={6}
-                    value={form.password} onChange={set('password')} placeholder="At least 6 characters"
+                    value={form.password} onChange={set('password')} placeholder={t('auth.passwordPlaceholder', locale)}
                     className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
                 </div>
 
@@ -320,10 +322,10 @@ function RegisterForm() {
                   <>
                     <div>
                       <label htmlFor="businessName" className="block text-sm font-semibold text-brand-700 mb-1.5">
-                        Business name <span className="text-red-400">*</span>
+                        {t('register.businessName', locale)} <span className="text-red-400">*</span>
                       </label>
                       <input id="businessName" type="text" required value={form.businessName} onChange={set('businessName')}
-                        placeholder="e.g. Kassala Coffee House"
+                        placeholder={t('register.businessNamePlaceholder', locale)}
                         className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
                     </div>
                     <div>
@@ -352,20 +354,20 @@ function RegisterForm() {
                     </div>
                     <div>
                       <label htmlFor="whatsappNumber" className="block text-sm font-semibold text-brand-700 mb-1.5">
-                        WhatsApp number <span className="text-red-400">*</span>
+                        {t('register.whatsappNumber', locale)} <span className="text-red-400">*</span>
                       </label>
                       <input id="whatsappNumber" type="tel" required value={form.whatsappNumber} onChange={set('whatsappNumber')}
                         placeholder="01012345678 or +249912345678"
                         className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
                       <PhonePreview value={form.whatsappNumber} />
-                      <p className="text-xs text-brand-300 mt-1">Orders are sent here — without it, you can't receive orders. Outside Egypt? Include your country code, e.g. +249 for Sudan.</p>
+                      <p className="text-xs text-brand-300 mt-1">{t('register.whatsappHint', locale)}</p>
                     </div>
                   </>
                 )}
 
                 <div>
                   <label htmlFor="phone" className="block text-sm font-semibold text-brand-700 mb-1.5">
-                    Phone <span className="text-brand-300 font-normal">(optional)</span>
+                    {t('register.phone', locale)} <span className="text-brand-300 font-normal">{t('register.optional', locale)}</span>
                   </label>
                   <input id="phone" type="tel" autoComplete="tel" value={form.phone} onChange={set('phone')}
                     placeholder="01012345678 or +249912345678"
@@ -375,12 +377,12 @@ function RegisterForm() {
 
                 <div>
                   <label htmlFor="city" className="block text-sm font-semibold text-brand-700 mb-1.5">
-                    City <span className="text-brand-300 font-normal">(optional)</span>
+                    {t('register.city', locale)} <span className="text-brand-300 font-normal">{t('register.optional', locale)}</span>
                   </label>
                   <select id="city" value={form.city} onChange={set('city')}
                     className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition bg-white">
-                    <option value="">Select your city</option>
-                    {EGYPT_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="">{t('register.selectCity', locale)}</option>
+                    {EGYPT_CITIES.map(c => <option key={c} value={c}>{placeName(c, locale)}</option>)}
                   </select>
                 </div>
 
@@ -389,13 +391,13 @@ function RegisterForm() {
                   disabled={step1Loading}
                   className="w-full bg-brand-700 hover:bg-brand-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200 mt-2"
                 >
-                  {step1Loading ? 'Creating account…' : (isSeller && SUBSCRIPTIONS_ENABLED ? 'Continue to Subscription' : 'Create account')}
+                  {step1Loading ? t('register.creatingAccount', locale) : (isSeller && SUBSCRIPTIONS_ENABLED ? t('register.continueSubscription', locale) : t('register.createAccount', locale))}
                 </button>
               </form>
 
               <div className="flex items-center gap-3 mt-6">
                 <div className="flex-1 h-px bg-brand-100" />
-                <span className="text-xs text-brand-300 font-medium">or</span>
+                <span className="text-xs text-brand-300 font-medium">{t('auth.or', locale)}</span>
                 <div className="flex-1 h-px bg-brand-100" />
               </div>
 
@@ -414,8 +416,8 @@ function RegisterForm() {
               </button>
 
               <p className="text-center text-sm text-brand-400 mt-6">
-                Already have an account?{' '}
-                <Link href="/login" className="text-brand-600 font-semibold hover:underline">Sign in</Link>
+                {t('register.haveAccount', locale)}{' '}
+                <Link href="/login" className="text-brand-600 font-semibold hover:underline">{t('register.signIn', locale)}</Link>
               </p>
             </>
           )}
@@ -423,8 +425,8 @@ function RegisterForm() {
           {step === 2 && (
             <>
               <div className="mb-6 text-center">
-                <h1 className="text-2xl font-black text-brand-900">Shop Subscription</h1>
-                <p className="text-brand-400 text-sm mt-1">Join Wasla's marketplace for Sudanese shops in Cairo</p>
+                <h1 className="text-2xl font-black text-brand-900">{t('register.subscriptionHeading', locale)}</h1>
+                <p className="text-brand-400 text-sm mt-1">{t('register.subscriptionSubheading', locale)}</p>
               </div>
 
               <form onSubmit={handleStep2} className="space-y-5">
@@ -438,16 +440,16 @@ function RegisterForm() {
                 <div className="border-2 border-brand-600 rounded-2xl p-5 bg-brand-50">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <p className="text-3xl font-black text-brand-900">EGP 500</p>
-                      <p className="text-sm text-brand-400 font-medium">per month</p>
+                      <p className="text-3xl font-black text-brand-900">{formatPrice(500, locale)}</p>
+                      <p className="text-sm text-brand-400 font-medium">{t('register.perMonth', locale)}</p>
                     </div>
-                    <span className="bg-brand-700 text-white text-xs font-black px-3 py-1 rounded-full">STANDARD</span>
+                    <span className="bg-brand-700 text-white text-xs font-black px-3 py-1 rounded-full">{t('register.standard', locale)}</span>
                   </div>
                   <ul className="space-y-2">
                     {[
-                      'Unlimited product listings',
-                      'Access to all platform features',
-                      'Featured on Wasla marketplace',
+                      t('register.featureUnlimitedListings', locale),
+                      t('register.featureAllFeatures', locale),
+                      t('register.featureFeatured', locale),
                     ].map(feature => (
                       <li key={feature} className="flex items-center gap-2 text-sm text-brand-700">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-brand-700 shrink-0">
@@ -460,9 +462,9 @@ function RegisterForm() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-brand-700 mb-2">Payment Method</label>
+                  <label className="block text-sm font-semibold text-brand-700 mb-2">{t('register.paymentMethod', locale)}</label>
                   <div className="space-y-3">
-                    {PAYMENT_METHODS.map(pm => (
+                    {getPaymentMethods(locale).map(pm => (
                       <label
                         key={pm.value}
                         className={`flex items-start gap-3 cursor-pointer border-2 rounded-2xl p-4 transition-all ${
@@ -507,7 +509,7 @@ function RegisterForm() {
                     </div>
                   </div>
                   <span className="text-sm text-brand-600 leading-snug select-none">
-                    I agree to <span className="text-brand-600 font-semibold">Wasla terms and conditions</span>
+                    {t('register.agreeTerms', locale)} <span className="text-brand-600 font-semibold">{t('register.termsAndConditions', locale)}</span>
                   </span>
                 </label>
 
@@ -516,7 +518,7 @@ function RegisterForm() {
                   disabled={step2Loading || !termsAccepted}
                   className="w-full bg-brand-700 hover:bg-brand-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-2xl text-sm transition-all duration-200"
                 >
-                  {step2Loading ? 'Submitting…' : 'Submit Registration'}
+                  {step2Loading ? t('register.submitting', locale) : t('register.submitRegistration', locale)}
                 </button>
               </form>
             </>

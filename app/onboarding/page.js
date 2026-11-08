@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { getSession } from 'next-auth/react'
 import Link from 'next/link'
 import { isValidPhone, toE164 } from '../../lib/phone'
-import { getLocaleCookie, t } from '../../lib/i18n'
+import { getLocaleCookie, t, placeName } from '../../lib/i18n'
 import Wordmark from '../../components/Wordmark'
 import PhonePreview from '../../components/PhonePreview'
 
@@ -47,19 +47,19 @@ export default function OnboardingPage() {
 
     if (isSeller) {
       if (!businessName.trim()) {
-        setError('Business name is required.')
+        setError(t('onboarding.businessNameRequired', locale))
         return
       }
       if (!isValidPhone(whatsappNumber)) {
-        setError('A valid WhatsApp number is required to receive orders, e.g. 01012345678 or +249912345678.')
+        setError(t('register.whatsappRequired', locale))
         return
       }
     } else if (!fullName.trim()) {
-      setError('Full name is required.')
+      setError(t('onboarding.fullNameRequired', locale))
       return
     }
     if (phone && !isValidPhone(phone)) {
-      setError('Please enter a valid phone number, e.g. 01012345678 or +249912345678.')
+      setError(t('register.invalidPhone', locale))
       return
     }
 
@@ -87,7 +87,7 @@ export default function OnboardingPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error ?? 'Something went wrong. Please try again.')
+        setError(data.error ?? t('onboarding.somethingWrong', locale))
         return
       }
 
@@ -98,7 +98,7 @@ export default function OnboardingPage() {
         router.push('/')
       }
     } catch {
-      setError('Unable to connect. Check your internet connection.')
+      setError(t('auth.connectionError', locale))
     } finally {
       setSubmitting(false)
     }
@@ -126,10 +126,10 @@ export default function OnboardingPage() {
 
           <div className="mb-8 text-center">
             <h1 className="text-2xl font-black text-brand-900">
-              {isSeller ? t('onboarding.sellerHeading', locale) : 'Welcome to Wasla'}
+              {isSeller ? t('onboarding.sellerHeading', locale) : t('onboarding.customerHeading', locale)}
             </h1>
             <p className="text-brand-400 text-sm mt-1">
-              {isSeller ? t('onboarding.sellerSubtitle', locale) : 'Finish setting up your account'}
+              {isSeller ? t('onboarding.sellerSubtitle', locale) : t('onboarding.customerSubtitle', locale)}
             </p>
           </div>
 
@@ -242,7 +242,7 @@ export default function OnboardingPage() {
             {/* City */}
             <div>
               <label htmlFor="city" className="block text-sm font-semibold text-brand-700 mb-1.5">
-                City <span className="text-brand-300 font-normal">(optional)</span>
+                {t('register.city', locale)} <span className="text-brand-300 font-normal">{t('register.optional', locale)}</span>
               </label>
               <select
                 id="city"
@@ -250,8 +250,8 @@ export default function OnboardingPage() {
                 onChange={e => setCity(e.target.value)}
                 className="w-full border border-brand-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition bg-white"
               >
-                <option value="">Select your city</option>
-                {EGYPT_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                <option value="">{t('onboarding.selectCity', locale)}</option>
+                {EGYPT_CITIES.map(c => <option key={c} value={c}>{placeName(c, locale)}</option>)}
               </select>
             </div>
 
@@ -260,7 +260,7 @@ export default function OnboardingPage() {
               disabled={submitting}
               className="w-full bg-brand-700 hover:bg-brand-800 active:bg-brand-900 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-3 rounded-xl text-sm transition-colors mt-2"
             >
-              {submitting ? 'Saving…' : 'Continue'}
+              {submitting ? t('onboarding.saving', locale) : t('onboarding.continue', locale)}
             </button>
 
           </form>

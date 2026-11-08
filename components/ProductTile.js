@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useState, useEffect, useLayoutEffect } from 'react'
 import { getCart, addToCart, updateQuantity } from '../lib/cart'
 import MediaThumb from './MediaThumb'
-import { productName, formatPrice, DEFAULT_LOCALE } from '../lib/i18n'
+import { productName, formatPrice, DEFAULT_LOCALE, t } from '../lib/i18n'
 
 // Compact quick-commerce tile: image, name, price, and an inline +/- stepper
 // that adds straight to cart — no detail-page hop required for staples.
@@ -82,7 +82,7 @@ export default function ProductTile({ product, locale = DEFAULT_LOCALE }) {
               {shopClosed ? 'Shop Closed' : 'لا يوصل لمنطقتك'}
             </p>
           ) : !inStockVariant ? (
-            <p className="text-[10px] text-gray-400 font-bold text-center py-1.5">Out of Stock</p>
+            <p className="text-[10px] text-brand-400 font-bold text-center py-1.5">{t('browse.outOfStock', locale)}</p>
           ) : (
             <div className="grid h-8">
               {/* Both states stay mounted and cross-fade/scale in place —
