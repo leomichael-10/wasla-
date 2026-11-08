@@ -23,6 +23,7 @@ export async function GET(request) {
   const brand    = searchParams.get('brand')
   const sort     = searchParams.get('sort') ?? 'az'
   const zoneId   = parseInt(searchParams.get('zoneId'), 10) || null
+  const limit    = parseInt(searchParams.get('limit'), 10) || null
 
   const where = { ...CATALOGUE_WHERE }
   if (category) where.category = { name: { contains: category, mode: 'insensitive' } }
@@ -54,6 +55,9 @@ export async function GET(request) {
     else if (sort === 'za') products.sort((a, b) => b.name.localeCompare(a.name))
     else if (sort === 'price_asc') products.sort((a, b) => Number(a.variants[0].price) - Number(b.variants[0].price))
     else if (sort === 'price_desc') products.sort((a, b) => Number(b.variants[0].price) - Number(a.variants[0].price))
+    else if (sort === 'newest') products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+    if (limit) products = products.slice(0, limit)
 
     return NextResponse.json({ products: JSON.parse(JSON.stringify(products)) })
   } catch (error) {

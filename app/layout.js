@@ -129,6 +129,24 @@ export default async function RootLayout({ children }) {
             __html: `try{document.documentElement.setAttribute('data-splash-seen',localStorage.getItem('wasla_splash_seen_v1')==='1'?'1':'0')}catch(e){document.documentElement.setAttribute('data-splash-seen','0')}`,
           }}
         />
+        {/*
+          A locally-bundled Capacitor build has no server, so it never gets
+          the Content-Security-Policy response header vercel.json sends on
+          the deployed web app (that header only reaches requests that hit
+          Vercel's edge). This meta tag is the native-compatible equivalent,
+          widened to also allow the real API origin — needed once a
+          Capacitor project (not yet scaffolded in this repo) actually calls
+          it from capacitor://localhost, where 'self' means the WebView's
+          own origin, not the API's. On the web, both this tag and
+          vercel.json's header apply at once; connect-src is enforced as
+          their intersection, so the header's stricter 'self'-only policy
+          still wins there — this tag only loosens anything in the native
+          context where that header never arrives.
+        */}
+        <meta
+          httpEquiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://res.cloudinary.com; connect-src 'self' https://wasla-249.com https://www.wasla-249.com"
+        />
       </head>
       <body className={`min-h-full flex flex-col bg-sand-50 text-brand-900 ${locale === 'ar' ? 'font-(family-name:--font-cairo)' : ''}`}>
         <SessionProviderWrapper>
