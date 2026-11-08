@@ -20,17 +20,17 @@ export default async function DeleteAccountPage() {
   const dir = locale === 'ar' ? 'rtl' : 'ltr'
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF]" dir={dir}>
+    <div className="min-h-screen bg-sand-50" dir={dir}>
       <Navbar />
       <div className="max-w-2xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-black text-gray-900 mb-2">{t('deleteAccountPage.title', locale)}</h1>
-        <p className="text-sm text-gray-500 mb-10">{t('deleteAccountPage.intro', locale)}</p>
+        <h1 className="text-3xl font-black text-brand-900 mb-2">{t('deleteAccountPage.title', locale)}</h1>
+        <p className="text-sm text-brand-400 mb-10">{t('deleteAccountPage.intro', locale)}</p>
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 space-y-8 text-sm text-gray-700 leading-relaxed">
+        <div className="bg-white rounded-2xl border border-brand-100 shadow-sm p-8 space-y-8 text-sm text-brand-700 leading-relaxed">
 
           <section>
-            <h2 className="text-base font-black text-gray-900 mb-3">{t('deleteAccountPage.stepsHeading', locale)}</h2>
-            <ol className="list-decimal ps-5 space-y-1.5 text-gray-600">
+            <h2 className="text-base font-black text-brand-900 mb-3">{t('deleteAccountPage.stepsHeading', locale)}</h2>
+            <ol className="list-decimal ps-5 space-y-1.5 text-brand-600">
               <li>{t('deleteAccountPage.step1', locale)}</li>
               <li>{t('deleteAccountPage.step2', locale)}</li>
               <li>{t('deleteAccountPage.step3', locale)}</li>
@@ -38,13 +38,13 @@ export default async function DeleteAccountPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-black text-gray-900 mb-3">{t('deleteAccountPage.whatHeading', locale)}</h2>
-            <p className="text-gray-600">{t('deleteAccountPage.whatBody', locale)}</p>
+            <h2 className="text-base font-black text-brand-900 mb-3">{t('deleteAccountPage.whatHeading', locale)}</h2>
+            <p className="text-brand-600">{t('deleteAccountPage.whatBody', locale)}</p>
           </section>
 
-          <section className="border-t border-gray-100 pt-6">
-            <h2 className="text-base font-black text-gray-900 mb-2">{t('deleteAccountPage.contactHeading', locale)}</h2>
-            <p className="text-gray-600">
+          <section className="border-t border-brand-100 pt-6">
+            <h2 className="text-base font-black text-brand-900 mb-2">{t('deleteAccountPage.contactHeading', locale)}</h2>
+            <p className="text-brand-600">
               {t('deleteAccountPage.contactBody', locale)}{' '}
               <a href="mailto:privacy@wasla.app" className="font-semibold text-brand-700 hover:underline">privacy@wasla.app</a>
             </p>

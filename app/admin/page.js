@@ -1064,12 +1064,12 @@ export default function AdminPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Icon / Emoji</label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Icon slug</label>
                   <input
                     type="text"
                     value={catForm.icon}
                     onChange={e => setCatForm(f => ({ ...f, icon: e.target.value }))}
-                    placeholder="e.g. 💨"
+                    placeholder="e.g. spices"
                     className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 w-32"
                   />
                 </div>

@@ -63,8 +63,8 @@ function RoleChooser({ locale, onChoose }) {
   return (
     <>
       <div className="mb-8 text-center">
-        <h1 className="text-2xl font-black text-gray-900">{t('register.chooserTitle', locale)}</h1>
-        <p className="text-gray-500 text-sm mt-1">{t('register.chooserSubtitle', locale)}</p>
+        <h1 className="text-2xl font-black text-brand-900">{t('register.chooserTitle', locale)}</h1>
+        <p className="text-brand-400 text-sm mt-1">{t('register.chooserSubtitle', locale)}</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {cards.map(card => (
@@ -79,8 +79,8 @@ function RoleChooser({ locale, onChoose }) {
                 {card.icon}
               </svg>
             </div>
-            <p className="font-black text-gray-900">{card.title}</p>
-            <p className="text-sm text-gray-500 mt-1">{card.body}</p>
+            <p className="font-black text-brand-900">{card.title}</p>
+            <p className="text-sm text-brand-400 mt-1">{card.body}</p>
           </button>
         ))}
       </div>
@@ -229,7 +229,7 @@ function RegisterForm() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#FBF6EF] flex flex-col">
+      <div className="min-h-screen bg-sand-50 flex flex-col">
         <div className="bg-brand-700 px-6 py-4">
           <Link href="/" className="text-white font-black text-xl tracking-tight">
             <Wordmark />
@@ -242,8 +242,8 @@ function RegisterForm() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
               </svg>
             </div>
-            <h2 className="text-xl font-black text-gray-900">Registration Submitted</h2>
-            <p className="text-gray-500 text-sm mt-3 leading-relaxed">
+            <h2 className="text-xl font-black text-brand-900">Registration Submitted</h2>
+            <p className="text-brand-400 text-sm mt-3 leading-relaxed">
               Our team will verify your payment and activate your account within <span className="font-semibold">24 hours</span>.
             </p>
             <Link
@@ -259,7 +259,7 @@ function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF] flex flex-col">
+    <div className="min-h-screen bg-sand-50 flex flex-col">
 
       <div className="bg-brand-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
@@ -284,10 +284,10 @@ function RegisterForm() {
                 </button>
               )}
               <div className="mb-8 text-center">
-                <h1 className="text-2xl font-black text-gray-900">
+                <h1 className="text-2xl font-black text-brand-900">
                   {isSeller ? 'Register Your Shop' : 'Create an account'}
                 </h1>
-                <p className="text-gray-500 text-sm mt-1">
+                <p className="text-brand-400 text-sm mt-1">
                   {isSeller
                     ? 'Join Wasla as a Sudanese shop in Cairo'
                     : 'Join Wasla — Sudanese products, delivered in Cairo'}
@@ -303,31 +303,31 @@ function RegisterForm() {
                 )}
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">Email address</label>
+                  <label htmlFor="email" className="block text-sm font-semibold text-brand-700 mb-1.5">Email address</label>
                   <input id="email" type="email" autoComplete="email" required value={form.email} onChange={set('email')}
                     placeholder="you@example.com"
-                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
+                    className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
+                  <label htmlFor="password" className="block text-sm font-semibold text-brand-700 mb-1.5">Password</label>
                   <input id="password" type="password" autoComplete="new-password" required minLength={6}
                     value={form.password} onChange={set('password')} placeholder="At least 6 characters"
-                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
+                    className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
                 </div>
 
                 {isSeller && (
                   <>
                     <div>
-                      <label htmlFor="businessName" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                      <label htmlFor="businessName" className="block text-sm font-semibold text-brand-700 mb-1.5">
                         Business name <span className="text-red-400">*</span>
                       </label>
                       <input id="businessName" type="text" required value={form.businessName} onChange={set('businessName')}
                         placeholder="e.g. Kassala Coffee House"
-                        className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
+                        className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                      <label className="block text-sm font-semibold text-brand-700 mb-1.5">
                         {t('seller.businessType', locale)} <span className="text-red-400">*</span>
                       </label>
                       <div className="grid grid-cols-2 gap-3">
@@ -337,7 +337,7 @@ function RegisterForm() {
                             className={`flex items-center justify-center gap-2 cursor-pointer border-2 rounded-2xl py-3 text-sm font-bold transition-all ${
                               form.sellerType === opt
                                 ? 'border-brand-600 bg-brand-50 text-brand-700'
-                                : 'border-gray-200 text-gray-500 hover:border-brand-200'
+                                : 'border-brand-100 text-brand-400 hover:border-brand-200'
                             }`}
                           >
                             <input
@@ -351,34 +351,34 @@ function RegisterForm() {
                       </div>
                     </div>
                     <div>
-                      <label htmlFor="whatsappNumber" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                      <label htmlFor="whatsappNumber" className="block text-sm font-semibold text-brand-700 mb-1.5">
                         WhatsApp number <span className="text-red-400">*</span>
                       </label>
                       <input id="whatsappNumber" type="tel" required value={form.whatsappNumber} onChange={set('whatsappNumber')}
                         placeholder="01012345678 or +249912345678"
-                        className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
+                        className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
                       <PhonePreview value={form.whatsappNumber} />
-                      <p className="text-xs text-gray-400 mt-1">Orders are sent here — without it, you can't receive orders. Outside Egypt? Include your country code, e.g. +249 for Sudan.</p>
+                      <p className="text-xs text-brand-300 mt-1">Orders are sent here — without it, you can't receive orders. Outside Egypt? Include your country code, e.g. +249 for Sudan.</p>
                     </div>
                   </>
                 )}
 
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Phone <span className="text-gray-400 font-normal">(optional)</span>
+                  <label htmlFor="phone" className="block text-sm font-semibold text-brand-700 mb-1.5">
+                    Phone <span className="text-brand-300 font-normal">(optional)</span>
                   </label>
                   <input id="phone" type="tel" autoComplete="tel" value={form.phone} onChange={set('phone')}
                     placeholder="01012345678 or +249912345678"
-                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
+                    className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition" />
                   <PhonePreview value={form.phone} />
                 </div>
 
                 <div>
-                  <label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    City <span className="text-gray-400 font-normal">(optional)</span>
+                  <label htmlFor="city" className="block text-sm font-semibold text-brand-700 mb-1.5">
+                    City <span className="text-brand-300 font-normal">(optional)</span>
                   </label>
                   <select id="city" value={form.city} onChange={set('city')}
-                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition bg-white">
+                    className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition bg-white">
                     <option value="">Select your city</option>
                     {EGYPT_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -394,15 +394,15 @@ function RegisterForm() {
               </form>
 
               <div className="flex items-center gap-3 mt-6">
-                <div className="flex-1 h-px bg-gray-100" />
-                <span className="text-xs text-gray-400 font-medium">or</span>
-                <div className="flex-1 h-px bg-gray-100" />
+                <div className="flex-1 h-px bg-brand-100" />
+                <span className="text-xs text-brand-300 font-medium">or</span>
+                <div className="flex-1 h-px bg-brand-100" />
               </div>
 
               <button
                 type="button"
                 onClick={() => handleGoogleSignup(isSeller)}
-                className="mt-3 w-full flex items-center justify-center gap-3 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#FBF6EF] active:bg-gray-100 active:scale-95 transition-all duration-200"
+                className="mt-3 w-full flex items-center justify-center gap-3 border border-brand-100 rounded-2xl px-4 py-3 text-sm font-semibold text-brand-700 hover:bg-sand-50 active:bg-brand-50 active:scale-95 transition-all duration-200"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -413,7 +413,7 @@ function RegisterForm() {
                 {t('register.googleSignup', locale)}
               </button>
 
-              <p className="text-center text-sm text-gray-500 mt-6">
+              <p className="text-center text-sm text-brand-400 mt-6">
                 Already have an account?{' '}
                 <Link href="/login" className="text-brand-600 font-semibold hover:underline">Sign in</Link>
               </p>
@@ -423,8 +423,8 @@ function RegisterForm() {
           {step === 2 && (
             <>
               <div className="mb-6 text-center">
-                <h1 className="text-2xl font-black text-gray-900">Shop Subscription</h1>
-                <p className="text-gray-500 text-sm mt-1">Join Wasla's marketplace for Sudanese shops in Cairo</p>
+                <h1 className="text-2xl font-black text-brand-900">Shop Subscription</h1>
+                <p className="text-brand-400 text-sm mt-1">Join Wasla's marketplace for Sudanese shops in Cairo</p>
               </div>
 
               <form onSubmit={handleStep2} className="space-y-5">
@@ -438,8 +438,8 @@ function RegisterForm() {
                 <div className="border-2 border-brand-600 rounded-2xl p-5 bg-brand-50">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <p className="text-3xl font-black text-gray-900">EGP 500</p>
-                      <p className="text-sm text-gray-500 font-medium">per month</p>
+                      <p className="text-3xl font-black text-brand-900">EGP 500</p>
+                      <p className="text-sm text-brand-400 font-medium">per month</p>
                     </div>
                     <span className="bg-brand-700 text-white text-xs font-black px-3 py-1 rounded-full">STANDARD</span>
                   </div>
@@ -449,7 +449,7 @@ function RegisterForm() {
                       'Access to all platform features',
                       'Featured on Wasla marketplace',
                     ].map(feature => (
-                      <li key={feature} className="flex items-center gap-2 text-sm text-gray-700">
+                      <li key={feature} className="flex items-center gap-2 text-sm text-brand-700">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-brand-700 shrink-0">
                           <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
                         </svg>
@@ -460,7 +460,7 @@ function RegisterForm() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Payment Method</label>
+                  <label className="block text-sm font-semibold text-brand-700 mb-2">Payment Method</label>
                   <div className="space-y-3">
                     {PAYMENT_METHODS.map(pm => (
                       <label
@@ -468,7 +468,7 @@ function RegisterForm() {
                         className={`flex items-start gap-3 cursor-pointer border-2 rounded-2xl p-4 transition-all ${
                           paymentMethod === pm.value
                             ? 'border-brand-600 bg-brand-50'
-                            : 'border-gray-200 hover:border-brand-200'
+                            : 'border-brand-100 hover:border-brand-200'
                         }`}
                       >
                         <div className="relative shrink-0 mt-0.5">
@@ -480,15 +480,15 @@ function RegisterForm() {
                             onChange={() => setPaymentMethod(pm.value)}
                             className="sr-only"
                           />
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === pm.value ? 'border-brand-600' : 'border-gray-300'}`}>
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === pm.value ? 'border-brand-600' : 'border-brand-200'}`}>
                             {paymentMethod === pm.value && (
                               <div className="w-2.5 h-2.5 rounded-full bg-brand-600" />
                             )}
                           </div>
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-900">{pm.label}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">{pm.detail}</p>
+                          <p className="text-sm font-bold text-brand-900">{pm.label}</p>
+                          <p className="text-xs text-brand-400 mt-0.5">{pm.detail}</p>
                         </div>
                       </label>
                     ))}
@@ -498,7 +498,7 @@ function RegisterForm() {
                 <label className="flex items-start gap-3 cursor-pointer group">
                   <div className="relative shrink-0 mt-0.5">
                     <input type="checkbox" checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} className="sr-only" />
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${termsAccepted ? 'bg-brand-700 border-brand-700' : 'border-gray-300 group-hover:border-brand-400'}`}>
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${termsAccepted ? 'bg-brand-700 border-brand-700' : 'border-brand-200 group-hover:border-brand-400'}`}>
                       {termsAccepted && (
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-white">
                           <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
@@ -506,7 +506,7 @@ function RegisterForm() {
                       )}
                     </div>
                   </div>
-                  <span className="text-sm text-gray-600 leading-snug select-none">
+                  <span className="text-sm text-brand-600 leading-snug select-none">
                     I agree to <span className="text-brand-600 font-semibold">Wasla terms and conditions</span>
                   </span>
                 </label>

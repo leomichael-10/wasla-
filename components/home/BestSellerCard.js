@@ -64,7 +64,7 @@ export default function BestSellerCard({ product, locale }) {
         <button
           onClick={handleAdd}
           disabled={disabled}
-          className="mt-auto w-full h-9 flex items-center justify-center gap-1.5 bg-wasla-orange disabled:bg-gray-200 text-white disabled:text-gray-400 text-xs font-black rounded-xl transition-colors active:scale-95 disabled:active:scale-100"
+          className="mt-auto w-full h-9 flex items-center justify-center gap-1.5 bg-wasla-orange disabled:bg-brand-100 text-white disabled:text-brand-400 text-xs font-black rounded-xl transition-colors active:scale-95 disabled:active:scale-100"
         >
           {disabled ? (
             statusText

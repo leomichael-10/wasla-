@@ -67,7 +67,7 @@ function VerifyEmailForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF] flex flex-col">
+    <div className="min-h-screen bg-sand-50 flex flex-col">
       <div className="bg-brand-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
           <Wordmark />
@@ -83,14 +83,14 @@ function VerifyEmailForm() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
               </div>
-              <h1 className="text-xl font-black text-gray-900">تم تفعيل بريدك الإلكتروني!</h1>
-              <p className="text-gray-500 text-sm mt-2">جاري تحويلك لصفحة تسجيل الدخول…</p>
+              <h1 className="text-xl font-black text-brand-900">تم تفعيل بريدك الإلكتروني!</h1>
+              <p className="text-brand-400 text-sm mt-2">جاري تحويلك لصفحة تسجيل الدخول…</p>
             </div>
           ) : (
             <>
               <div className="mb-6 text-center">
-                <h1 className="text-2xl font-black text-gray-900">فعّل حسابك</h1>
-                <p className="text-gray-500 text-sm mt-1">
+                <h1 className="text-2xl font-black text-brand-900">فعّل حسابك</h1>
+                <p className="text-brand-400 text-sm mt-1">
                   بعتنا كود مكوّن من 6 أرقام لـ <strong>{email}</strong>
                 </p>
               </div>
@@ -100,7 +100,7 @@ function VerifyEmailForm() {
                   <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl px-4 py-3">{error}</div>
                 )}
                 <div>
-                  <label htmlFor="code" className="block text-sm font-semibold text-gray-700 mb-1.5">كود التفعيل</label>
+                  <label htmlFor="code" className="block text-sm font-semibold text-brand-700 mb-1.5">كود التفعيل</label>
                   <input
                     id="code"
                     type="text"
@@ -110,7 +110,7 @@ function VerifyEmailForm() {
                     value={code}
                     onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
                     placeholder="123456"
-                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-center text-2xl tracking-[0.5em] font-black focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition"
+                    className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-center text-2xl tracking-[0.5em] font-black focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition"
                   />
                 </div>
                 <button
@@ -123,7 +123,7 @@ function VerifyEmailForm() {
               </form>
 
               <div className="mt-5 text-center">
-                {resendMsg && <p className="text-xs text-gray-500 mb-2">{resendMsg}</p>}
+                {resendMsg && <p className="text-xs text-brand-400 mb-2">{resendMsg}</p>}
                 <button
                   onClick={handleResend}
                   disabled={resending || cooldown > 0}

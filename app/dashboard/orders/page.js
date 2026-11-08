@@ -265,7 +265,13 @@ export default function DashboardOrdersPage() {
                     )}
 
                     {order.addressLandmark && (
-                      <p className="text-sm font-bold text-accent-600 mt-1">📍 {order.addressLandmark}</p>
+                      <p className="text-sm font-bold text-accent-600 mt-1 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5 shrink-0">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                        </svg>
+                        {order.addressLandmark}
+                      </p>
                     )}
 
                     {order.deliveryNotes && (

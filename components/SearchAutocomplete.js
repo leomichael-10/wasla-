@@ -22,12 +22,12 @@ function SuggestionRow({ id, item, label, price, active, onSelect, locale }) {
       aria-selected={active}
       onMouseDown={e => e.preventDefault()}
       onClick={onSelect}
-      className={`w-full flex items-center gap-3 px-4 py-2 text-start transition-colors ${active ? 'bg-accent-50' : 'hover:bg-gray-50'}`}
+      className={`w-full flex items-center gap-3 px-4 py-2 text-start transition-colors ${active ? 'bg-accent-50' : 'hover:bg-brand-50'}`}
     >
       <MediaThumb src={item.image} alt="" className="w-9 h-9 rounded-lg shrink-0" />
-      <span className="flex-1 min-w-0 text-xs font-bold text-gray-900 truncate">{label}</span>
+      <span className="flex-1 min-w-0 text-xs font-bold text-brand-900 truncate">{label}</span>
       {price != null && (
-        <span className="text-xs font-black text-gray-900 shrink-0">{formatPrice(price, locale)}</span>
+        <span className="text-xs font-black text-brand-900 shrink-0">{formatPrice(price, locale)}</span>
       )}
     </button>
   )
@@ -242,14 +242,14 @@ export default function SearchAutocomplete({
           className="z-100 max-h-[70vh] overflow-y-auto rounded-2xl bg-white shadow-xl border border-brand-100 py-2"
         >
           {loading ? (
-            <p className="px-4 py-6 text-center text-xs text-gray-400">…</p>
+            <p className="px-4 py-6 text-center text-xs text-brand-300">…</p>
           ) : flatItems.length === 0 ? (
-            <p className="px-4 py-6 text-center text-xs text-gray-400">{t('search.noResults', locale)}</p>
+            <p className="px-4 py-6 text-center text-xs text-brand-300">{t('search.noResults', locale)}</p>
           ) : (
             <>
               {productItems.length > 0 && (
                 <div>
-                  <p className="px-4 pt-1 pb-1.5 text-[11px] font-black uppercase tracking-wide text-gray-400">{t('nav.products', locale)}</p>
+                  <p className="px-4 pt-1 pb-1.5 text-[11px] font-black uppercase tracking-wide text-brand-300">{t('nav.products', locale)}</p>
                   {productItems.map(item => (
                     <SuggestionRow
                       key={item.key}
@@ -266,7 +266,7 @@ export default function SearchAutocomplete({
               )}
               {shopItems.length > 0 && (
                 <div>
-                  <p className="px-4 pt-2 pb-1.5 text-[11px] font-black uppercase tracking-wide text-gray-400">{t('search.shops', locale)}</p>
+                  <p className="px-4 pt-2 pb-1.5 text-[11px] font-black uppercase tracking-wide text-brand-300">{t('search.shops', locale)}</p>
                   {shopItems.map(item => (
                     <SuggestionRow
                       key={item.key}

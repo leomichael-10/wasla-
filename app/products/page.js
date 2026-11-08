@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation'
 import Navbar from '../../components/Navbar'
 import BrowseProductTile from '../../components/BrowseProductTile'
 import CategoryIcon from '../../components/CategoryIcon'
-import { getZoneCookie } from '../../lib/zone'
+import { getZoneCookie, openZonePicker } from '../../lib/zone'
 import { getLocaleCookie, t, categoryName, interpolate } from '../../lib/i18n'
 
 const BRANDS = ['Kassala', 'Gedaref', 'El Obeid']
@@ -213,11 +213,6 @@ function ProductsBrowser() {
 
   function clearFilters() { setSearch(''); setBrand(''); setCategory('') }
 
-  function handleChangeZone() {
-    document.cookie = 'wasla_zone=; path=/; max-age=0'
-    window.location.reload()
-  }
-
   return (
     <div className="min-h-screen bg-sand-50" dir={dir}>
       <Navbar />
@@ -344,7 +339,7 @@ function ProductsBrowser() {
                   <p className="text-nile-500 text-sm font-semibold mt-3">
                     {interpolate(t('browse.emptyZone', locale), { zone: locale === 'ar' ? zone.nameAr : zone.nameEn })}
                     {' '}
-                    <button onClick={handleChangeZone} className="underline hover:no-underline">{t('browse.changeZone', locale)}</button>
+                    <button onClick={openZonePicker} className="underline hover:no-underline">{t('browse.changeZone', locale)}</button>
                   </p>
                 )}
                 {hasFilters && (

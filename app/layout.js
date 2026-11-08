@@ -164,24 +164,24 @@ export default async function RootLayout({ children }) {
             above the footer instead of letting it sit right after the
             actual content. */}
         <main className="pb-16 lg:pb-0">{children}</main>
-        <footer className="bg-white border-t border-gray-100">
+        <footer className="bg-white border-t border-brand-100">
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-black text-brand-600 font-(family-name:--font-reem-kufi)">
                   <Wordmark accentClassName="text-accent-400" />
                 </span>
-                <span className="text-gray-300">|</span>
-                <span className="text-xs text-gray-400">{t('footer.tagline', locale)}</span>
+                <span className="text-brand-300">|</span>
+                <span className="text-xs text-brand-400">{t('footer.tagline', locale)}</span>
               </div>
-              <nav className="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500">
+              <nav className="flex flex-wrap items-center justify-center gap-4 text-xs text-brand-500">
                 <Link href="/products"          className="hover:text-accent-400 transition-colors">{t('footer.products', locale)}</Link>
                 <Link href="/terms"             className="hover:text-accent-400 transition-colors">{t('footer.terms', locale)}</Link>
                 <Link href="/privacy"           className="hover:text-accent-400 transition-colors">{t('footer.privacy', locale)}</Link>
                 <Link href="/delete-account"     className="hover:text-accent-400 transition-colors">{t('footer.deleteAccount', locale)}</Link>
-                <Link href="/register?mode=retailer" className="text-gray-400 hover:text-accent-400 transition-colors">{t('footer.sell', locale)}</Link>
+                <Link href="/register?mode=retailer" className="text-brand-400 hover:text-accent-400 transition-colors">{t('footer.sell', locale)}</Link>
               </nav>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-brand-400">
                 &copy; {new Date().getFullYear()} Wasla. {t('footer.rights', locale)}.
               </p>
             </div>

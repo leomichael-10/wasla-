@@ -106,14 +106,14 @@ export default function OnboardingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FBF6EF] flex items-center justify-center">
+      <div className="min-h-screen bg-sand-50 flex items-center justify-center">
         <div className="w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF] flex flex-col">
+    <div className="min-h-screen bg-sand-50 flex flex-col">
 
       <div className="bg-brand-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
@@ -122,13 +122,13 @@ export default function OnboardingPage() {
       </div>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 w-full max-w-md p-8">
+        <div className="bg-white rounded-3xl shadow-sm border border-brand-100 w-full max-w-md p-8">
 
           <div className="mb-8 text-center">
-            <h1 className="text-2xl font-black text-gray-900">
+            <h1 className="text-2xl font-black text-brand-900">
               {isSeller ? t('onboarding.sellerHeading', locale) : 'Welcome to Wasla'}
             </h1>
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="text-brand-400 text-sm mt-1">
               {isSeller ? t('onboarding.sellerSubtitle', locale) : 'Finish setting up your account'}
             </p>
           </div>
@@ -145,7 +145,7 @@ export default function OnboardingPage() {
               <>
                 {/* Business name */}
                 <div>
-                  <label htmlFor="businessName" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <label htmlFor="businessName" className="block text-sm font-semibold text-brand-700 mb-1.5">
                     {t('onboarding.businessName', locale)} <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -155,13 +155,13 @@ export default function OnboardingPage() {
                     value={businessName}
                     onChange={e => setBusinessName(e.target.value)}
                     placeholder={t('onboarding.businessNamePlaceholder', locale)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
+                    className="w-full border border-brand-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   />
                 </div>
 
                 {/* Business type */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <label className="block text-sm font-semibold text-brand-700 mb-1.5">
                     {t('seller.businessType', locale)} <span className="text-red-400">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-3">
@@ -171,7 +171,7 @@ export default function OnboardingPage() {
                         className={`flex items-center justify-center gap-2 cursor-pointer border-2 rounded-xl py-3 text-sm font-bold transition-all ${
                           sellerType === opt
                             ? 'border-brand-600 bg-brand-50 text-brand-700'
-                            : 'border-gray-200 text-gray-500 hover:border-brand-200'
+                            : 'border-brand-100 text-brand-400 hover:border-brand-200'
                         }`}
                       >
                         <input
@@ -187,7 +187,7 @@ export default function OnboardingPage() {
 
                 {/* WhatsApp number */}
                 <div>
-                  <label htmlFor="whatsappNumber" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <label htmlFor="whatsappNumber" className="block text-sm font-semibold text-brand-700 mb-1.5">
                     {t('onboarding.whatsappNumber', locale)} <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -197,16 +197,16 @@ export default function OnboardingPage() {
                     value={whatsappNumber}
                     onChange={e => setWhatsappNumber(e.target.value)}
                     placeholder="01012345678 or +249912345678"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
+                    className="w-full border border-brand-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                   />
                   <PhonePreview value={whatsappNumber} />
-                  <p className="text-xs text-gray-400 mt-1">{t('onboarding.whatsappHint', locale)}</p>
+                  <p className="text-xs text-brand-300 mt-1">{t('onboarding.whatsappHint', locale)}</p>
                 </div>
               </>
             ) : (
               /* Full name */
               <div>
-                <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                <label htmlFor="fullName" className="block text-sm font-semibold text-brand-700 mb-1.5">
                   Full name <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -217,15 +217,15 @@ export default function OnboardingPage() {
                   value={fullName}
                   onChange={e => setFullName(e.target.value)}
                   placeholder="Your full name"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
+                  className="w-full border border-brand-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                 />
               </div>
             )}
 
             {/* Phone */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Phone <span className="text-gray-400 font-normal">(optional)</span>
+              <label htmlFor="phone" className="block text-sm font-semibold text-brand-700 mb-1.5">
+                Phone <span className="text-brand-300 font-normal">(optional)</span>
               </label>
               <input
                 id="phone"
@@ -234,21 +234,21 @@ export default function OnboardingPage() {
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 placeholder="01012345678 or +249912345678"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
+                className="w-full border border-brand-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
               />
               <PhonePreview value={phone} />
             </div>
 
             {/* City */}
             <div>
-              <label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                City <span className="text-gray-400 font-normal">(optional)</span>
+              <label htmlFor="city" className="block text-sm font-semibold text-brand-700 mb-1.5">
+                City <span className="text-brand-300 font-normal">(optional)</span>
               </label>
               <select
                 id="city"
                 value={city}
                 onChange={e => setCity(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition bg-white"
+                className="w-full border border-brand-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition bg-white"
               >
                 <option value="">Select your city</option>
                 {EGYPT_CITIES.map(c => <option key={c} value={c}>{c}</option>)}

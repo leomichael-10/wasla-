@@ -3,8 +3,8 @@ import { useState } from 'react'
 import { t } from '../lib/i18n'
 import { useUser } from '../lib/UserContext'
 
-const inputCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition bg-white'
-const labelCls = 'block text-sm font-semibold text-gray-700 mb-1.5'
+const inputCls = 'w-full border border-brand-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition bg-white'
+const labelCls = 'block text-sm font-semibold text-brand-700 mb-1.5'
 
 // Maps the API's stable error `code` (see app/api/profile/change-password/
 // route.js) to a localized message — never displays the API's raw

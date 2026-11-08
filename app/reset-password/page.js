@@ -68,7 +68,7 @@ function ResetPasswordForm() {
   const invalidLink = !email || !code
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF] flex flex-col">
+    <div className="min-h-screen bg-sand-50 flex flex-col">
 
       <div className="bg-brand-700 px-6 py-4">
         <Link href="/" className="text-white font-black text-xl tracking-tight">
@@ -86,8 +86,8 @@ function ResetPasswordForm() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
                 </svg>
               </div>
-              <h1 className="text-xl font-black text-gray-900">{t('resetPassword.invalidLinkHeading', locale)}</h1>
-              <p className="text-gray-500 text-sm mt-2">{t('resetPassword.invalidLinkBody', locale)}</p>
+              <h1 className="text-xl font-black text-brand-900">{t('resetPassword.invalidLinkHeading', locale)}</h1>
+              <p className="text-brand-400 text-sm mt-2">{t('resetPassword.invalidLinkBody', locale)}</p>
               <Link
                 href="/forgot-password"
                 className="inline-block mt-6 bg-brand-700 hover:bg-brand-800 active:scale-95 text-white font-black px-6 py-2.5 rounded-2xl text-sm transition-all duration-200"
@@ -102,14 +102,14 @@ function ResetPasswordForm() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
               </div>
-              <h1 className="text-xl font-black text-gray-900">{t('resetPassword.successHeading', locale)}</h1>
-              <p className="text-gray-500 text-sm mt-2">{t('resetPassword.successBody', locale)}</p>
+              <h1 className="text-xl font-black text-brand-900">{t('resetPassword.successHeading', locale)}</h1>
+              <p className="text-brand-400 text-sm mt-2">{t('resetPassword.successBody', locale)}</p>
             </div>
           ) : (
             <>
               <div className="mb-8 text-center">
-                <h1 className="text-2xl font-black text-gray-900">{t('resetPassword.heading', locale)}</h1>
-                <p className="text-gray-500 text-sm mt-1">{t('resetPassword.subtitle', locale)}</p>
+                <h1 className="text-2xl font-black text-brand-900">{t('resetPassword.heading', locale)}</h1>
+                <p className="text-brand-400 text-sm mt-1">{t('resetPassword.subtitle', locale)}</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -120,7 +120,7 @@ function ResetPasswordForm() {
                 )}
 
                 <div>
-                  <label htmlFor="newPassword" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <label htmlFor="newPassword" className="block text-sm font-semibold text-brand-700 mb-1.5">
                     {t('resetPassword.newPasswordLabel', locale)}
                   </label>
                   <input
@@ -132,12 +132,12 @@ function ResetPasswordForm() {
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition"
+                    className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-brand-700 mb-1.5">
                     {t('resetPassword.confirmLabel', locale)}
                   </label>
                   <input
@@ -149,7 +149,7 @@ function ResetPasswordForm() {
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition"
+                    className="w-full border border-brand-100 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition"
                   />
                 </div>
 

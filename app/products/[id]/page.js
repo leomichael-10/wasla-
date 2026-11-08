@@ -9,20 +9,20 @@ import { getLocaleCookie, productName, categoryName, placeName, t, interpolate, 
 
 function Skeleton() {
   return (
-    <div className="min-h-screen bg-[#FBF6EF]">
+    <div className="min-h-screen bg-sand-50">
       <Navbar />
       <div className="max-w-4xl mx-auto px-4 py-8 animate-pulse">
-        <div className="h-4 bg-gray-100 rounded w-48 mb-8" />
+        <div className="h-4 bg-brand-50 rounded w-48 mb-8" />
         <div className="grid sm:grid-cols-2 gap-8">
-          <div className="aspect-square bg-gray-100 rounded-3xl" />
+          <div className="aspect-square bg-brand-50 rounded-3xl" />
           <div className="space-y-4">
-            <div className="h-3 bg-gray-100 rounded w-20" />
-            <div className="h-8 bg-gray-100 rounded w-3/4" />
-            <div className="h-4 bg-gray-100 rounded w-full" />
+            <div className="h-3 bg-brand-50 rounded w-20" />
+            <div className="h-8 bg-brand-50 rounded w-3/4" />
+            <div className="h-4 bg-brand-50 rounded w-full" />
             <div className="flex gap-2 mt-4">
-              {[1,2,3].map(i => <div key={i} className="h-8 bg-gray-100 rounded-full w-24" />)}
+              {[1,2,3].map(i => <div key={i} className="h-8 bg-brand-50 rounded-full w-24" />)}
             </div>
-            <div className="h-12 bg-gray-100 rounded-full mt-6 w-full" />
+            <div className="h-12 bg-brand-50 rounded-full mt-6 w-full" />
           </div>
         </div>
       </div>
@@ -35,7 +35,7 @@ function StarSelector({ value, onChange }) {
     <div className="flex gap-1">
       {[1,2,3,4,5].map(n => (
         <button key={n} type="button" onClick={() => onChange(n)}
-          className={`text-2xl transition-colors ${n <= value ? 'text-yellow-400' : 'text-gray-200 hover:text-yellow-300'}`}>
+          className={`text-2xl transition-colors ${n <= value ? 'text-yellow-400' : 'text-brand-200 hover:text-yellow-300'}`}>
           &#9733;
         </button>
       ))}
@@ -164,10 +164,10 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-[#FBF6EF]">
+      <div className="min-h-screen bg-sand-50">
         <Navbar />
         <div className="max-w-4xl mx-auto px-4 py-24 text-center">
-          <p className="text-gray-500 font-semibold text-lg">{t('product.notFound', locale)}</p>
+          <p className="text-brand-400 font-semibold text-lg">{t('product.notFound', locale)}</p>
           <Link href="/products" className="mt-4 inline-block text-brand-600 font-bold hover:underline text-sm">
             {t('product.backToProducts', locale)}
           </Link>
@@ -197,13 +197,13 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF]">
+    <div className="min-h-screen bg-sand-50">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar />
       <div className="max-w-4xl mx-auto px-4 py-8">
 
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-sm text-gray-400 mb-7 flex-wrap">
+        <nav className="flex items-center gap-1.5 text-sm text-brand-300 mb-7 flex-wrap">
           <Link href="/"         className="hover:text-brand-600 transition-colors">{t('tab.home', locale)}</Link>
           <span>/</span>
           <Link href="/products" className="hover:text-brand-600 transition-colors">{t('nav.products', locale)}</Link>
@@ -222,7 +222,7 @@ export default function ProductDetailPage() {
               the same underlying bidi issue, since displayName is often an
               English fallback (see lib/i18n.js productName()) rendered
               inside an rtl-direction page. */}
-          <span dir="auto" className="text-gray-700 font-medium truncate max-w-45">{displayName}</span>
+          <span dir="auto" className="text-brand-700 font-medium truncate max-w-45">{displayName}</span>
         </nav>
 
         {/* Main grid */}
@@ -239,7 +239,7 @@ export default function ProductDetailPage() {
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {images.map((url, i) => (
                   <button key={url} onClick={() => setMainImageIdx(i)}
-                    className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-colors ${i === mainImageIdx ? 'border-brand-500' : 'border-transparent hover:border-gray-300'}`}>
+                    className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-colors ${i === mainImageIdx ? 'border-brand-500' : 'border-transparent hover:border-brand-200'}`}>
                     <img src={url} alt="" className="w-full h-full object-cover" />
                   </button>
                 ))}
@@ -255,7 +255,7 @@ export default function ProductDetailPage() {
                   unknown language (often an untranslated English fallback, see
                   lib/i18n.js productName()); isolating it keeps trailing Latin
                   punctuation from jumping to the wrong side inside this rtl page. */}
-              <h1 dir="auto" className="text-2xl sm:text-3xl font-black text-gray-900 mt-1 leading-tight">{displayName}</h1>
+              <h1 dir="auto" className="text-2xl sm:text-3xl font-black text-brand-900 mt-1 leading-tight">{displayName}</h1>
               {product.category && (
                 <Link href={`/products?category=${encodeURIComponent(product.category.name)}`}
                   className="inline-block mt-2 bg-brand-50 text-brand-700 text-xs font-semibold px-3 py-1 rounded-full hover:bg-brand-100 transition-colors">
@@ -266,21 +266,21 @@ export default function ProductDetailPage() {
                 <div className="flex items-center gap-2 mt-2">
                   <div className="flex gap-0.5">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <span key={i} className={`text-sm ${i < Math.round(avgRating) ? 'text-yellow-400' : 'text-gray-200'}`}>&#9733;</span>
+                      <span key={i} className={`text-sm ${i < Math.round(avgRating) ? 'text-yellow-400' : 'text-brand-200'}`}>&#9733;</span>
                     ))}
                   </div>
-                  <span className="text-sm font-semibold text-gray-600">
+                  <span className="text-sm font-semibold text-brand-600">
                     {avgRating.toFixed(1)} ({reviews.length} {t('product.reviewsLabel', locale)})
                   </span>
                 </div>
               )}
             </div>
 
-            {product.description && <p dir="auto" className="text-sm text-gray-600 leading-relaxed">{product.description}</p>}
+            {product.description && <p dir="auto" className="text-sm text-brand-600 leading-relaxed">{product.description}</p>}
 
             {/* Variant selector */}
             <div>
-              <p className="text-sm font-bold text-gray-800 mb-2.5">
+              <p className="text-sm font-bold text-brand-800 mb-2.5">
                 {t('product.option', locale)}{selectedVariant?.label && <span className="ms-2 font-normal text-brand-700">{selectedVariant.label}</span>}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -291,7 +291,7 @@ export default function ProductDetailPage() {
                     <button key={variant.id} onClick={() => !isOutOfStock && setSelectedVariant(variant)}
                       disabled={isOutOfStock}
                       className={`px-3.5 py-1.5 rounded-full text-sm font-semibold border transition-all duration-150
-                        ${isSelected ? 'bg-brand-700 border-brand-700 text-white shadow-sm' : 'bg-white border-gray-200 text-gray-700 hover:border-brand-400 hover:text-brand-600'}
+                        ${isSelected ? 'bg-brand-700 border-brand-700 text-white shadow-sm' : 'bg-white border-brand-100 text-brand-700 hover:border-brand-400 hover:text-brand-600'}
                         ${isOutOfStock ? 'opacity-35 cursor-not-allowed line-through' : 'cursor-pointer'}`}>
                       {variant.label ?? `${t('product.option', locale)} ${variant.id}`}
                     </button>
@@ -315,7 +315,7 @@ export default function ProductDetailPage() {
 
             {/* Price + cart */}
             <div className="flex items-center gap-3 mt-1">
-              <span className="text-3xl font-black text-gray-900 tabular-nums">
+              <span className="text-3xl font-black text-brand-900 tabular-nums">
                 {selectedVariant ? formatPrice(selectedVariant.price, locale) : '—'}
               </span>
               <button onClick={handleAddToCart} disabled={!selectedVariant || outOfStock}
@@ -332,34 +332,34 @@ export default function ProductDetailPage() {
         {product.seller && (
           <div className="mt-10 bg-white rounded-3xl border border-brand-50 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-black text-gray-900 text-base">{t('product.sellerInfo', locale)}</h2>
+              <h2 className="font-black text-brand-900 text-base">{t('product.sellerInfo', locale)}</h2>
               <Link href={`/shops/${product.seller.id}`} className="text-sm font-bold text-brand-600 hover:underline">
                 {t('product.viewShop', locale)}
               </Link>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">{t('checkout.shopFallbackName', locale)}</p>
-                <p dir="auto" className="font-bold text-gray-800 text-sm">{product.seller.businessName}</p>
+                <p className="text-[10px] font-bold text-brand-300 uppercase tracking-wider mb-0.5">{t('checkout.shopFallbackName', locale)}</p>
+                <p dir="auto" className="font-bold text-brand-800 text-sm">{product.seller.businessName}</p>
               </div>
               {product.seller.city && (
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">{t('product.locationLabel', locale)}</p>
-                  <p dir="auto" className="font-bold text-gray-800 text-sm">
+                  <p className="text-[10px] font-bold text-brand-300 uppercase tracking-wider mb-0.5">{t('product.locationLabel', locale)}</p>
+                  <p dir="auto" className="font-bold text-brand-800 text-sm">
                     {placeName(product.seller.city, locale)}{product.seller.area ? `${locale === 'ar' ? '، ' : ', '}${placeName(product.seller.area, locale)}` : ''}
                   </p>
                 </div>
               )}
               <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">{t('product.deliveryLabel', locale)}</p>
-                <p className={`font-bold text-sm ${product.seller.deliveryAvailable ? 'text-green-600' : 'text-gray-400'}`}>
+                <p className="text-[10px] font-bold text-brand-300 uppercase tracking-wider mb-0.5">{t('product.deliveryLabel', locale)}</p>
+                <p className={`font-bold text-sm ${product.seller.deliveryAvailable ? 'text-green-600' : 'text-brand-300'}`}>
                   {product.seller.deliveryAvailable ? t('product.deliveryAvailable', locale) : t('product.deliveryNotAvailable', locale)}
                 </p>
               </div>
               {product.seller.workingHours && (
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">{t('product.hoursLabel', locale)}</p>
-                  <p dir="auto" className="font-bold text-gray-800 text-sm">{product.seller.workingHours}</p>
+                  <p className="text-[10px] font-bold text-brand-300 uppercase tracking-wider mb-0.5">{t('product.hoursLabel', locale)}</p>
+                  <p dir="auto" className="font-bold text-brand-800 text-sm">{product.seller.workingHours}</p>
                 </div>
               )}
             </div>
@@ -372,20 +372,20 @@ export default function ProductDetailPage() {
           {/* Write a review */}
           {user?.role === 'customer' && canReview && !alreadyReviewed && (
             <div className="bg-white rounded-3xl border border-brand-50 shadow-sm p-6">
-              <h2 className="font-black text-gray-900 text-base mb-4">{t('product.writeReview', locale)}</h2>
+              <h2 className="font-black text-brand-900 text-base mb-4">{t('product.writeReview', locale)}</h2>
               {reviewSuccess ? (
                 <p className="text-green-600 font-semibold text-sm">{t('product.reviewSubmitted', locale)}</p>
               ) : (
                 <form onSubmit={handleSubmitReview} className="space-y-4">
                   <div>
-                    <p className="text-sm font-semibold text-gray-700 mb-2">{t('product.yourRating', locale)}</p>
+                    <p className="text-sm font-semibold text-brand-700 mb-2">{t('product.yourRating', locale)}</p>
                     <StarSelector value={reviewRating} onChange={setReviewRating} />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t('product.commentOptional', locale)}</label>
+                    <label className="block text-sm font-semibold text-brand-700 mb-1.5">{t('product.commentOptional', locale)}</label>
                     <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)}
                       placeholder={t('product.commentPlaceholder', locale)} rows={3}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none" />
+                      className="w-full border border-brand-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none" />
                   </div>
                   {reviewError && <p className="text-xs text-red-500">{reviewError}</p>}
                   <button type="submit" disabled={reviewLoading}
@@ -400,34 +400,34 @@ export default function ProductDetailPage() {
           {/* Reviews list */}
           {reviews.length > 0 && (
             <div className="bg-white rounded-3xl border border-brand-50 shadow-sm p-6">
-              <h2 className="font-black text-gray-900 text-base mb-5">
+              <h2 className="font-black text-brand-900 text-base mb-5">
                 {t('product.customerReviews', locale)}
-                <span className="ms-2 text-gray-400 font-normal">({reviews.length})</span>
+                <span className="ms-2 text-brand-300 font-normal">({reviews.length})</span>
                 <span className="ms-2 text-sm font-semibold text-yellow-500">{avgRating.toFixed(1)} / 5</span>
               </h2>
               <div className="space-y-4">
                 {reviews.map(review => {
                   const reviewerName = review.customer?.customerProfile?.fullName ?? t('product.customerFallback', locale)
                   return (
-                  <div key={review.id} className="flex gap-3 border-b border-gray-50 last:border-0 pb-4 last:pb-0">
+                  <div key={review.id} className="flex gap-3 border-b border-brand-50 last:border-0 pb-4 last:pb-0">
                     <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs shrink-0">
                       {reviewerName[0].toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span dir="auto" className="text-xs font-semibold text-gray-700">
+                        <span dir="auto" className="text-xs font-semibold text-brand-700">
                           {reviewerName}
                         </span>
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-[10px] text-brand-300">
                           {new Date(review.createdAt).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-GB', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                       </div>
                       <div className="flex gap-0.5 mb-1">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <span key={i} className={`text-sm ${i < review.rating ? 'text-yellow-400' : 'text-gray-200'}`}>&#9733;</span>
+                          <span key={i} className={`text-sm ${i < review.rating ? 'text-yellow-400' : 'text-brand-200'}`}>&#9733;</span>
                         ))}
                       </div>
-                      {review.comment && <p dir="auto" className="text-sm text-gray-600 leading-relaxed">{review.comment}</p>}
+                      {review.comment && <p dir="auto" className="text-sm text-brand-600 leading-relaxed">{review.comment}</p>}
                     </div>
                   </div>
                   )

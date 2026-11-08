@@ -9,7 +9,7 @@
 // "aspect-square rounded-3xl"); this never invents its own sizing.
 export default function MediaThumb({ src, alt = '', className = '', imgClassName = '' }) {
   return (
-    <div className={`bg-[#FBF6EF] flex items-center justify-center overflow-hidden ${className}`}>
+    <div className={`bg-sand-50 flex items-center justify-center overflow-hidden ${className}`}>
       {src ? (
         <img src={src} alt={alt} className={`w-full h-full object-cover ${imgClassName}`} />
       ) : (

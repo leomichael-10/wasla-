@@ -85,9 +85,9 @@ export default function PWAInstall() {
           className="w-10 h-10 rounded-xl shrink-0"
         />
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-gray-900 text-sm">{t('pwa.installTitle', locale)}</p>
+          <p className="font-bold text-brand-900 text-sm">{t('pwa.installTitle', locale)}</p>
           {showIosHint ? (
-            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+            <p className="text-xs text-brand-400 mt-1 leading-relaxed">
               {t('pwa.iosBody', locale)}{' '}
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5 inline-block align-text-bottom">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V4m0 0 3.5 3.5M12 4 8.5 7.5M6 12v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-6" />
@@ -95,7 +95,7 @@ export default function PWAInstall() {
               , {t('pwa.iosThenTap', locale)}.
             </p>
           ) : (
-            <p className="text-xs text-gray-500 mt-1">{t('pwa.installBody', locale)}</p>
+            <p className="text-xs text-brand-400 mt-1">{t('pwa.installBody', locale)}</p>
           )}
           <div className="flex items-center gap-3 mt-2.5">
             {!showIosHint && (
@@ -108,7 +108,7 @@ export default function PWAInstall() {
             )}
             <button
               onClick={dismiss}
-              className="text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-xs font-semibold text-brand-300 hover:text-brand-600 transition-colors"
             >
               {t('pwa.dismiss', locale)}
             </button>
