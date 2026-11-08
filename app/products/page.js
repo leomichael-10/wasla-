@@ -218,10 +218,16 @@ function ProductsBrowser() {
       <Navbar />
 
       {mobileOpen && (
-        <div className="fixed inset-0 bg-black/40 z-40 sm:hidden" onClick={() => setMobileOpen(false)} />
+        <div
+          className="wasla-modal-backdrop fixed inset-0 bg-black/40 z-40 sm:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
       )}
 
-      <div className={`fixed bottom-0 inset-x-0 z-50 bg-wasla-card rounded-t-2xl p-6 shadow-2xl transition-transform duration-300 sm:hidden ${mobileOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+      <div
+        className={`fixed bottom-0 inset-x-0 z-50 bg-wasla-card rounded-t-2xl p-6 shadow-2xl transition-transform duration-300 sm:hidden ${mobileOpen ? 'translate-y-0' : 'translate-y-full'}`}
+        style={{ transitionTimingFunction: 'var(--ease-drawer)' }}
+      >
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-black text-brand-900">{t('browse.filters', locale)}</h2>
           <button onClick={() => setMobileOpen(false)} className="text-brand-400 hover:text-brand-600" aria-label="Close filters">

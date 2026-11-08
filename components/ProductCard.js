@@ -84,7 +84,7 @@ export default function ProductCard({ product }) {
           />
         </div>
 
-        <div className="absolute bottom-0 translate-y-1/2 right-4 bg-accent-400 text-brand-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg z-10">
+        <div className="absolute bottom-0 translate-y-1/2 end-4 bg-accent-400 text-brand-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg z-10">
           {priceLabel}
         </div>
       </div>

@@ -84,20 +84,20 @@ export default function ZoneGate() {
   const currentZoneId = getZoneCookie()?.id
 
   return (
-    <div className="fixed inset-0 z-50 bg-brand-900/60 backdrop-blur-sm flex items-center justify-center px-4">
-      <div dir={dir} className="relative bg-wasla-card rounded-3xl shadow-2xl w-full max-w-md p-6 max-h-[85vh] overflow-y-auto">
+    <div className="wasla-modal-backdrop fixed inset-0 z-50 bg-brand-900/60 backdrop-blur-sm flex items-center justify-center px-4">
+      <div dir={dir} className="wasla-modal-panel relative bg-wasla-card rounded-3xl shadow-2xl w-full max-w-md p-6 max-h-[85vh] overflow-y-auto">
 
         <button
           onClick={handleSkip}
           aria-label="Close"
-          className="absolute top-4 inset-e-4 w-8 h-8 flex items-center justify-center rounded-full text-brand-400 hover:text-brand-700 hover:bg-sand-50 transition-colors"
+          className="absolute top-2 inset-e-2 min-w-11 min-h-11 flex items-center justify-center rounded-full text-brand-400 hover:text-brand-700 hover:bg-sand-50 transition-colors"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
           </svg>
         </button>
 
-        <h2 className="text-lg font-black text-brand-900 pe-8">{t('zone.title', locale)}</h2>
+        <h2 className="text-lg font-black text-brand-900 pe-10">{t('zone.title', locale)}</h2>
         <p className="text-sm text-brand-500 mt-1">{t('zone.subtitle', locale)}</p>
 
         {view === 'loading' && (

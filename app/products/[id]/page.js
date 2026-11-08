@@ -35,7 +35,7 @@ function StarSelector({ value, onChange }) {
     <div className="flex gap-1">
       {[1,2,3,4,5].map(n => (
         <button key={n} type="button" onClick={() => onChange(n)}
-          className={`text-2xl transition-colors ${n <= value ? 'text-yellow-400' : 'text-brand-200 hover:text-yellow-300'}`}>
+          className={`min-w-11 min-h-11 flex items-center justify-center text-2xl transition-colors ${n <= value ? 'text-yellow-400' : 'text-brand-200 hover:text-yellow-300'}`}>
           &#9733;
         </button>
       ))}
@@ -352,7 +352,7 @@ export default function ProductDetailPage() {
               )}
               <div>
                 <p className="text-[10px] font-bold text-brand-300 uppercase tracking-wider mb-0.5">{t('product.deliveryLabel', locale)}</p>
-                <p className={`font-bold text-sm ${product.seller.deliveryAvailable ? 'text-green-600' : 'text-brand-300'}`}>
+                <p className={`font-bold text-sm ${product.seller.deliveryAvailable ? 'text-nile-500' : 'text-brand-300'}`}>
                   {product.seller.deliveryAvailable ? t('product.deliveryAvailable', locale) : t('product.deliveryNotAvailable', locale)}
                 </p>
               </div>

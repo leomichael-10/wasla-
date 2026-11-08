@@ -55,7 +55,7 @@ function DishCard({ dish, locale }) {
         <div className="w-28 h-28 rounded-full border-4 border-white/80 shadow-lg overflow-hidden">
           <MediaThumb src={mainImage} alt={displayName} className="w-full h-full rounded-full" />
         </div>
-        <div className="absolute bottom-0 translate-y-1/2 rtl:left-4 ltr:right-4 bg-accent-400 text-brand-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg z-10">
+        <div className="absolute bottom-0 translate-y-1/2 end-4 bg-accent-400 text-brand-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg z-10">
           {priceLabel}
         </div>
       </div>
@@ -185,7 +185,7 @@ export default function RestaurantPage() {
 
               <div className="flex flex-wrap gap-2">
                 {restaurant.deliveryAvailable && (
-                  <span className="bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                  <span className="bg-nile-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
                     {t('home.sameDay', locale)}
                   </span>
                 )}

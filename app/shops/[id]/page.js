@@ -147,7 +147,7 @@ export default function ShopPage() {
               {/* Quick badges */}
               <div className="flex flex-wrap gap-2">
                 {shop.deliveryAvailable && (
-                  <span className="bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                  <span className="bg-nile-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
                     Delivery available
                   </span>
                 )}
@@ -202,9 +202,9 @@ export default function ShopPage() {
                 >
                   {tab}
                   {tab === 'All' ? (
-                    <span className="ml-1.5 text-xs opacity-70">({shop.productCount})</span>
+                    <span className="ms-1.5 text-xs opacity-70">({shop.productCount})</span>
                   ) : (
-                    <span className="ml-1.5 text-xs opacity-70">
+                    <span className="ms-1.5 text-xs opacity-70">
                       ({shop.products.filter(p => p.category?.name === tab).length})
                     </span>
                   )}
@@ -218,7 +218,7 @@ export default function ShopPage() {
         <div>
           <h2 className="text-lg font-black text-brand-900 mb-4">
             {activeTab === 'All' ? `All Products` : activeTab}
-            <span className="ml-2 text-base font-normal text-brand-300">({filteredProducts.length})</span>
+            <span className="ms-2 text-base font-normal text-brand-300">({filteredProducts.length})</span>
           </h2>
 
           {filteredProducts.length === 0 ? (
@@ -241,7 +241,7 @@ export default function ShopPage() {
               <div>
                 <h2 className="font-black text-brand-900 text-base">
                   Reviews
-                  <span className="ml-2 text-brand-300 font-normal text-sm">({shop.reviewCount})</span>
+                  <span className="ms-2 text-brand-300 font-normal text-sm">({shop.reviewCount})</span>
                 </h2>
                 {shop.reviewCount > 0 && (
                   <div className="mt-1">
