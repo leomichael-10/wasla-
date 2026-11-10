@@ -7,7 +7,6 @@ import HomeSearchBar from '../components/home/HomeSearchBar'
 import HeroBanner from '../components/home/HeroBanner'
 import ModeCards from '../components/home/ModeCards'
 import BestSellerRail from '../components/home/BestSellerRail'
-import PlaceholderTiles from '../components/home/PlaceholderTiles'
 import { DEFAULT_LOCALE, LOCALE_COOKIE } from '../lib/i18n'
 import { CATALOGUE_WHERE, CATALOGUE_INCLUDE, toCatalogueProducts } from '../lib/catalogue'
 
@@ -65,7 +64,6 @@ export default async function HomePage() {
         <HeroBanner locale={locale} />
         <ModeCards locale={locale} />
         <BestSellerRail products={popular} locale={locale} />
-        <PlaceholderTiles locale={locale} />
       </div>
     </div>
   )

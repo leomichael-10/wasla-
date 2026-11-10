@@ -78,9 +78,9 @@ export default function BrowseProductTile({ product, locale }) {
 
       <div className="p-3 flex flex-col gap-1 flex-1">
         <Link href={`/products/${product.id}`} className="block">
-          <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 min-h-8">{displayName}</p>
+          <p className="text-xs font-bold text-brand-900 leading-snug line-clamp-2 min-h-8">{displayName}</p>
         </Link>
-        <p className="text-sm font-black text-gray-900">{formatPrice(price, locale)}</p>
+        <p className="text-sm font-black text-brand-900">{formatPrice(price, locale)}</p>
         {!canAdd && (
           <p className="text-[10px] text-hibiscus-500 font-bold">
             {t('browse.outOfStock', locale)}
@@ -121,7 +121,7 @@ export default function BrowseProductTile({ product, locale }) {
           <button
             onClick={handleAdd}
             aria-label={t('browse.addToCart', locale)}
-            className="col-start-1 row-start-1 w-9 h-9 rounded-full bg-accent-400 hover:bg-accent-500 active:scale-95 text-gray-900 font-black text-lg shadow-md flex items-center justify-center transition-[opacity,transform] duration-160"
+            className="col-start-1 row-start-1 w-9 h-9 rounded-full bg-accent-400 hover:bg-accent-500 active:scale-95 text-brand-900 font-black text-lg shadow-md flex items-center justify-center transition-[opacity,transform] duration-160"
             style={{
               transitionTimingFunction: 'var(--ease-out)',
               opacity:       qty > 0 ? 0 : 1,

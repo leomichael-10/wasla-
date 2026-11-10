@@ -55,15 +55,15 @@ function DishCard({ dish, locale }) {
         <div className="w-28 h-28 rounded-full border-4 border-white/80 shadow-lg overflow-hidden">
           <MediaThumb src={mainImage} alt={displayName} className="w-full h-full rounded-full" />
         </div>
-        <div className="absolute bottom-0 translate-y-1/2 rtl:left-4 ltr:right-4 bg-accent-400 text-gray-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg z-10">
+        <div className="absolute bottom-0 translate-y-1/2 end-4 bg-accent-400 text-brand-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg z-10">
           {priceLabel}
         </div>
       </div>
 
       <div className="pt-6 px-4 pb-4 flex flex-col flex-1 gap-1.5">
-        <h3 dir="auto" className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 min-h-10">{displayName}</h3>
+        <h3 dir="auto" className="text-sm font-bold text-brand-900 leading-snug line-clamp-2 min-h-10">{displayName}</h3>
         {dish.description && (
-          <p dir="auto" className="text-xs text-gray-400 leading-tight line-clamp-2">{dish.description}</p>
+          <p dir="auto" className="text-xs text-brand-300 leading-tight line-clamp-2">{dish.description}</p>
         )}
 
         <div className="mt-auto pt-2">
@@ -78,9 +78,14 @@ function DishCard({ dish, locale }) {
             onClick={handleAddToCart}
             disabled={!inStockVariant}
           >
-            {feedback
-              ? t('browse.addToCart', locale) + ' ✓'
-              : inStockVariant
+            {feedback ? (
+              <span className="inline-flex items-center justify-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5 shrink-0">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                </svg>
+                {t('browse.addToCart', locale)}
+              </span>
+            ) : inStockVariant
                 ? t('browse.addToCart', locale)
                 : shopClosed ? t('browse.outOfZone', locale) : t('browse.outOfStock', locale)}
           </button>
@@ -114,13 +119,13 @@ export default function RestaurantPage() {
   }, [id])
 
   if (loading) return (
-    <div className="min-h-screen bg-[#FBF6EF]">
+    <div className="min-h-screen bg-sand-50">
       <Navbar />
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-6 animate-pulse">
-        <div className="h-48 bg-white rounded-2xl border border-gray-100" />
+        <div className="h-48 bg-white rounded-2xl border border-brand-100" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="aspect-square bg-white rounded-2xl border border-gray-100" />
+            <div key={i} className="aspect-square bg-white rounded-2xl border border-brand-100" />
           ))}
         </div>
       </div>
@@ -128,10 +133,10 @@ export default function RestaurantPage() {
   )
 
   if (error || !restaurant) return (
-    <div className="min-h-screen bg-[#FBF6EF]">
+    <div className="min-h-screen bg-sand-50">
       <Navbar />
       <div className="max-w-6xl mx-auto px-4 py-24 text-center">
-        <p className="text-gray-500 font-semibold">{error || t('restaurant.notFound', locale)}</p>
+        <p className="text-brand-400 font-semibold">{error || t('restaurant.notFound', locale)}</p>
         <Link href="/" className="mt-4 inline-block text-brand-700 font-bold hover:underline text-sm">
           {t('tab.home', locale)}
         </Link>
@@ -140,7 +145,7 @@ export default function RestaurantPage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF]">
+    <div className="min-h-screen bg-sand-50">
       <Navbar />
 
       {/* Restaurant hero banner */}
@@ -180,7 +185,7 @@ export default function RestaurantPage() {
 
               <div className="flex flex-wrap gap-2">
                 {restaurant.deliveryAvailable && (
-                  <span className="bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                  <span className="bg-nile-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
                     {t('home.sameDay', locale)}
                   </span>
                 )}
@@ -209,13 +214,17 @@ export default function RestaurantPage() {
 
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         <div>
-          <h2 className="text-lg font-black text-gray-900 mb-4">{t('restaurant.menu', locale)}</h2>
+          <h2 className="text-lg font-black text-brand-900 mb-4">{t('restaurant.menu', locale)}</h2>
 
           {restaurant.dishes.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-24 text-center">
-              <p className="text-4xl mb-4">🍽️</p>
-              <h3 className="text-xl font-black text-gray-900 mb-2">{t('restaurant.menuComingSoon', locale)}</h3>
-              <p className="text-sm text-gray-500">{t('restaurant.menuComingSoonHint', locale)}</p>
+            <div className="bg-white rounded-2xl border border-brand-100 shadow-sm py-24 text-center">
+              <span className="flex items-center justify-center w-20 h-20 rounded-full bg-sand-50 mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.4} stroke="currentColor" className="w-9 h-9 text-brand-300">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 3v6.75a2.25 2.25 0 0 0 4.5 0V3M7.5 9.75V21M9.75 3v18M15.75 3v7.5a2.25 2.25 0 0 0 4.5 0V3m-2.25 7.5V21" />
+                </svg>
+              </span>
+              <h3 className="text-xl font-black text-brand-900 mb-2">{t('restaurant.menuComingSoon', locale)}</h3>
+              <p className="text-sm text-brand-400">{t('restaurant.menuComingSoonHint', locale)}</p>
             </div>
           ) : (
             <div className="space-y-8">

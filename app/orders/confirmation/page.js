@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '../../../components/Navbar'
 import { buildWaMeUrl } from '../../../lib/notifications'
-import { getLocaleCookie, productName, formatPrice } from '../../../lib/i18n'
+import { getLocaleCookie, productName, formatPrice, t } from '../../../lib/i18n'
 
 export default function OrderConfirmationPage() {
   const [orders,     setOrders]     = useState([])
@@ -52,9 +52,9 @@ export default function OrderConfirmationPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-black text-brand-900">Order Placed Successfully</h1>
+          <h1 className="text-2xl font-black text-brand-900">{t('orderConfirmation.placed', locale)}</h1>
           <p className="text-brand-500 text-sm mt-2">
-            Your order has been received and will be confirmed by the seller shortly.
+            {t('orderConfirmation.body', locale)}
           </p>
         </div>
 
@@ -64,14 +64,14 @@ export default function OrderConfirmationPage() {
             {orders.map((order, idx) => (
               <div key={idx} className="bg-wasla-card rounded-2xl border border-brand-100 overflow-hidden">
                 <div className="px-5 py-4 border-b border-brand-50 flex items-center justify-between">
-                  <span className="font-black text-brand-900">Order #{order.id}</span>
+                  <span className="font-black text-brand-900">{t('orderConfirmation.orderNumber', locale)}{order.id}</span>
                   <span className="font-black text-brand-900 tabular-nums">{formatPrice(order.total, locale, { decimals: 2 })}</span>
                 </div>
                 <div className="px-5 py-4 space-y-2">
                   {order.items?.map((item, i) => (
                     <div key={i} className="flex items-center justify-between text-sm">
                       <span className="text-brand-700">
-                        {item.productVariant?.product ? productName(item.productVariant.product, locale) : 'Product'}
+                        {item.productVariant?.product ? productName(item.productVariant.product, locale) : t('orderConfirmation.product', locale)}
                         {item.productVariant?.label ? ` · ${item.productVariant.label}` : ''}
                       </span>
                       <span className="text-brand-500">×{item.quantity}</span>
@@ -79,9 +79,9 @@ export default function OrderConfirmationPage() {
                   ))}
                 </div>
                 <div className="px-5 py-3 bg-sand-50 border-t border-brand-100 grid grid-cols-3 text-xs text-brand-500 gap-2">
-                  <span>Payment: {order.paymentMethod ?? 'cod'}</span>
-                  <span className="text-center text-green-600 font-semibold">Status: Placed</span>
-                  <span className="text-right">Delivery: {order.promisedEta ? new Date(order.promisedEta).toLocaleString('en-EG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : 'TBD'}</span>
+                  <span>{t('orderConfirmation.payment', locale)}: {order.paymentMethod ?? 'cod'}</span>
+                  <span className="text-center text-green-600 font-semibold">{t('orderConfirmation.statusPlaced', locale)}</span>
+                  <span className="text-right">{t('orderConfirmation.delivery', locale)}: {order.promisedEta ? new Date(order.promisedEta).toLocaleString('en-EG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : t('orderConfirmation.tbd', locale)}</span>
                 </div>
 
                 {(() => {
@@ -110,14 +110,14 @@ export default function OrderConfirmationPage() {
                 {order.paymentMethod === 'manual_transfer' && (
                   <div className="px-5 py-4 border-t border-brand-100">
                     {uploaded[order.id] ? (
-                      <p className="text-xs text-green-600 font-semibold">Receipt uploaded — awaiting admin confirmation.</p>
+                      <p className="text-xs text-green-600 font-semibold">{t('orderConfirmation.receiptUploaded', locale)}</p>
                     ) : (
                       <>
                         <p className="text-xs text-brand-500 mb-2">
-                          Send payment via InstaPay or Vodafone Cash, then upload your receipt to confirm this order.
+                          {t('orderConfirmation.receiptHint', locale)}
                         </p>
                         <label className={`inline-block cursor-pointer bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-bold px-4 py-2 rounded-xl transition-colors ${uploading === order.id ? 'opacity-50 pointer-events-none' : ''}`}>
-                          {uploading === order.id ? 'Uploading…' : 'Upload Receipt'}
+                          {uploading === order.id ? t('orderConfirmation.uploading', locale) : t('orderConfirmation.uploadReceipt', locale)}
                           <input
                             type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
                             onChange={e => handleReceiptUpload(order.id, e.target.files?.[0])}
@@ -132,8 +132,8 @@ export default function OrderConfirmationPage() {
           </div>
         ) : (
           <div className="bg-wasla-card rounded-2xl border border-brand-100 p-8 text-center mb-8">
-            <p className="text-brand-500 font-semibold">Your order has been placed.</p>
-            <p className="text-sm text-brand-400 mt-1">Check My Orders for details.</p>
+            <p className="text-brand-500 font-semibold">{t('orderConfirmation.placedNoDetails', locale)}</p>
+            <p className="text-sm text-brand-400 mt-1">{t('orderConfirmation.checkMyOrders', locale)}</p>
           </div>
         )}
 
@@ -143,13 +143,13 @@ export default function OrderConfirmationPage() {
             href="/orders"
             className="bg-brand-700 hover:bg-brand-800 text-white font-black px-6 py-3 rounded-xl text-sm transition-colors"
           >
-            Track My Orders
+            {t('orderConfirmation.trackMyOrders', locale)}
           </Link>
           <Link
             href="/products"
             className="text-sm font-semibold text-brand-500 hover:text-brand-700"
           >
-            Continue Shopping
+            {t('orderConfirmation.continueShopping', locale)}
           </Link>
         </div>
       </div>

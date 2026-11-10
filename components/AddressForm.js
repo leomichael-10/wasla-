@@ -3,8 +3,8 @@ import { useState } from 'react'
 import { t } from '../lib/i18n'
 import PhonePreview from './PhonePreview'
 
-const inputCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition bg-white'
-const labelCls = 'block text-sm font-semibold text-gray-700 mb-1.5'
+const inputCls = 'w-full border border-brand-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition bg-white'
+const labelCls = 'block text-sm font-semibold text-brand-700 mb-1.5'
 
 // Shared create/edit form for a saved delivery address. Used by both the
 // Account page's address manager and the checkout "add new address" flow.
@@ -145,7 +145,7 @@ export default function AddressForm({ initial, zones, locale, onSaved, onCancel 
           type="checkbox" checked={isDefault} onChange={e => setIsDefault(e.target.checked)}
           className="accent-brand-600"
         />
-        <span className="text-sm text-gray-700">{t('address.setDefault', locale)}</span>
+        <span className="text-sm text-brand-700">{t('address.setDefault', locale)}</span>
       </label>
 
       <div className="flex gap-2 pt-1">
@@ -158,7 +158,7 @@ export default function AddressForm({ initial, zones, locale, onSaved, onCancel 
         {onCancel && (
           <button
             type="button" onClick={onCancel}
-            className="px-5 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+            className="px-5 py-3 rounded-xl text-sm font-bold text-brand-400 hover:bg-brand-50 transition-colors"
           >
             {t('address.cancel', locale)}
           </button>

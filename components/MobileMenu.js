@@ -56,7 +56,7 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
         {user && (
           <div className="px-5 py-3 bg-brand-50 border-b border-brand-100">
             <p className="text-xs font-bold text-brand-700 uppercase tracking-wide">{user.role}</p>
-            <p className="text-sm font-semibold text-gray-800 truncate mt-0.5">{user.email}</p>
+            <p className="text-sm font-semibold text-brand-800 truncate mt-0.5">{user.email}</p>
           </div>
         )}
 
@@ -66,7 +66,7 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
               key={link.href}
               href={link.href}
               onClick={onClose}
-              className="flex items-center px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 hover:bg-brand-50 hover:text-brand-700 transition-colors border-l-4 border-transparent hover:border-brand-200 min-h-11"
+              className="flex items-center px-4 py-3 rounded-xl text-sm font-semibold text-brand-700 hover:bg-brand-50 hover:text-brand-700 transition-colors border-l-4 border-transparent hover:border-brand-200 min-h-11"
             >
               {link.label}
             </Link>
@@ -82,7 +82,7 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
           )}
         </nav>
 
-        <div className="px-5 py-4 border-t border-gray-100">
+        <div className="px-5 py-4 border-t border-brand-100">
           {user ? (
             <button
               onClick={() => { onLogout(); onClose() }}
@@ -102,7 +102,7 @@ export default function MobileMenu({ user, isOpen, onClose, onLogout }) {
               <Link
                 href="/register"
                 onClick={onClose}
-                className="flex-1 text-center bg-accent-400 hover:bg-accent-500 active:scale-95 text-gray-900 font-black py-3 rounded-2xl text-sm transition-all duration-200 min-h-11 flex items-center justify-center"
+                className="flex-1 text-center bg-accent-400 hover:bg-accent-500 active:scale-95 text-brand-900 font-black py-3 rounded-2xl text-sm transition-all duration-200 min-h-11 flex items-center justify-center"
               >
                 Register
               </Link>

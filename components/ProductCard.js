@@ -10,10 +10,10 @@ function StarRating({ rating, count }) {
     <div className="flex items-center gap-1">
       <div className="flex gap-0.5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <span key={i} className={`text-xs ${i < rounded ? 'text-accent-400' : 'text-gray-200'}`}>&#9733;</span>
+          <span key={i} className={`text-xs ${i < rounded ? 'text-accent-400' : 'text-brand-200'}`}>&#9733;</span>
         ))}
       </div>
-      {count > 0 && <span className="text-[11px] text-gray-400">({count})</span>}
+      {count > 0 && <span className="text-[11px] text-brand-300">({count})</span>}
     </div>
   )
 }
@@ -84,7 +84,7 @@ export default function ProductCard({ product }) {
           />
         </div>
 
-        <div className="absolute bottom-0 translate-y-1/2 right-4 bg-accent-400 text-gray-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg z-10">
+        <div className="absolute bottom-0 translate-y-1/2 end-4 bg-accent-400 text-brand-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg z-10">
           {priceLabel}
         </div>
       </div>
@@ -93,20 +93,20 @@ export default function ProductCard({ product }) {
         {product.brand && (
           <span className="text-[11px] font-bold text-brand-500 uppercase tracking-wide">{product.brand}</span>
         )}
-        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 min-h-10">{product.name}</h3>
+        <h3 className="text-sm font-bold text-brand-900 leading-snug line-clamp-2 min-h-10">{product.name}</h3>
         {variantLabels.length > 0 ? (
-          <p className="text-xs text-gray-400 leading-tight">
+          <p className="text-xs text-brand-300 leading-tight">
             {variantLabels.length} option{variantLabels.length !== 1 ? 's' : ''}{' · '}
             {variantLabels.slice(0, 2).join(', ')}{variantLabels.length > 2 ? '…' : ''}
           </p>
         ) : (
-          <p className="text-xs text-gray-400 leading-tight min-h-4" />
+          <p className="text-xs text-brand-300 leading-tight min-h-4" />
         )}
         {reviewCount > 0 && <StarRating rating={avgRating} count={reviewCount} />}
         {product.seller && (
           <Link
             href={`/shops/${product.seller.id}`}
-            className="relative z-10 text-xs text-gray-400 hover:text-brand-600 transition-colors"
+            className="relative z-10 text-xs text-brand-300 hover:text-brand-600 transition-colors"
             onClick={e => e.stopPropagation()}
           >
             {product.seller.businessName}{product.seller.city ? ` · ${product.seller.city}` : ''}

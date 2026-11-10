@@ -4,10 +4,8 @@ import { useSearchParams } from 'next/navigation'
 import Navbar from '../../components/Navbar'
 import BrowseProductTile from '../../components/BrowseProductTile'
 import CategoryIcon from '../../components/CategoryIcon'
-import { getZoneCookie } from '../../lib/zone'
+import { getZoneCookie, openZonePicker } from '../../lib/zone'
 import { getLocaleCookie, t, categoryName, interpolate } from '../../lib/i18n'
-
-const BRANDS = ['Kassala', 'Gedaref', 'El Obeid']
 
 const SORT_KEYS = [
   { value: 'az',         key: 'browse.sortAz'        },
@@ -124,20 +122,22 @@ function MobileCategoryRail({ categories, active, onSelect, locale }) {
   )
 }
 
-function FilterPanel({ brand, setBrand, locale, onClose }) {
+function FilterPanel({ brand, setBrand, brands, locale, onClose }) {
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-xs font-bold text-brand-400 uppercase tracking-wide mb-3">{t('browse.brand', locale)}</p>
-        <div className="space-y-2.5">
-          {BRANDS.map(b => (
-            <label key={b} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="radio" name="brand" checked={brand === b} onChange={() => setBrand(brand === b ? '' : b)} className="accent-accent-500 w-4 h-4" />
-              <span className="text-sm text-brand-700 group-hover:text-brand-900 transition-colors">{b}</span>
-            </label>
-          ))}
+      {brands.length > 0 && (
+        <div>
+          <p className="text-xs font-bold text-brand-400 uppercase tracking-wide mb-3">{t('browse.brand', locale)}</p>
+          <div className="space-y-2.5">
+            {brands.map(b => (
+              <label key={b} className="flex items-center gap-2.5 cursor-pointer group">
+                <input type="radio" name="brand" checked={brand === b} onChange={() => setBrand(brand === b ? '' : b)} className="accent-accent-500 w-4 h-4" />
+                <span className="text-sm text-brand-700 group-hover:text-brand-900 transition-colors">{b}</span>
+              </label>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {onClose && (
         <button onClick={onClose} className="w-full bg-brand-700 hover:bg-brand-800 active:scale-95 text-white font-bold py-2.5 rounded-2xl text-sm transition-all duration-200">
@@ -153,6 +153,7 @@ function ProductsBrowser() {
 
   const [products,    setProducts]    = useState([])
   const [categories,  setCategories]  = useState([])
+  const [brands,      setBrands]      = useState([])
   const [loading,     setLoading]     = useState(true)
   const [mobileOpen,  setMobileOpen]  = useState(false)
   const [locale,      setLocale]      = useState('ar')
@@ -178,6 +179,10 @@ function ProductsBrowser() {
     fetch('/api/categories')
       .then(r => r.json())
       .then(d => setCategories(d.categories ?? []))
+      .catch(() => {})
+    fetch('/api/products/brands')
+      .then(r => r.json())
+      .then(d => setBrands(d.brands ?? []))
       .catch(() => {})
   }, [])
 
@@ -213,20 +218,21 @@ function ProductsBrowser() {
 
   function clearFilters() { setSearch(''); setBrand(''); setCategory('') }
 
-  function handleChangeZone() {
-    document.cookie = 'wasla_zone=; path=/; max-age=0'
-    window.location.reload()
-  }
-
   return (
     <div className="min-h-screen bg-sand-50" dir={dir}>
       <Navbar />
 
       {mobileOpen && (
-        <div className="fixed inset-0 bg-black/40 z-40 sm:hidden" onClick={() => setMobileOpen(false)} />
+        <div
+          className="wasla-modal-backdrop fixed inset-0 bg-black/40 z-40 sm:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
       )}
 
-      <div className={`fixed bottom-0 inset-x-0 z-50 bg-wasla-card rounded-t-2xl p-6 shadow-2xl transition-transform duration-300 sm:hidden ${mobileOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+      <div
+        className={`fixed bottom-0 inset-x-0 z-50 bg-wasla-card rounded-t-2xl p-6 shadow-2xl transition-transform duration-300 sm:hidden ${mobileOpen ? 'translate-y-0' : 'translate-y-full'}`}
+        style={{ transitionTimingFunction: 'var(--ease-drawer)' }}
+      >
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-black text-brand-900">{t('browse.filters', locale)}</h2>
           <button onClick={() => setMobileOpen(false)} className="text-brand-400 hover:text-brand-600" aria-label="Close filters">
@@ -238,7 +244,7 @@ function ProductsBrowser() {
         {hasFilters && (
           <button onClick={clearFilters} className="text-xs text-hibiscus-500 hover:text-hibiscus-600 font-semibold mb-4 block">{t('browse.clearAll', locale)}</button>
         )}
-        <FilterPanel brand={brand} setBrand={setBrand} locale={locale} onClose={() => setMobileOpen(false)} />
+        <FilterPanel brand={brand} setBrand={setBrand} brands={brands} locale={locale} onClose={() => setMobileOpen(false)} />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 pt-6 pb-3">
@@ -316,7 +322,7 @@ function ProductsBrowser() {
                 <h2 className="font-black text-brand-900 text-sm">{t('browse.filters', locale)}</h2>
                 {hasFilters && <button onClick={clearFilters} className="text-xs text-hibiscus-500 hover:text-hibiscus-600 font-semibold">{t('browse.clear', locale)}</button>}
               </div>
-              <FilterPanel brand={brand} setBrand={setBrand} locale={locale} />
+              <FilterPanel brand={brand} setBrand={setBrand} brands={brands} locale={locale} />
             </div>
           </aside>
 
@@ -344,7 +350,7 @@ function ProductsBrowser() {
                   <p className="text-nile-500 text-sm font-semibold mt-3">
                     {interpolate(t('browse.emptyZone', locale), { zone: locale === 'ar' ? zone.nameAr : zone.nameEn })}
                     {' '}
-                    <button onClick={handleChangeZone} className="underline hover:no-underline">{t('browse.changeZone', locale)}</button>
+                    <button onClick={openZonePicker} className="underline hover:no-underline">{t('browse.changeZone', locale)}</button>
                   </p>
                 )}
                 {hasFilters && (

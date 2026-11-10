@@ -5,17 +5,18 @@ import Link from 'next/link'
 import Navbar from '../../../components/Navbar'
 import ProductCard from '../../../components/ProductCard'
 import MediaThumb from '../../../components/MediaThumb'
+import { getLocaleCookie, t, categoryName, countReviews } from '../../../lib/i18n'
 
-function StarDisplay({ rating, count }) {
+function StarDisplay({ rating, count, locale }) {
   return (
     <div className="flex items-center gap-1.5">
       <div className="flex gap-0.5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <span key={i} className={`text-sm ${i < Math.round(rating) ? 'text-yellow-400' : 'text-gray-200'}`}>&#9733;</span>
+          <span key={i} className={`text-sm ${i < Math.round(rating) ? 'text-yellow-400' : 'text-brand-200'}`}>&#9733;</span>
         ))}
       </div>
-      <span className="text-sm font-bold text-gray-700">{rating.toFixed(1)}</span>
-      <span className="text-xs text-gray-400">({count} review{count !== 1 ? 's' : ''})</span>
+      <span className="text-sm font-bold text-brand-700">{rating.toFixed(1)}</span>
+      <span className="text-xs text-brand-300">({countReviews(count, locale)})</span>
     </div>
   )
 }
@@ -26,6 +27,9 @@ export default function ShopPage() {
   const [loading,    setLoading]    = useState(true)
   const [error,      setError]      = useState('')
   const [activeTab,  setActiveTab]  = useState('All')
+  const [locale,     setLocale]     = useState('ar')
+
+  useEffect(() => { setLocale(getLocaleCookie()) }, [])
 
   useEffect(() => {
     fetch(`/api/shops/${id}`)
@@ -37,9 +41,9 @@ export default function ShopPage() {
           fetch(`/api/track/pixel/${data.shop.trackingPixel.id}`).catch(() => {})
         }
       })
-      .catch(err => setError(err.message || 'Failed to load shop.'))
+      .catch(err => setError(err.message || t('shop.loadFailed', locale)))
       .finally(() => setLoading(false))
-  }, [id])
+  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derive unique category tabs from products
   const categories = useMemo(() => {
@@ -60,14 +64,14 @@ export default function ShopPage() {
   }, [shop, activeTab])
 
   if (loading) return (
-    <div className="min-h-screen bg-[#FBF6EF]">
+    <div className="min-h-screen bg-sand-50">
       <Navbar />
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-6 animate-pulse">
-        <div className="h-48 bg-white rounded-2xl border border-gray-100" />
-        <div className="h-10 bg-white rounded-2xl border border-gray-100 w-1/2" />
+        <div className="h-48 bg-white rounded-2xl border border-brand-100" />
+        <div className="h-10 bg-white rounded-2xl border border-brand-100 w-1/2" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="aspect-square bg-white rounded-2xl border border-gray-100" />
+            <div key={i} className="aspect-square bg-white rounded-2xl border border-brand-100" />
           ))}
         </div>
       </div>
@@ -75,12 +79,12 @@ export default function ShopPage() {
   )
 
   if (error || !shop) return (
-    <div className="min-h-screen bg-[#FBF6EF]">
+    <div className="min-h-screen bg-sand-50">
       <Navbar />
       <div className="max-w-6xl mx-auto px-4 py-24 text-center">
-        <p className="text-gray-500 font-semibold">{error || 'Shop not found.'}</p>
+        <p className="text-brand-400 font-semibold">{error || t('shop.notFound', locale)}</p>
         <Link href="/shops" className="mt-4 inline-block text-brand-700 font-bold hover:underline text-sm">
-          Browse Shops
+          {t('shop.browseShops', locale)}
         </Link>
       </div>
     </div>
@@ -99,7 +103,7 @@ export default function ShopPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FBF6EF]">
+    <div className="min-h-screen bg-sand-50">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar />
 
@@ -108,9 +112,9 @@ export default function ShopPage() {
         <div className="max-w-6xl mx-auto px-4 py-10">
           {/* Breadcrumb */}
           <div className="flex items-center gap-1.5 text-brand-100 text-xs mb-5">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <Link href="/" className="hover:text-white transition-colors">{t('shop.home', locale)}</Link>
             <span>/</span>
-            <Link href="/shops" className="hover:text-white transition-colors">Shops</Link>
+            <Link href="/shops" className="hover:text-white transition-colors">{t('shops.shopsHeading', locale)}</Link>
             <span>/</span>
             <span className="text-white font-medium">{shop.businessName}</span>
           </div>
@@ -127,7 +131,7 @@ export default function ShopPage() {
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
                       <path fillRule="evenodd" d="M16.403 12.652a3 3 0 0 0 0-5.304 3 3 0 0 0-3.75-3.751 3 3 0 0 0-5.305 0 3 3 0 0 0-3.751 3.75 3 3 0 0 0 0 5.305 3 3 0 0 0 3.75 3.751 3 3 0 0 0 5.305 0 3 3 0 0 0 3.751-3.75Zm-2.546-4.46a.75.75 0 0 0-1.214-.883l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
                     </svg>
-                    Verified Seller
+                    {t('shop.verifiedSeller', locale)}
                   </span>
                 )}
               </div>
@@ -140,20 +144,20 @@ export default function ShopPage() {
 
               {shop.reviewCount > 0 && (
                 <div className="mb-3">
-                  <StarDisplay rating={shop.averageRating} count={shop.reviewCount} />
+                  <StarDisplay rating={shop.averageRating} count={shop.reviewCount} locale={locale} />
                 </div>
               )}
 
               {/* Quick badges */}
               <div className="flex flex-wrap gap-2">
                 {shop.deliveryAvailable && (
-                  <span className="bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                    Delivery available
+                  <span className="bg-nile-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                    {t('shop.deliveryAvailable', locale)}
                   </span>
                 )}
                 {shop.warrantyAvailable && (
                   <span className="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                    Warranty
+                    {t('shop.warranty', locale)}
                   </span>
                 )}
                 {shop.workingHours && (
@@ -173,11 +177,11 @@ export default function ShopPage() {
             <div className="flex gap-5 shrink-0">
               <div className="text-center">
                 <p className="text-2xl font-black text-white">{shop.productCount}</p>
-                <p className="text-xs text-brand-100 font-semibold uppercase tracking-wide mt-0.5">Products</p>
+                <p className="text-xs text-brand-100 font-semibold uppercase tracking-wide mt-0.5">{t('shops.productsHeading', locale)}</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-black text-white">{shop.orderCount}</p>
-                <p className="text-xs text-brand-100 font-semibold uppercase tracking-wide mt-0.5">Orders</p>
+                <p className="text-xs text-brand-100 font-semibold uppercase tracking-wide mt-0.5">{t('shops.ordersHeading', locale)}</p>
               </div>
             </div>
           </div>
@@ -188,7 +192,7 @@ export default function ShopPage() {
 
         {/* ── Category tabs ──────────────────────────────────────────────── */}
         {categories.length > 1 && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3">
+          <div className="bg-white rounded-2xl border border-brand-100 shadow-sm px-4 py-3">
             <div className="flex gap-2 overflow-x-auto scrollbar-hide">
               {['All', ...categories].map(tab => (
                 <button
@@ -197,14 +201,14 @@ export default function ShopPage() {
                   className={`shrink-0 px-4 py-2 rounded-xl text-sm font-bold transition-colors ${
                     activeTab === tab
                       ? 'bg-brand-700 text-white'
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-[#FBF6EF]'
+                      : 'text-brand-400 hover:text-brand-900 hover:bg-sand-50'
                   }`}
                 >
-                  {tab}
+                  {tab === 'All' ? t('shop.allTab', locale) : categoryName(tab, locale)}
                   {tab === 'All' ? (
-                    <span className="ml-1.5 text-xs opacity-70">({shop.productCount})</span>
+                    <span className="ms-1.5 text-xs opacity-70">({shop.productCount})</span>
                   ) : (
-                    <span className="ml-1.5 text-xs opacity-70">
+                    <span className="ms-1.5 text-xs opacity-70">
                       ({shop.products.filter(p => p.category?.name === tab).length})
                     </span>
                   )}
@@ -216,14 +220,14 @@ export default function ShopPage() {
 
         {/* ── Products grid ──────────────────────────────────────────────── */}
         <div>
-          <h2 className="text-lg font-black text-gray-900 mb-4">
-            {activeTab === 'All' ? `All Products` : activeTab}
-            <span className="ml-2 text-base font-normal text-gray-400">({filteredProducts.length})</span>
+          <h2 className="text-lg font-black text-brand-900 mb-4">
+            {activeTab === 'All' ? t('shop.allProducts', locale) : categoryName(activeTab, locale)}
+            <span className="ms-2 text-base font-normal text-brand-300">({filteredProducts.length})</span>
           </h2>
 
           {filteredProducts.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-16 text-center">
-              <p className="text-gray-400 font-medium">No products in this category yet.</p>
+            <div className="bg-white rounded-2xl border border-brand-100 shadow-sm py-16 text-center">
+              <p className="text-brand-300 font-medium">{t('shop.noProductsInCategory', locale)}</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -236,16 +240,16 @@ export default function ShopPage() {
 
         {/* ── Reviews ────────────────────────────────────────────────────── */}
         {shop.reviews?.length > 0 && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="bg-white rounded-2xl border border-brand-100 shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="font-black text-gray-900 text-base">
-                  Reviews
-                  <span className="ml-2 text-gray-400 font-normal text-sm">({shop.reviewCount})</span>
+                <h2 className="font-black text-brand-900 text-base">
+                  {t('shop.reviews', locale)}
+                  <span className="ms-2 text-brand-300 font-normal text-sm">({shop.reviewCount})</span>
                 </h2>
                 {shop.reviewCount > 0 && (
                   <div className="mt-1">
-                    <StarDisplay rating={shop.averageRating} count={shop.reviewCount} />
+                    <StarDisplay rating={shop.averageRating} count={shop.reviewCount} locale={locale} />
                   </div>
                 )}
               </div>
@@ -253,26 +257,26 @@ export default function ShopPage() {
 
             <div className="space-y-4">
               {shop.reviews.map(review => (
-                <div key={review.id} className="flex gap-3 border-b border-gray-50 last:border-0 pb-4 last:pb-0">
+                <div key={review.id} className="flex gap-3 border-b border-brand-50 last:border-0 pb-4 last:pb-0">
                   <div className="w-9 h-9 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center font-black text-sm shrink-0">
-                    {(review.customer?.customerProfile?.fullName ?? 'C')[0].toUpperCase()}
+                    {(review.customer?.customerProfile?.fullName ?? t('shop.customer', locale))[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-semibold text-gray-800">
-                        {review.customer?.customerProfile?.fullName ?? 'Customer'}
+                      <span className="text-sm font-semibold text-brand-800">
+                        {review.customer?.customerProfile?.fullName ?? t('shop.customer', locale)}
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-brand-300">
                         {new Date(review.createdAt).toLocaleDateString('en-AE', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </span>
                     </div>
                     <div className="flex gap-0.5 mb-1">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <span key={i} className={`text-sm ${i < review.rating ? 'text-yellow-400' : 'text-gray-200'}`}>&#9733;</span>
+                        <span key={i} className={`text-sm ${i < review.rating ? 'text-yellow-400' : 'text-brand-200'}`}>&#9733;</span>
                       ))}
                     </div>
                     {review.comment && (
-                      <p className="text-sm text-gray-600 leading-relaxed">{review.comment}</p>
+                      <p className="text-sm text-brand-600 leading-relaxed">{review.comment}</p>
                     )}
                   </div>
                 </div>

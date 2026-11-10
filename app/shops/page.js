@@ -37,7 +37,7 @@ function ShopCard({ shop, locale }) {
           )}
         </div>
         {shop.deliveryAvailable && (
-          <span className="absolute top-2.5 right-3 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+          <span className="absolute top-2.5 end-3 bg-nile-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
             {t('shops.delivery', locale)}
           </span>
         )}
@@ -61,7 +61,7 @@ function ShopCard({ shop, locale }) {
 
         <div className="flex flex-wrap gap-1.5 mt-auto">
           {shop.deliveryAvailable && (
-            <span className="bg-green-50 text-green-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+            <span className="bg-nile-50 text-nile-600 text-[10px] font-semibold px-2 py-0.5 rounded-full">
               {t('shops.deliveryAvailable', locale)}
             </span>
           )}

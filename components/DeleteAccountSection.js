@@ -2,8 +2,8 @@
 import { useState } from 'react'
 import { t, interpolate } from '../lib/i18n'
 
-const inputCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 transition bg-white'
-const labelCls = 'block text-sm font-semibold text-gray-700 mb-1.5'
+const inputCls = 'w-full border border-brand-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 transition bg-white'
+const labelCls = 'block text-sm font-semibold text-brand-700 mb-1.5'
 
 // Maps the API's stable error `code` (see app/api/profile/delete-account/
 // route.js) to a localized message, same pattern as
@@ -122,15 +122,15 @@ export default function DeleteAccountSection({ locale, role, hasPassword, onDele
 
       <div className="bg-white rounded-xl p-4 space-y-3 text-sm">
         <div>
-          <p className="font-bold text-gray-800 mb-1">{t('deleteAccount.keepTitle', locale)}</p>
-          <ul className="list-disc ps-5 text-gray-600 space-y-0.5">
+          <p className="font-bold text-brand-800 mb-1">{t('deleteAccount.keepTitle', locale)}</p>
+          <ul className="list-disc ps-5 text-brand-600 space-y-0.5">
             <li>{t('deleteAccount.keepOrders', locale)}</li>
             {isSeller && <li>{t('deleteAccount.keepLedgerSeller', locale)}</li>}
           </ul>
         </div>
         <div>
-          <p className="font-bold text-gray-800 mb-1">{t('deleteAccount.deleteTitle', locale)}</p>
-          <ul className="list-disc ps-5 text-gray-600 space-y-0.5">
+          <p className="font-bold text-brand-800 mb-1">{t('deleteAccount.deleteTitle', locale)}</p>
+          <ul className="list-disc ps-5 text-brand-600 space-y-0.5">
             <li>{t('deleteAccount.deletePersonal', locale)}</li>
             {isSeller && <li>{t('deleteAccount.deleteShop', locale)}</li>}
           </ul>
@@ -202,7 +202,7 @@ export default function DeleteAccountSection({ locale, role, hasPassword, onDele
           <button
             type="button"
             onClick={reset}
-            className="text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors"
+            className="text-sm font-bold text-brand-400 hover:text-brand-700 transition-colors"
           >
             {t('deleteAccount.cancel', locale)}
           </button>

@@ -207,7 +207,7 @@ export default function CartPage() {
               </h2>
               <div className="space-y-3">
                 {cartItems.map(item => (
-                  <div key={item.productVariantId} className="bg-white rounded-3xl border border-brand-50 shadow-sm p-4 sm:p-5 transition-all duration-300">
+                  <div key={item.productVariantId} className="bg-white rounded-2xl border border-brand-50 shadow-sm p-4 sm:p-5 transition-all duration-300">
                     <div className="flex items-start gap-3">
                       <MediaThumb src={item.image} alt={productName(item, locale)} className="w-16 h-16 rounded-2xl shrink-0" />
                       <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
